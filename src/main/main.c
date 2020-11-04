@@ -4,6 +4,8 @@
 
 #include <segments/intro.h>
 
+#define NUM_LOGOS 50
+
 extern Gfx test_line_mesh[];
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
@@ -40,9 +42,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         // gDPSetCombineLERP(g_dlistHead++, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 1, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 1);
         // gDPSetEnvColor(g_dlistHead++, 255, 255, 255, 255);
 
-        for (i = 0; i < 4; i++)
+        for (i = 0; i < NUM_LOGOS; i++)
         {
-            f32 tmpAngle2 = angle - i * (360.0f / 4);
+            f32 tmpAngle2 = angle - i * (360.0f / NUM_LOGOS);
             gfxPushMat();
              gfxPosition(0.0f, angle - i * (360.0f / 50), 0.0f, 1.0f, sinf(tmpAngle) * 200.0f, cosf(tmpAngle) * 200.0f, 0.0f);
             //  gSPModifyVertex(g_dlistHead++, 0, G_MWO_POINT_XYSCREEN, ((sins(i * 2048       ) + SCREEN_WIDTH / 2) << (16 + 2)) | ((coss(i * 2048       ) + SCREEN_HEIGHT / 2) << 2));
@@ -51,7 +53,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
              drawGfx(logo_logo_mesh);
              drawGfx(test_line_mesh);
             gfxPopMat();
-            tmpAngle += (2 * M_PI) / 4.0f;
+            tmpAngle += (2 * M_PI) / NUM_LOGOS;
         }
     
         endFrame();

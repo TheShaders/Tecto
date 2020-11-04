@@ -83,19 +83,40 @@ SECTIONS
     START_SEGMENT_AFTER(audio, gfx)
     {
         BUILD_ROOT/src/audio/audio.o(.text*);
+        lib/libopus.a(.text*);
         BUILD_ROOT/src/audio/audio.o(.data*);
         BUILD_ROOT/src/audio/audio.o(.rodata*);
+        lib/libopus.a(.data*);
+        lib/libopus.a(.rodata*);
         . = ALIGN(16);
     }
     END_SEGMENT(audio);
 
-    START_SEGMENT_AFTER(libultra, audio)
+    START_SEGMENT_AFTER(libgcc, audio)
     {
-        SDK/ultra/usr/lib/libgultra.a(.text*);
-        SDK/ultra/usr/lib/libgultra.a(.data*);
-        SDK/ultra/usr/lib/libgultra.a(.rodata*);
-        SDK/ultra/usr/lib/libgultra.a(.scommon*);
-        SDK/ultra/usr/lib/libgultra.a(COMMON*);
+        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.text*);
+        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.data*);
+        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.rodata*);
+        . = ALIGN(16);
+    }
+    END_SEGMENT(libgcc);
+
+    START_SEGMENT_AFTER(libnustd, libgcc)
+    {
+        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.text*);
+        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.data*);
+        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.rodata*);
+        . = ALIGN(16);
+    }
+    END_SEGMENT(libnustd);
+
+    START_SEGMENT_AFTER(libultra, libnustd)
+    {
+        SDK/ultra/usr/lib/libgultra_rom.a(.text*);
+        SDK/ultra/usr/lib/libgultra_rom.a(.data*);
+        SDK/ultra/usr/lib/libgultra_rom.a(.rodata*);
+        SDK/ultra/usr/lib/libgultra_rom.a(.scommon*);
+        SDK/ultra/usr/lib/libgultra_rom.a(COMMON*);
         . = ALIGN(16);
     }
     END_SEGMENT(libultra);
@@ -123,7 +144,7 @@ SECTIONS
 
     START_NOLOAD_AFTER(libultra, main.noload)
     {
-        SDK/ultra/usr/lib/libgultra.a(.bss*);
+        SDK/ultra/usr/lib/libgultra_rom.a(.bss*);
         . = ALIGN(16);
     }
     END_NOLOAD(libultra);
@@ -138,9 +159,24 @@ SECTIONS
     START_NOLOAD_AFTER(audio, gfx.noload)
     {
         BUILD_ROOT/src/audio/audio.o(.bss*);
+        lib/libopus.a(.bss*);
         . = ALIGN(16);
     }
     END_NOLOAD(audio);
+
+    START_NOLOAD_AFTER(libgcc, audio.noload)
+    {
+        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.bss*);
+        . = ALIGN(16);
+    }
+    END_NOLOAD(libgcc);
+
+    START_NOLOAD_AFTER(libnustd, libgcc.noload)
+    {
+        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.bss*);
+        . = ALIGN(16);
+    }
+    END_NOLOAD(libnustd);
 
     memPoolStart = .;
 
@@ -151,6 +187,12 @@ SECTIONS
         . = ALIGN(16);
     }
     END_SEGMENT(intro);
+
+    START_SEGMENT(song, 0x04000000)
+    {
+        . = ALIGN(16);
+    }
+    END_SEGMENT(song);
 
     /DISCARD/ :
     {

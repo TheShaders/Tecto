@@ -2,6 +2,7 @@
 #include <gfx.h>
 #include <mem.h>
 #include <audio.h>
+#include <malloc.h>
 
 u16 g_frameBuffers[NUM_FRAME_BUFFERS][SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
 u16 g_depthBuffer[SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
@@ -10,6 +11,8 @@ struct GfxContext g_gfxContexts[NUM_FRAME_BUFFERS];
 
 u64 taskStack[SP_DRAM_STACK_SIZE64];
 u64 taskOutputBuffer[OUTPUT_BUFF_LEN];
+
+u8* introSegAddr;
 
 Gfx *g_dlistHead;
 
@@ -102,14 +105,17 @@ void initGfx(void)
 
     // Create message queue for DMA reads/writes
     osCreateMesgQueue(&dmaMesgQueue, &dmaMessage, 1);
+
+    // Allocate RAM for the intro segment to be DMA'd to
+    introSegAddr = mt_malloc((u32)_introSegmentRomEnd - (u32)_introSegmentRomStart);
     
     // Invalidate the data cache for the region being DMA'd to
-    osInvalDCache(memPoolStart, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart); 
+    osInvalDCache(introSegAddr, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart); 
 
-    // DMA the intro segment
+    // Set up the intro segment DMA
     dmaIoMessage.hdr.pri = OS_MESG_PRI_NORMAL;
     dmaIoMessage.hdr.retQueue = &dmaMesgQueue;
-    dmaIoMessage.dramAddr = memPoolStart;
+    dmaIoMessage.dramAddr = introSegAddr;
     dmaIoMessage.devAddr = (u32)_introSegmentRomStart;
     dmaIoMessage.size = (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart;
 
@@ -287,7 +293,7 @@ void startFrame(void)
     resetGfxFrame();
 
     gSPSegment(g_dlistHead++, 0x00, 0x00000000);
-    gSPSegment(g_dlistHead++, 0x04, OS_K0_TO_PHYSICAL(memPoolStart));
+    gSPSegment(g_dlistHead++, 0x04, OS_K0_TO_PHYSICAL(introSegAddr));
     gSPSegment(g_dlistHead++, BUFFER_SEGMENT, OS_K0_TO_PHYSICAL(&g_frameBuffers[g_curGfxContext]));
 
 #ifdef INTERLACED

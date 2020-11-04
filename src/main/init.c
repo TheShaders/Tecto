@@ -4,6 +4,7 @@
 #include <mem.h>
 #include <gfx.h>
 #include <audio.h>
+#include <malloc.h>
 
 u8 idleThreadStack[IDLE_THREAD_STACKSIZE] __attribute__((aligned (16)));
 static u8 mainThreadStack[MAIN_THREAD_STACKSIZE] __attribute__((aligned (16)));
@@ -18,12 +19,13 @@ OSPiHandle *g_romHandle;
 
 void init(void)
 {
+    osInitialize();
     // Are these needed?
     // bzero(_mainSegmentBssStart, (u32)_mainSegmentBssEnd - (u32)_mainSegmentBssStart);
-    bzero(_gfxSegmentBssStart, (u32)_gfxSegmentBssEnd - (u32)_gfxSegmentBssStart);
-    bzero(_libultraSegmentBssStart, (u32)_libultraSegmentBssEnd - (u32)_libultraSegmentBssStart);
-    osInitialize();
+    // bzero(_gfxSegmentBssStart, (u32)_gfxSegmentBssEnd - (u32)_gfxSegmentBssStart);
+    // bzero(_libultraSegmentBssStart, (u32)_libultraSegmentBssEnd - (u32)_libultraSegmentBssStart);
 
+    InitHeap(memPoolStart, 0x10000);//(u32) 0x80400000 - (u32) memPoolStart);
     g_romHandle = osCartRomInit();
 
     osCreateThread(&g_threads[IDLE_THREAD_INDEX], IDLE_THREAD, idle, NULL, idleThreadStack + IDLE_THREAD_STACKSIZE, 10);

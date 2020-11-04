@@ -65,6 +65,7 @@ SRC_DIRS  := $(wildcard $(SRC_ROOT)/*)
 C_SRCS    := $(foreach src_dir,$(SRC_DIRS),$(wildcard $(src_dir)/*.c))
 CXX_SRCS  := $(foreach src_dir,$(SRC_DIRS),$(wildcard $(src_dir)/*.cpp))
 ASM_SRCS  := $(foreach src_dir,$(SRC_DIRS),$(wildcard $(src_dir)/*.s))
+BIN_FILES := $(foreach src_dir,$(SRC_DIRS),$(wildcard $(src_dir)/*.bin))
 LD_SCRIPT := n64.ld
 BOOT      := boot/boot.6102
 
@@ -77,7 +78,8 @@ BUILD_DIRS     := $(addprefix $(BUILD_ROOT)/,$(SRC_DIRS)) $(BOOT_BUILD_DIR)
 C_OBJS   := $(addprefix $(BUILD_ROOT)/,$(C_SRCS:.c=.o))
 CXX_OBJS := $(addprefix $(BUILD_ROOT)/,$(CXX_SRCS:.cpp=.o))
 ASM_OBJS := $(addprefix $(BUILD_ROOT)/,$(ASM_SRCS:.s=.o))
-OBJS     := $(C_OBJS) $(CXX_OBJS) $(ASM_OBJS)
+BIN_OBJS := $(addprefix $(BUILD_ROOT)/,$(BIN_FILES:.bin=.o))
+OBJS     := $(C_OBJS) $(CXX_OBJS) $(ASM_OBJS) $(BIN_OBJS)
 LD_CPP   := $(BUILD_ROOT)/$(LD_SCRIPT)
 BOOT_OBJ := $(BUILD_ROOT)/$(BOOT).o
 D_FILES  := $(C_OBJS:.o=.d) $(CXX_OBJS:.o=.d) $(LD_CPP).d
@@ -91,15 +93,15 @@ ELF      := $(Z64:.z64=.elf)
 # Build tool flags
 
 CFLAGS     := -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -mhard-float -fno-stack-protector -fno-common -fno-zero-initialized-in-bss \
-			  -I include -I . -I src/ -I $(SDK)/ultra/usr/include -fno-PIC -mno-abicalls -fno-strict-aliasing -fno-inline-functions -ffreestanding -fwrapv -Wall -Wextra \
+			  -I include -I . -I src/ -I $(SDK)/ultra/usr/include -I $(SDK)/nintendo/n64kit/nustd/include -fno-PIC -mno-abicalls -fno-strict-aliasing -fno-inline-functions -ffreestanding -fwrapv -Wall -Wextra \
 			  -mno-check-zero-division -mno-split-addresses -mno-relax-pic-calls -mfp32 -mgp32 -mbranch-cost=1 \
 			  -fno-dse -fno-check-pointer-bounds -Wno-chkp -mno-odd-spreg -O2 -D_FINALROM \
 			  -D_MIPS_SZLONG=32 -D_MIPS_SZINT=32 -D_LANGUAGE_C -D_ULTRA64 -D__EXTENSIONS__ -DF3DEX_GBI_2
 CXXFLAGS   := 
 ASFLAGS    := -mtune=vr4300 -march=vr4300 -mabi=32 -mips3
 LDFLAGS    := -T $(LD_CPP) -mips3 --accept-unknown-input-arch --no-check-sections -Map $(BUILD_ROOT)/$(TARGET).map \
-			  -L $(SDK)/ultra/usr/lib -lgultra
-LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DSDK=$(SDK) -Umips
+			  -L $(SDK)/ultra/usr/lib -lgultra_rom -L $(SDK)/nintendo/n64kit/nustd/lib -lnustd -L lib -lopus -L $(N64CHAIN)/lib/gcc/mips64-elf/10.1.0 -lgcc
+LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DSDK=$(SDK) -DCHAIN=$(N64CHAIN) -Umips
 OCOPYFLAGS := --pad-to=0x400000 --gap-fill=0xFF
 
 ### Rules ###
@@ -117,6 +119,11 @@ $(BUILD_ROOT)/%.o : %.c | $(BUILD_DIRS)
 	@$(PRINT) $(GREEN) Compiling C source file: $(ENDGREEN) $(BLUE) $< $(ENDBLUE) $(ENDLINE)
 	@$(CC) $< -o $@ -c -MMD -MF $(@:.o=.d) $(CFLAGS)
 
+# .bin -> .o
+$(BUILD_ROOT)/%.o : %.bin | $(BUILD_DIRS)
+	@$(PRINT) $(GREEN) Objcopying binary file: $(ENDGREEN) $(BLUE) $< $(ENDBLUE) $(ENDLINE)
+	@$(OBJCOPY) -I binary -O elf32-big $< $@
+
 # .s -> .o
 $(BUILD_ROOT)/%.o : %.s | $(BUILD_DIRS)
 	@$(PRINT) $(GREEN) Compiling ASM source file: $(ENDGREEN) $(BLUE) $< $(ENDBLUE) $(ENDLINE)
@@ -130,7 +137,7 @@ $(BOOT_OBJ) : $(BOOT) | $(BOOT_BUILD_DIR)
 # .o -> .elf
 $(ELF) : $(OBJS) $(LD_CPP) $(BOOT_OBJ) $(SDK)/ultra/usr/lib/PR/gspF3DEX2.fifo.o
 	@$(PRINT) $(GREEN) Linking elf file: $(ENDGREEN) $(BLUE) $@ $(ENDBLUE) $(ENDLINE)
-	@$(LD) $(LDFLAGS) -L $(BUILD_ROOT) -o $@ $(OBJS) $(SDK)/ultra/usr/lib/PR/gspF3DEX2.fifo.o
+	@$(LD) $(LDFLAGS) -L $(BUILD_ROOT) -o $@
 
 # .elf -> .z64
 $(Z64) : $(ELF)

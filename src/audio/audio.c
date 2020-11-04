@@ -1,9 +1,11 @@
 #include <audio.h>
 #include <ultra64.h>
+#include <malloc.h>
+#include <mem.h>
 
 #define SINE_FREQ 440
 
-s16 audioBuffers[NUM_AUDIO_BUFFERS][AUDIO_BUFFER_LEN + 100] __attribute__((aligned (64)));
+s16 audioBuffers[NUM_AUDIO_BUFFERS][AUDIO_BUFFER_LEN] __attribute__((aligned (64)));
 
 OSMesgQueue audioMsgQueue;
 OSMesg audioMsg;
@@ -12,11 +14,52 @@ u16 curAudioBuffer = 0;
 u32 audioPhaseAngle = 0;
 s32 realSampleRate;
 
+OSMesgQueue audioDmaMesgQueue;
+
+OSIoMesg audioDmaIoMessage;
+OSMesg audioDmaMessage;
+
+u8* song;
+
+extern u8 _songSegmentRomStart[], _songSegmentRomEnd[];
+
 void audioInit(void)
 {
+    int err;
+
     osCreateMesgQueue(&audioMsgQueue, &audioMsg, 1);
     osSetEventMesg(OS_EVENT_AI, &audioMsgQueue, NULL);
+
+    // Set up a zero buffer to prevent any audio pop at startup
+    bzero(audioBuffers[2], AUDIO_BUFFER_LEN * sizeof(u16));
+    osAiSetNextBuffer(&audioBuffers[2], AUDIO_BUFFER_LEN * sizeof(u16));
+
+    // Set up the audio frequency
     realSampleRate = osAiSetFrequency(SAMPLE_RATE);
+    
+
+    // Create message queue for DMA reads/writes
+    // osCreateMesgQueue(&audioDmaMesgQueue, &audioDmaMessage, 1);
+
+    // decoder = opus_decoder_create(SAMPLE_RATE, 2, &err);
+
+    // song = mt_malloc((u32)_songSegmentRomEnd - (u32)_songSegmentRomStart);
+    
+    // // Invalidate the data cache for the region being DMA'd to
+    // osInvalDCache(song, (u32)_songSegmentRomEnd - (u32)_songSegmentRomStart); 
+
+    // // Set up the intro segment DMA
+    // audioDmaIoMessage.hdr.pri = OS_MESG_PRI_NORMAL;
+    // audioDmaIoMessage.hdr.retQueue = &audioDmaMesgQueue;
+    // audioDmaIoMessage.dramAddr = song;
+    // audioDmaIoMessage.devAddr = (u32)_songSegmentRomStart;
+    // audioDmaIoMessage.size = (u32)_songSegmentRomEnd - (u32)_songSegmentRomStart;
+
+    // // Start the DMA
+    // osEPiStartDma(g_romHandle, &audioDmaIoMessage, OS_READ);
+
+    // // Wait for the DMA to complete
+    // osRecvMesg(&audioDmaMesgQueue, NULL, OS_MESG_BLOCK);
 }
 
 void fillAudioBuffer(u32 bufferIndex)

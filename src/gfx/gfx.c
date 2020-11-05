@@ -1,16 +1,21 @@
 #include <ultra64.h>
+#include <PR/sched.h>
+
 #include <gfx.h>
 #include <mem.h>
 #include <audio.h>
 #include <malloc.h>
+#include <task_sched.h>
 
 u16 g_frameBuffers[NUM_FRAME_BUFFERS][SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
 u16 g_depthBuffer[SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
 
 struct GfxContext g_gfxContexts[NUM_FRAME_BUFFERS];
+OSScTask gfxTasks[NUM_FRAME_BUFFERS];
 
 u64 taskStack[SP_DRAM_STACK_SIZE64];
 u64 taskOutputBuffer[OUTPUT_BUFF_LEN];
+u64 taskYieldBuffer[OS_YIELD_DATA_SIZE / sizeof(u64)];
 
 u8* introSegAddr;
 
@@ -24,84 +29,63 @@ u32 g_curGfxContext;
 u32 g_curFramebuffer;
 u16 g_perspNorm;
 
-OSTask gfxtask = {{
-    M_GFXTASK,            // Type
-    OS_TASK_DP_WAIT,      // Flags
-
-    NULL,                 // Boot ucode
-    0,                    // Boot ucode size 
-
-    NULL,                 // Task ucode
-    SP_UCODE_SIZE,        // Task ucode size (4kB)
-
-    NULL,                 // Task ucode data
-    SP_UCODE_DATA_SIZE,   // Task ucode data size (2kB)
-
-    &taskStack[0],        // Task ucode dmem stack
-    SP_DRAM_STACK_SIZE8,  // Task ucode dmem stack size (1kB)
-
-    &taskOutputBuffer[0],               // Task buffer
-    &taskOutputBuffer[OUTPUT_BUFF_LEN], // Task buffer end
-
-    NULL,                 // Task data pointer
-    0,                    // Task data size
-
-    NULL,                 // Task yield buffer pointer (not used)
-    0                     // Task yield buffer size (not used)
-}};
-
 OSMesgQueue dmaMesgQueue;
-OSMesgQueue rdpMesgQueue;
-OSMesgQueue rspMesgQueue;
-OSMesgQueue viMesgQueue;
 
 OSMesg dmaMessage;
-OSMesg rdpMessage;
-OSMesg rspMessage;
-OSMesg viMessage;
 
 OSIoMesg dmaIoMessage;
 
 void initGfx(void)
 {
-    // Set up the gfx task boot microcode pointer and size
-    gfxtask.t.ucode_boot = (u64*) rspbootTextStart;
-    gfxtask.t.ucode_boot_size = (u32)rspbootTextEnd - (u32)rspbootTextStart;
+    int i;
 
-    // // Set up the gfx task gfx microcode text pointer and size
-    gfxtask.t.ucode = (u64*) gspF3DEX2_fifoTextStart;
-    gfxtask.t.ucode_size = (u32)gspF3DEX2_fifoTextEnd - (u32)gspF3DEX2_fifoTextStart;
+    // Set up the graphics tasks
+    for (i = 0; i < NUM_FRAME_BUFFERS; i++)
+    {
+        // Set up OSScTask fields
 
-    // // Set up the gfx task gfx microcode data pointer and size
-    gfxtask.t.ucode_data = (u64*) gspF3DEX2_fifoDataStart;
-    gfxtask.t.ucode_data_size = (u32)gspF3DEX2_fifoDataEnd - (u32)gspF3DEX2_fifoDataStart;
+        // Set up fifo task, configure it to automatically swap buffers after completion
+        gfxTasks[i].flags = OS_SC_NEEDS_RSP | OS_SC_NEEDS_RDP | OS_SC_SWAPBUFFER | OS_SC_LAST_TASK;
 
-    // Set up the gfx task gfx microcode text pointer and size
-    // gfxtask.t.ucode = (u64*) gspL3DEX2_fifoTextStart;
-    // gfxtask.t.ucode_size = (u32)gspL3DEX2_fifoTextEnd - (u32)gspL3DEX2_fifoTextStart;
+        gfxTasks[i].framebuffer = &g_frameBuffers[i];
+        gfxTasks[i].msgQ = &g_gfxContexts[i].taskDoneQueue;
+        osCreateMesgQueue(&g_gfxContexts[i].taskDoneQueue, &g_gfxContexts[i].taskDoneMesg, 1);
 
-    // Set up the gfx task gfx microcode data pointer and size
-    // gfxtask.t.ucode_data = (u64*) gspL3DEX2_fifoDataStart;
-    // gfxtask.t.ucode_data_size = (u32)gspL3DEX2_fifoDataEnd - (u32)gspL3DEX2_fifoDataStart;
+        // Set up OSTask fields
+
+        // Make this a graphics task
+        gfxTasks[i].list.t.type = M_GFXTASK;
+        gfxTasks[i].list.t.flags = OS_TASK_DP_WAIT;
+
+        // Set up the gfx task boot microcode pointer and size
+        gfxTasks[i].list.t.ucode_boot = (u64*) rspbootTextStart;
+        gfxTasks[i].list.t.ucode_boot_size = (u32)rspbootTextEnd - (u32)rspbootTextStart;
+
+        // // Set up the gfx task gfx microcode text pointer and size
+        gfxTasks[i].list.t.ucode = (u64*) gspF3DEX2_fifoTextStart;
+        gfxTasks[i].list.t.ucode_size = (u32)gspF3DEX2_fifoTextEnd - (u32)gspF3DEX2_fifoTextStart;
+
+        // // Set up the gfx task gfx microcode data pointer and size
+        gfxTasks[i].list.t.ucode_data = (u64*) gspF3DEX2_fifoDataStart;
+        gfxTasks[i].list.t.ucode_data_size = (u32)gspF3DEX2_fifoDataEnd - (u32)gspF3DEX2_fifoDataStart;
+
+        gfxTasks[i].list.t.dram_stack = &taskStack[0];
+        gfxTasks[i].list.t.dram_stack_size = SP_DRAM_STACK_SIZE8;
+
+        gfxTasks[i].list.t.output_buff = &taskOutputBuffer[0];
+        gfxTasks[i].list.t.output_buff_size = &taskOutputBuffer[OUTPUT_BUFF_LEN];
+
+        gfxTasks[i].list.t.data_ptr = (u64*)&g_gfxContexts[i].dlistBuffer[0];
+
+        gfxTasks[i].list.t.yield_data_ptr = &taskYieldBuffer[0];
+        gfxTasks[i].list.t.yield_data_size = OS_YIELD_DATA_SIZE;
+    }
+
+    // Send a dummy complete message to the last task, so the first one can run
+    osSendMesg(gfxTasks[NUM_FRAME_BUFFERS - 1].msgQ, gfxTasks[NUM_FRAME_BUFFERS - 1].msg, OS_MESG_BLOCK);
 
     // Set the gfx context index to 0
     g_curGfxContext = 0;
-
-    // Set up the message queues
-
-    // Create message queue for RDP completion
-    osCreateMesgQueue(&rdpMesgQueue, &rdpMessage, 1);
-    // Hook up the RDP completion message
-    osSetEventMesg(OS_EVENT_DP, &rdpMesgQueue, NULL);
-    
-    // Create message queue for RSP completion
-    osCreateMesgQueue(&rspMesgQueue, &rspMessage, 1);
-    // Hook up the RSP completion message
-    osSetEventMesg(OS_EVENT_SP, &rspMesgQueue, NULL);
-
-    // Send dummy messages to the RSP and RDP queues to allow the first frame to be drawn
-    osSendMesg(&rdpMesgQueue, NULL, OS_MESG_NOBLOCK);
-    osSendMesg(&rspMesgQueue, NULL, OS_MESG_NOBLOCK);
 
     // Create message queue for DMA reads/writes
     osCreateMesgQueue(&dmaMesgQueue, &dmaMessage, 1);
@@ -128,9 +112,8 @@ void initGfx(void)
 
 void resetGfxFrame(void)
 {
-    // Set up the master displaylist head and gfx task data to point to the current context's displaylist
+    // Set up the master displaylist head
     g_dlistHead = &g_gfxContexts[g_curGfxContext].dlistBuffer[0];
-    gfxtask.t.data_ptr = (u64*) g_dlistHead;
 
     // Reset the matrix stack index
     g_curMatFPtr = &g_gfxContexts[g_curGfxContext].mtxFStack[0];
@@ -151,29 +134,28 @@ void resetGfxFrame(void)
 
 void sendGfxTask(void)
 {
-    gfxtask.t.data_size = (u32)g_dlistHead - (u32)&g_gfxContexts[g_curGfxContext].dlistBuffer[0];
+    gfxTasks[g_curGfxContext].list.t.data_size = (u32)g_dlistHead - (u32)&g_gfxContexts[g_curGfxContext].dlistBuffer[0];
 
     // Writeback cache for graphics task data
-    // osWritebackDCache(&g_dlistBuffer[0], sizeof(g_dlistBuffer));
     osWritebackDCacheAll();
 
-    // Wait for both RSP and RDP to finish
-    // TODO this won't work if other RSP tasks are used
-    osRecvMesg(&rdpMesgQueue, NULL, OS_MESG_BLOCK);
-    osRecvMesg(&rspMesgQueue, NULL, OS_MESG_BLOCK);
-    
-    // Send the task complete message for the previous context
-    osSendMesg(&g_gfxContexts[g_curGfxContext ^ 1].taskDoneQueue, NULL, OS_MESG_NOBLOCK);
+    // Wait for the previous RSP task to complete
+    osRecvMesg(gfxTasks[(g_curGfxContext + (NUM_FRAME_BUFFERS - 1)) % NUM_FRAME_BUFFERS].msgQ, NULL, OS_MESG_BLOCK);
 
-    // Wait for the current graphics context's previous framebuffer to be displayed
-    // This prevents the task from overwriting a framebuffer before/while it is being drawn
-    osRecvMesg(&g_gfxContexts[g_curGfxContext].gfxQueue, NULL, OS_MESG_BLOCK);
+    // This may be required, but isn't preset in the demo, so if problems arise later on this may solve them
+    // if (gfxTasks[(g_curGfxContext + (NUM_FRAME_BUFFERS - 1)) % NUM_FRAME_BUFFERS].state & OS_SC_NEEDS_RDP)
+    // {
+    //     // Wait for the task's RDP portion to complete as well
+    //     osRecvMesg(gfxTasks[(g_curGfxContext + (NUM_FRAME_BUFFERS - 1)) % NUM_FRAME_BUFFERS].msgQ, NULL, OS_MESG_BLOCK);
+    // }
     
     // Start the RSP task
-    osSpTaskStart(&gfxtask);
+    scheduleGfxTask(&gfxTasks[g_curGfxContext]);
+
+    // while (1);
     
     // Switch to the next context
-    g_curGfxContext ^= 1;
+    g_curGfxContext = (g_curGfxContext + 1) % NUM_FRAME_BUFFERS;
 }
 
 Vp viewport = {{											
@@ -347,55 +329,4 @@ void endFrame()
     gSPEndDisplayList(g_dlistHead++);
 
     sendGfxTask();
-}
-
-void viThreadFunc(__attribute__((unused)) void *arg)
-{
-    // Create message queue for VI retrace
-    osCreateMesgQueue(&viMesgQueue, &viMessage, 1);
-
-    // Hook up the VI retrace message
-    osViSetEvent(&viMesgQueue, NULL, 1);
-
-    // Send a dummy framebuffer
-    osViSwapBuffer(&g_frameBuffers[1]);
-    
-    // Send dummy messages to the framebuffer swapped queue to allow the first gfx task for that buffer to run
-    osSendMesg(&g_gfxContexts[0].gfxQueue, NULL, OS_MESG_NOBLOCK);
-
-    // Turn off black screen
-	osViBlack(FALSE);
-
-    // Set the frame buffer index to 0
-    g_curFramebuffer = 0;
-
-    // Clear any VI messages
-    while (!MQ_IS_EMPTY(&viMesgQueue))
-    {
-        osRecvMesg(&viMesgQueue, NULL, OS_MESG_BLOCK);
-    }
-
-    while (1)
-    {
-        // Wait until the graphics task for this frame is done
-        osRecvMesg(&g_gfxContexts[g_curFramebuffer].taskDoneQueue, NULL, OS_MESG_BLOCK);
-
-        // Clear any pending VI messages
-        while (!MQ_IS_EMPTY(&viMesgQueue))
-        {
-            osRecvMesg(&viMesgQueue, NULL, OS_MESG_BLOCK);
-        }
-
-        // Wait for the next VI event before displaying the completed framebuffer
-        osRecvMesg(&viMesgQueue, NULL, OS_MESG_BLOCK);
-
-        // Send the current framebuffer
-        osViSwapBuffer(&g_frameBuffers[g_curFramebuffer]);
-
-        // Send the message to indicate the previous framebuffer was displayed
-        osSendMesg(&g_gfxContexts[g_curFramebuffer].gfxQueue, NULL, OS_MESG_NOBLOCK);
-        
-        // Repeat for the next framebuffer
-        g_curFramebuffer ^= 1;
-    }
 }

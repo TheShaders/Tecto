@@ -43,10 +43,6 @@ struct GfxContext {
     MtxF projMtxF;
     // Fixed point projection matrix
     Mtx projMtx;
-    // Framebuffer swapped message
-    OSMesg gfxMesg;
-    // Framebuffer swapped message queue
-    OSMesgQueue gfxQueue;
     // Graphics tasks done message
     OSMesg taskDoneMesg;
     // Graphics tasks done message queue
@@ -142,7 +138,5 @@ void mtxfMul(MtxF out, MtxF a, MtxF b);
     guPositionF(tmp, pitch, rx, ry, rz, x, y, z); \
     mtxfMul(*g_curMatFPtr, *g_curMatFPtr, tmp); \
 }
-
-void viThreadFunc(void *arg);
 
 #endif

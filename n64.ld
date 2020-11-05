@@ -59,12 +59,15 @@ SECTIONS
         BUILD_ROOT/src/entry/entry.o(.text*);
         BUILD_ROOT/src/main/main.o(.text*);
         BUILD_ROOT/src/main/init.o(.text*);
+        BUILD_ROOT/src/main/task_sched.o(.text*);
         BUILD_ROOT/src/asmmath/asmmath.o(.text*);
         /* BUILD_ROOT/src/usb/usb.o(.text*); */
         BUILD_ROOT/src/main/main.o(.data*);
         BUILD_ROOT/src/main/main.o(.rodata*);
         BUILD_ROOT/src/main/init.o(.data*);
         BUILD_ROOT/src/main/init.o(.rodata*);
+        BUILD_ROOT/src/main/task_sched.o(.data*);
+        BUILD_ROOT/src/main/task_sched.o(.rodata*);
         /* BUILD_ROOT/src/usb/usb.o(.data*);
         BUILD_ROOT/src/usb/usb.o(.rodata*); */
         . = ALIGN(16);
@@ -137,6 +140,7 @@ SECTIONS
     {
         BUILD_ROOT/src/main/main.o(.bss*);
         BUILD_ROOT/src/main/init.o(.bss*);
+        BUILD_ROOT/src/main/task_sched.o(.bss*);
         /* BUILD_ROOT/src/usb/usb.o(.bss*); */
         . = ALIGN(16);
     }

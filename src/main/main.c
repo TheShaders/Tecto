@@ -26,12 +26,18 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         gfxLookat(
             0.0f, 100.0f, -300.0f, // Eye pos
-            0.0f, 0.0f, 0.0f, // Look pos
+            0.0f, 20.0f, 0.0f, // Look pos
             0.0f, 1.0f, 0.0f);
 
+
+        // gfxPushMat();
+        //  gfxRotateAxisAngle(angle, 0.0f, 1.0f, 0.0f);
+        //  drawGfx(logo_logo_mesh);
+        // gfxPopMat();
+
         gfxPushMat();
-         gfxRotateAxisAngle(angle, 0.0f, 1.0f, 0.0f);
-         drawGfx(logo_logo_mesh);
+         gfxScale(2, 2, 2);
+         drawModel(&testmodel);
         gfxPopMat();
 
         tmpAngle = -angle * (M_PI / 180) / 4.0f;
@@ -55,13 +61,12 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             //  gSPModifyVertex(g_dlistHead++, 0, G_MWO_POINT_XYSCREEN, ((sins(i * 2048       ) + SCREEN_WIDTH / 2) << (16 + 2)) | ((coss(i * 2048       ) + SCREEN_HEIGHT / 2) << 2));
             //  gSPModifyVertex(g_dlistHead++, 1, G_MWO_POINT_XYSCREEN, ((sins(i * 2048 + 2048) + SCREEN_WIDTH / 2) << (16 + 2)) | ((coss(i * 2048 + 2048) + SCREEN_HEIGHT / 2) << 2));
             //  gSPLine3D(g_dlistHead++, 0, 1, 0x0);
-             drawGfx(logo_logo_mesh);
-             drawGfx(test_line_mesh);
+            //  drawGfx(logo_logo_mesh);
+            //  drawGfx(test_line_mesh);
+                drawModel(&testmodel);
             gfxPopMat();
             tmpAngle += (2 * M_PI) / NUM_LOGOS;
         }
-
-        drawModel(&testmodel);
     
         endFrame();
 

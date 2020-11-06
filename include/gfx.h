@@ -3,12 +3,7 @@
 
 #include <PR/ultratypes.h>
 #include <config.h>
-
-struct Model_t;
-typedef struct Model_t Model;
-
-typedef float MtxF[4][4];
-typedef float Vec3[3];
+#include <types.h>
 
 #ifdef HIGH_RES
 #define SCREEN_WIDTH  640
@@ -68,8 +63,8 @@ void initGfx(void);
 void startFrame(void);
 void endFrame(void);
 
-void drawGfx(Gfx* toDraw);
-void drawModel(Model* toDraw);
+void drawGfx(Gfx *toDraw);
+void drawModel(Model *toDraw);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b);
 
@@ -102,9 +97,18 @@ void mtxfMul(MtxF out, MtxF a, MtxF b);
     copyMat(nextMat, g_curMatFPtr); \
     g_curMatFPtr++; \
 }
+
+#define gfxPushLoadMat(src) \
+{ \
+    g_curMatFPtr++; \
+    copyMat(g_curMatFPtr, src); \
+}
     
 #define gfxPopMat() \
     g_curMatFPtr--
+
+#define gfxSaveMat(dst) \
+    copyMat(dst, g_curMatFPtr);
 
 #define gfxIdentity() \
     guMtxIdentF(*g_curMatFPtr)
@@ -133,6 +137,13 @@ void mtxfMul(MtxF out, MtxF a, MtxF b);
 { \
     MtxF tmp; \
     guTranslateF(tmp, x, y, z); \
+    mtxfMul(*g_curMatFPtr, *g_curMatFPtr, tmp); \
+}
+
+#define gfxScale(sx, sy, sz) \
+{ \
+    MtxF tmp; \
+    guScaleF(tmp, sx, sy, sz); \
     mtxfMul(*g_curMatFPtr, *g_curMatFPtr, tmp); \
 }
 

@@ -315,24 +315,93 @@ void startFrame(void)
         // GBL_c1(G_BL_CLR_BL, G_BL_A_IN, G_BL_CLR_MEM, G_BL_A_MEM), GBL_c1(G_BL_CLR_BL, G_BL_A_IN, G_BL_CLR_MEM, G_BL_A_MEM));
 }
 
-void drawModel(Model* toDraw)
+// Draws a model (TODO add posing)
+void drawModel(Model *toDraw)
 {
     int boneIndex, layerIndex;
-    Bone* curBone;
-    BoneLayer* curBoneLayer;
+    Bone *bones, *curBone;
+    BoneLayer *curBoneLayer;
+    Gfx *callbackReturn;
+    MtxF *boneMatrices;
 
+    // Get the virtual address of the model being drawn
     toDraw = segmentedToVirtual(toDraw);
-    curBone = segmentedToVirtual(&toDraw->bones[0]);
+    // Allocate space for this model's bone matrices
+    boneMatrices = calloc(toDraw->numBones, sizeof(MtxF));
 
+    // Draw the model's bones
+    curBone = bones = segmentedToVirtual(&toDraw->bones[0]);
     for (boneIndex = 0; boneIndex < toDraw->numBones; boneIndex++)
     {
+        // If the bone has a parent, load the parent's matrix before transforming
+        if (curBone->parent != 0xFF)
+        {
+            gfxPushLoadMat(bones[curBone->parent].matrix);
+        }
+        // Otherwise, use the current matrix on the stack
+        else
+        {
+            gfxPushMat();
+        }
+
+        // Draw the bone's layers
         curBoneLayer = segmentedToVirtual(&curBone->layers[0]);
         for (layerIndex = 0; layerIndex < curBone->numLayers; layerIndex++)
         {
-            gSPDisplayList(g_dlistHead++, curBoneLayer->displaylist);
+            // Check if this bone has a before drawn callback, and if so call it
+            if (curBone->beforeCb)
+            {
+                callbackReturn = curBone->beforeCb(curBone, curBoneLayer);
+                // If the callback returned a displaylist, draw it
+                if (callbackReturn)
+                {
+                    gSPDisplayList(g_dlistHead++, callbackReturn);
+                }
+            }
+            
+            // Draw the layer
+            drawGfx(curBoneLayer->displaylist);
+
+            // Check if this bone has an after drawn callback, and if so call it
+            if (curBone->afterCb)
+            {
+                callbackReturn = curBone->afterCb(curBone, curBoneLayer);
+                // If the callback returned a displaylist, draw it
+                if (callbackReturn)
+                {
+                    gSPDisplayList(g_dlistHead++, callbackReturn);
+                }
+            }
             curBoneLayer++;
         }
+
+        gfxTranslate(0, 30, 0);
+
+        curBone->matrix = &boneMatrices[boneIndex];
+        // Save this bone's matrix in case other bones are children of this one
+        gfxSaveMat(&boneMatrices[boneIndex]);
+
+        // Pop this bone's matrix off the stack
+        gfxPopMat();
+
+        curBone++;
     }
+
+    // Free the memory used for the bone matrices
+    free(boneMatrices);
+}
+
+Gfx* gfxSetEnvColor(Bone* bone, __attribute__((unused)) BoneLayer *layer)
+{
+    if (bone->index == 0)
+    {
+        gDPSetEnvColor(g_dlistHead++, 255, 0, 0, 0);
+    }
+    else if (bone->index == 1)
+    {
+        gDPSetEnvColor(g_dlistHead++, 0, 255, 0, 0);
+    }
+    return NULL;
 }
 
 void drawGfx(Gfx* toDraw)

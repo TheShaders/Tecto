@@ -4,6 +4,8 @@
 #include <PR/ultratypes.h>
 #include <PR/os_pi.h>
 
+#define SEGMENT_COUNT 32
+
 extern OSPiHandle *g_romHandle;
 extern u8 memPoolStart[];
 
@@ -16,5 +18,9 @@ extern u8 _gfxSegmentBssStart[];
 extern u8 _gfxSegmentBssEnd[];
 extern u8 _libultraSegmentBssStart[];
 extern u8 _libultraSegmentBssEnd[];
+
+void setSegment(u32 segmentIndex, void* virtualAddress);
+
+void* segmentedToVirtual(void* segmented);
 
 #endif

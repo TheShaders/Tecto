@@ -4,9 +4,14 @@
 
 #include <segments/intro.h>
 
-#define NUM_LOGOS 50
+#define NUM_LOGOS 10
 
 extern Gfx test_line_mesh[];
+extern u8 *introSegAddr;
+
+extern u8 _introSegmentStart[];
+
+extern Model testmodel;
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
@@ -46,7 +51,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         {
             // f32 tmpAngle2 = angle - i * (360.0f / NUM_LOGOS);
             gfxPushMat();
-             gfxPosition(0.0f, angle - i * (360.0f / 50), 0.0f, 1.0f, sinf(tmpAngle) * 200.0f, cosf(tmpAngle) * 200.0f, 0.0f);
+             gfxPosition(0.0f, angle - i * (360.0f / NUM_LOGOS), 0.0f, 1.0f, sinf(tmpAngle) * 200.0f, cosf(tmpAngle) * 200.0f, 0.0f);
             //  gSPModifyVertex(g_dlistHead++, 0, G_MWO_POINT_XYSCREEN, ((sins(i * 2048       ) + SCREEN_WIDTH / 2) << (16 + 2)) | ((coss(i * 2048       ) + SCREEN_HEIGHT / 2) << 2));
             //  gSPModifyVertex(g_dlistHead++, 1, G_MWO_POINT_XYSCREEN, ((sins(i * 2048 + 2048) + SCREEN_WIDTH / 2) << (16 + 2)) | ((coss(i * 2048 + 2048) + SCREEN_HEIGHT / 2) << 2));
             //  gSPLine3D(g_dlistHead++, 0, 1, 0x0);
@@ -55,6 +60,8 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             gfxPopMat();
             tmpAngle += (2 * M_PI) / NUM_LOGOS;
         }
+
+        drawModel(&testmodel);
     
         endFrame();
 

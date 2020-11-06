@@ -4,6 +4,9 @@
 #include <PR/ultratypes.h>
 #include <config.h>
 
+struct Model_t;
+typedef struct Model_t Model;
+
 typedef float MtxF[4][4];
 typedef float Vec3[3];
 
@@ -66,6 +69,7 @@ void startFrame(void);
 void endFrame(void);
 
 void drawGfx(Gfx* toDraw);
+void drawModel(Model* toDraw);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b);
 

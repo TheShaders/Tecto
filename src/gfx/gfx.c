@@ -1,11 +1,12 @@
 #include <ultra64.h>
 #include <PR/sched.h>
+#include <malloc.h>
 
 #include <gfx.h>
 #include <mem.h>
 #include <audio.h>
-#include <malloc.h>
 #include <task_sched.h>
+#include <model.h>
 
 u16 g_frameBuffers[NUM_FRAME_BUFFERS][SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
 u16 g_depthBuffer[SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
@@ -275,6 +276,7 @@ void startFrame(void)
     resetGfxFrame();
 
     gSPSegment(g_dlistHead++, 0x00, 0x00000000);
+    setSegment(0x04, introSegAddr);
     gSPSegment(g_dlistHead++, 0x04, OS_K0_TO_PHYSICAL(introSegAddr));
     gSPSegment(g_dlistHead++, BUFFER_SEGMENT, OS_K0_TO_PHYSICAL(&g_frameBuffers[g_curGfxContext]));
 
@@ -311,6 +313,26 @@ void startFrame(void)
     // gDPSetRenderMode(g_dlistHead++, AA_EN | Z_CMP | Z_UPD | IM_RD | CVG_DST_CLAMP |
         // ZMODE_OPA | ALPHA_CVG_SEL |
         // GBL_c1(G_BL_CLR_BL, G_BL_A_IN, G_BL_CLR_MEM, G_BL_A_MEM), GBL_c1(G_BL_CLR_BL, G_BL_A_IN, G_BL_CLR_MEM, G_BL_A_MEM));
+}
+
+void drawModel(Model* toDraw)
+{
+    int boneIndex, layerIndex;
+    Bone* curBone;
+    BoneLayer* curBoneLayer;
+
+    toDraw = segmentedToVirtual(toDraw);
+    curBone = segmentedToVirtual(&toDraw->bones[0]);
+
+    for (boneIndex = 0; boneIndex < toDraw->numBones; boneIndex++)
+    {
+        curBoneLayer = segmentedToVirtual(&curBone->layers[0]);
+        for (layerIndex = 0; layerIndex < curBone->numLayers; layerIndex++)
+        {
+            gSPDisplayList(g_dlistHead++, curBoneLayer->displaylist);
+            curBoneLayer++;
+        }
+    }
 }
 
 void drawGfx(Gfx* toDraw)

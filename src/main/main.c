@@ -12,9 +12,11 @@ extern u8 *introSegAddr;
 extern u8 _introSegmentStart[];
 
 extern Model testmodel;
+extern Animation testmodelAnim;
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
+    u32 frame = 0;
     u32 i;
     float angle = 0.0f;
     float tmpAngle;
@@ -26,7 +28,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         gfxLookat(
             0.0f, 100.0f, -300.0f, // Eye pos
-            0.0f, 20.0f, 0.0f, // Look pos
+            0.0f, 0.0f, 0.0f, // Look pos
             0.0f, 1.0f, 0.0f);
 
 
@@ -36,8 +38,8 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         // gfxPopMat();
 
         gfxPushMat();
-         gfxScale(2, 2, 2);
-         drawModel(&testmodel);
+         gfxScale(1, 1, 1);
+         drawModel(&testmodel, &testmodelAnim, frame);
         gfxPopMat();
 
         tmpAngle = -angle * (M_PI / 180) / 4.0f;
@@ -63,7 +65,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             //  gSPLine3D(g_dlistHead++, 0, 1, 0x0);
             //  drawGfx(logo_logo_mesh);
             //  drawGfx(test_line_mesh);
-                drawModel(&testmodel);
+                // drawModel(&testmodel, &testmodelAnim, 0);
             gfxPopMat();
             tmpAngle += (2 * M_PI) / NUM_LOGOS;
         }
@@ -71,5 +73,8 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         endFrame();
 
         angle += 360.0f / (5 * 60.0f);
+        frame++;
+        if (frame >= 120)
+            frame = 0;
     }
 }

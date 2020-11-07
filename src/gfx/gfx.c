@@ -126,7 +126,7 @@ void resetGfxFrame(void)
     // Set up projection matrix
 
     // Perpsective matrix
-    gfxPerspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 1000.0f, 1.0f);
+    gfxPerspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 20000.0f, 1.0f);
 
     // Ortho matrix
     // guOrthoF(g_projMtxF, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, -SCREEN_HEIGHT / 2, -10.0f, 10.0f, 1.0f);
@@ -316,21 +316,29 @@ void startFrame(void)
 }
 
 // Draws a model (TODO add posing)
-void drawModel(Model *toDraw)
+void drawModel(Model *toDraw, Animation *anim, u32 frame)
 {
     int boneIndex, layerIndex;
     Bone *bones, *curBone;
     BoneLayer *curBoneLayer;
+    BoneTable *curBoneTable = NULL;
     Gfx *callbackReturn;
     MtxF *boneMatrices;
+    u32 numFrames = 0;
 
-    // Get the virtual address of the model being drawn
+    // Get the virtual address of the model
     toDraw = segmentedToVirtual(toDraw);
     // Allocate space for this model's bone matrices
     boneMatrices = calloc(toDraw->numBones, sizeof(MtxF));
 
     // Draw the model's bones
     curBone = bones = segmentedToVirtual(&toDraw->bones[0]);
+    if (anim != NULL)
+    {
+        anim = segmentedToVirtual(anim);
+        numFrames = anim->frameCount;
+        curBoneTable = segmentedToVirtual(anim->boneTables);
+    }
     for (boneIndex = 0; boneIndex < toDraw->numBones; boneIndex++)
     {
         // If the bone has a parent, load the parent's matrix before transforming
@@ -342,6 +350,83 @@ void drawModel(Model *toDraw)
         else
         {
             gfxPushMat();
+        }
+
+        gfxTranslate(curBone->posX, curBone->posY, curBone->posZ);
+
+        if (anim != NULL)
+        {
+            float x = 0.0f;
+            float y = 0.0f;
+            float z = 0.0f;
+            u32 hasCurrentTransformComponent = 0;
+            s16 *curBoneChannel = segmentedToVirtual(curBoneTable->channels);
+            curBoneChannel += frame;
+
+            if (curBoneTable->flags & CHANNEL_POS_X)
+            {
+                x = *curBoneChannel / 10.0f;
+                curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
+            }
+            if (curBoneTable->flags & CHANNEL_POS_Y)
+            {
+                y = *curBoneChannel / 10.0f;
+                curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
+            }
+            if (curBoneTable->flags & CHANNEL_POS_Z)
+            {
+                z = *curBoneChannel / 10.0f;
+                curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
+            }
+            if (hasCurrentTransformComponent)
+            {
+                gfxTranslate(x, y, z);
+            }
+
+            if (curBoneTable->flags & CHANNEL_ROT_X)
+            {
+                gfxRotateAxisAngle(*curBoneChannel * (180.0f / 32768.0f), 1.0f, 0.0f, 0.0f);
+                curBoneChannel += numFrames;
+            }
+            if (curBoneTable->flags & CHANNEL_ROT_Y)
+            {
+                gfxRotateAxisAngle(*curBoneChannel * (180.0f / 32768.0f), 0.0f, 1.0f, 0.0f);
+                curBoneChannel += numFrames;
+            }
+            if (curBoneTable->flags & CHANNEL_ROT_Z)
+            {
+                gfxRotateAxisAngle(*curBoneChannel * (180.0f / 32768.0f), 0.0f, 0.0f, 1.0f);
+                curBoneChannel += numFrames;
+            }
+
+            hasCurrentTransformComponent = 0;
+
+            if (curBoneTable->flags & CHANNEL_SCALE_X)
+            {
+                x = *(u16*)curBoneChannel / 256.0f;
+                curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
+            }
+            if (curBoneTable->flags & CHANNEL_SCALE_Y)
+            {
+                y = *(u16*)curBoneChannel / 256.0f;
+                curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
+            }
+            if (curBoneTable->flags & CHANNEL_SCALE_Z)
+            {
+                z = *(u16*)curBoneChannel / 256.0f;
+                curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
+            }
+            if (hasCurrentTransformComponent)
+            {
+                gfxScale(x, y, z);
+            }
+            
         }
 
         // Draw the bone's layers
@@ -375,8 +460,6 @@ void drawModel(Model *toDraw)
             curBoneLayer++;
         }
 
-        gfxTranslate(0, 30, 0);
-
         curBone->matrix = &boneMatrices[boneIndex];
         // Save this bone's matrix in case other bones are children of this one
         gfxSaveMat(&boneMatrices[boneIndex]);
@@ -385,6 +468,8 @@ void drawModel(Model *toDraw)
         gfxPopMat();
 
         curBone++;
+        if (anim)
+            curBoneTable++;
     }
 
     // Free the memory used for the bone matrices

@@ -64,7 +64,7 @@ void startFrame(void);
 void endFrame(void);
 
 void drawGfx(Gfx *toDraw);
-void drawModel(Model *toDraw);
+void drawModel(Model *toDraw, Animation* anim, u32 frame);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b);
 

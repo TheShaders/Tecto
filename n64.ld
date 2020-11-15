@@ -61,7 +61,7 @@ SECTIONS
         BUILD_ROOT/src/main/mem.o(.text*);
         BUILD_ROOT/src/main/init.o(.text*);
         BUILD_ROOT/src/main/task_sched.o(.text*);
-        BUILD_ROOT/src/asmmath/asmmath.o(.text*);
+        BUILD_ROOT/src/math/asmmath.o(.text*);
         /* BUILD_ROOT/src/usb/usb.o(.text*); */
         BUILD_ROOT/src/main/main.o(.data*);
         BUILD_ROOT/src/main/main.o(.rodata*);

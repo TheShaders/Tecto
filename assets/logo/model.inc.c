@@ -231,20 +231,3 @@ Gfx logo_logo_mesh[] = {
 	gsDPPipeSync(),
 	gsSPEndDisplayList(),
 };
-
-Vtx test_vtx[] = {
-	{{{0,  10, 0},0, {0, 0},{0x0, 0x81, 0x0, 0xFF}}},
-	{{{0, -10, 0},0, {0, 0},{0x0, 0x81, 0x0, 0xFF}}},
-};
-
-Gfx test_line_mesh[] = {
-	gsDPPipeSync(),
-	gsDPSetCombineLERP(0, 0, 0, ENVIRONMENT, 0, 0, 0, 1, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 1),
-    gsSPSetGeometryMode(G_LIGHTING),
-	gsDPSetEnvColor(255, 255, 255, 255),
-	gsSPVertex(test_vtx, 2, 0),
-	gsSPLineW3D(0, 1, 5, 0x0),
-    gsSPClearGeometryMode(G_LIGHTING),
-	gsDPPipeSync(),
-	gsSPEndDisplayList(),
-};

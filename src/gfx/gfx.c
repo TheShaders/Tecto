@@ -180,25 +180,24 @@ const Gfx rdpInitDL[] = {
 const Gfx clearScreenDL[] = {
     gsDPSetCycleType(G_CYC_FILL),
     gsDPSetColorImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, BUFFER_SEGMENT << 24),
-    gsDPSetFillColor(GPACK_RGBA5551(0x7F, 0x7F, 0x7F, 1) << 16 | GPACK_RGBA5551(0x7F, 0x7F, 0x7F, 1)),
+    gsDPSetFillColor(GPACK_RGBA5551(0, 61, 8, 1) << 16 | GPACK_RGBA5551(0, 61, 8, 1)),
     gsDPFillRectangle(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1),
     gsDPPipeSync(),
 
     // gsDPSetFillColor(GPACK_RGBA5551(0x3F, 0x3F, 0x3F, 1) << 16 | GPACK_RGBA5551(0x3F, 0x3F, 0x3F, 1)),
     // gsDPFillRectangle(10, 10, SCREEN_WIDTH - 10 - 1, SCREEN_HEIGHT - 10 - 1),
-    gsDPPipeSync(),
+    // gsDPPipeSync(),
     gsSPEndDisplayList(),
 };
 
 const Gfx clearDepthBuffer[] = {
 	gsDPSetCycleType(G_CYC_FILL),
-    gsDPSetDepthSource(G_ZS_PIXEL),
-    gsDPSetDepthImage(OS_K0_TO_PHYSICAL(g_depthBuffer)),
     gsDPSetColorImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, OS_K0_TO_PHYSICAL(g_depthBuffer)),
 
     gsDPSetFillColor(GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0)),
     gsDPFillRectangle(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1),
     gsDPPipeSync(),
+    gsDPSetDepthImage(OS_K0_TO_PHYSICAL(g_depthBuffer)),
     gsSPEndDisplayList(),
 };
 
@@ -365,19 +364,19 @@ void drawModel(Model *toDraw, Animation *anim, u32 frame)
 
             if (curBoneTable->flags & CHANNEL_POS_X)
             {
-                x = *curBoneChannel / 10.0f;
+                x = *curBoneChannel;
                 curBoneChannel += numFrames;
                 hasCurrentTransformComponent = 1;
             }
             if (curBoneTable->flags & CHANNEL_POS_Y)
             {
-                y = *curBoneChannel / 10.0f;
+                y = *curBoneChannel;
                 curBoneChannel += numFrames;
                 hasCurrentTransformComponent = 1;
             }
             if (curBoneTable->flags & CHANNEL_POS_Z)
             {
-                z = *curBoneChannel / 10.0f;
+                z = *curBoneChannel;
                 curBoneChannel += numFrames;
                 hasCurrentTransformComponent = 1;
             }

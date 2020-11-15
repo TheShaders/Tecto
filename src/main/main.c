@@ -1,18 +1,25 @@
 #include <main.h>
 #include <init.h>
 #include <gfx.h>
+#include <model.h>
+#include <mem.h>
 
 #include <segments/intro.h>
 
 #define NUM_LOGOS 10
 
-extern Gfx test_line_mesh[];
 extern u8 *introSegAddr;
 
 extern u8 _introSegmentStart[];
 
 extern Model testmodel;
+extern Model character_model;
 extern Animation testmodelAnim;
+extern Animation character_anim_Walking;
+
+
+LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
+Vec3 g_lightDir = {127.0f, -32.0f, 0.0f};
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
@@ -26,10 +33,25 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     {
         startFrame();
 
+        gSPSetGeometryMode(g_dlistHead++, G_LIGHTING | G_ZBUFFER);
+
+        gSPLookAt(g_dlistHead++, &lookAt);
+
         gfxLookat(
-            0.0f, 100.0f, -300.0f, // Eye pos
-            0.0f, 0.0f, 0.0f, // Look pos
+            0.0f, 300.0f, -1000.0f, // Eye pos
+            0.0f, 300.0f, 0.0f, // Look pos
             0.0f, 1.0f, 0.0f);
+
+        g_lightDir[0] = -127.0f * cosf((M_PI / 180.0f) * angle);
+        g_lightDir[2] = 127.0f * sinf((M_PI / 180.0f) * angle);
+
+        lookAt.l[0].l.dir[0] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][0] + g_lightDir[1] * (*g_curMatFPtr)[1][0] + g_lightDir[2] * (*g_curMatFPtr)[2][0]);
+        lookAt.l[0].l.dir[1] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][1] + g_lightDir[1] * (*g_curMatFPtr)[1][1] + g_lightDir[2] * (*g_curMatFPtr)[2][1]);
+        lookAt.l[0].l.dir[2] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][2] + g_lightDir[1] * (*g_curMatFPtr)[1][2] + g_lightDir[2] * (*g_curMatFPtr)[2][2]);
+
+        lookAt.l[1].l.dir[0] = (s8)(*g_curMatFPtr)[1][0];
+        lookAt.l[1].l.dir[1] = -(s8)(*g_curMatFPtr)[1][1];
+        lookAt.l[1].l.dir[2] = (s8)(*g_curMatFPtr)[1][2];
 
 
         // gfxPushMat();
@@ -38,8 +60,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         // gfxPopMat();
 
         gfxPushMat();
-         gfxScale(1, 1, 1);
-         drawModel(&testmodel, &testmodelAnim, frame);
+         gfxScale(0.5f, 0.5f, 0.5f);
+         gfxRotateAxisAngle(angle, 0.0f, 1.0f, 0.0f);
+         drawModel(&character_model, &character_anim_Walking, frame);
         gfxPopMat();
 
         tmpAngle = -angle * (M_PI / 180) / 4.0f;
@@ -64,7 +87,6 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             //  gSPModifyVertex(g_dlistHead++, 1, G_MWO_POINT_XYSCREEN, ((sins(i * 2048 + 2048) + SCREEN_WIDTH / 2) << (16 + 2)) | ((coss(i * 2048 + 2048) + SCREEN_HEIGHT / 2) << 2));
             //  gSPLine3D(g_dlistHead++, 0, 1, 0x0);
             //  drawGfx(logo_logo_mesh);
-            //  drawGfx(test_line_mesh);
                 // drawModel(&testmodel, &testmodelAnim, 0);
             gfxPopMat();
             tmpAngle += (2 * M_PI) / NUM_LOGOS;
@@ -74,7 +96,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         angle += 360.0f / (5 * 60.0f);
         frame++;
-        if (frame >= 120)
+        if (frame >= ((Animation*)segmentedToVirtual(&character_anim_Walking))->frameCount)
             frame = 0;
     }
 }

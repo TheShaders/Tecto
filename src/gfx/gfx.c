@@ -126,10 +126,10 @@ void resetGfxFrame(void)
     // Set up projection matrix
 
     // Perpsective matrix
-    gfxPerspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 20000.0f, 1.0f);
+    gfxPerspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 100.0f, 20000.0f, 1.0f);
 
     // Ortho matrix
-    // guOrthoF(g_projMtxF, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, -SCREEN_HEIGHT / 2, -10.0f, 10.0f, 1.0f);
+    // guOrthoF(g_gfxContexts[g_curGfxContext].projMtxF, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2, SCREEN_HEIGHT / 2, 100.0f, 20000.0f, 1.0f);
     // g_perspNorm = 0xFFFF;
 }
 
@@ -160,8 +160,8 @@ void sendGfxTask(void)
 }
 
 Vp viewport = {{											
-    { SCREEN_WIDTH << 1, SCREEN_HEIGHT << 1, G_MAXZ, 0},
-    { SCREEN_WIDTH << 1, SCREEN_HEIGHT << 1, 0, 0},
+    { SCREEN_WIDTH << 1, SCREEN_HEIGHT << 1, G_MAXZ / 2, 0},
+    { SCREEN_WIDTH << 1, SCREEN_HEIGHT << 1, G_MAXZ / 2, 0},
 }};
 
 const Gfx rdpInitDL[] = {

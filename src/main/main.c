@@ -39,7 +39,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         gSPLookAt(g_dlistHead++, &lookAt);
 
         gfxLookat(
-            -1000.0f * cosf((M_PI / 180.0f) * angle), 300.0f, 1000.0f * sinf((M_PI / 180.0f) * angle), // Eye pos
+            1000.0f * sinf((M_PI / 180.0f) * angle * 0), 300.0f, 1000.0f * cosf((M_PI / 180.0f) * angle * 0), // Eye pos
             0.0f, 300.0f, 0.0f, // Look pos
             0.0f, 1.0f, 0.0f);
 
@@ -63,7 +63,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         gfxPushMat();
          gfxScale(0.5f, 0.5f, 0.5f);
         //  gfxRotateAxisAngle(angle, 0.0f, 1.0f, 0.0f);
-         drawModel(&character_model, &character_anim_Walking, frame);
+        //  drawModel(&character_model, &character_anim_Walking, frame);
         gfxPopMat();
 
         tmpAngle = -angle * (M_PI / 180) / 4.0f;
@@ -85,7 +85,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         gSPLoadUcodeL(g_dlistHead++, gspL3DEX2_fifo);
         gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_CULL_BACK);
         gDPPipeSync(g_dlistHead++);
-        gDPSetRenderMode(g_dlistHead++, G_RM_AA_ZB_XLU_LINE, G_RM_AA_ZB_XLU_LINE2);
+        gDPSetRenderMode(g_dlistHead++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
 
         gfxPushMat();
          gfxTranslate(0.0f, 0.0f, 0.0f);
@@ -93,8 +93,20 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             AABB aabb = {
                 .min = {-100.0f, -100.0f, -100.0f},
                 .max = { 100.0f,  100.0f,  100.0f},
-            };  
-            drawAABB(&aabb, 0xFF0000FF);
+            };
+            Vec3 rayOrigin = { 200.0f * sinf((M_PI / 180.0f) * angle), 150.0f, 0.0f };
+            Vec3 rayDir = { 0.0f, -100.0f, 0.0f };
+            Vec3 rayEnd = { rayOrigin[0] + rayDir[0], rayOrigin[1] + rayDir[1], rayOrigin[2] + rayDir[2] };
+            Vec3 rayDirInv = { 1/rayDir[0], 1/rayDir[1], 1/rayDir[2] };
+            if (rayVsAABB(rayOrigin, rayDirInv, &aabb, 0.0f, 1.0f))
+            {
+                drawAABB(&aabb, 0x00FF00FF);
+            }
+            else
+            {
+                drawAABB(&aabb, 0xFF0000FF);
+            }
+            drawLine(rayOrigin, rayEnd, 0x0000FFFF);
         }
         gfxPopMat();
     

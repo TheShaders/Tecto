@@ -548,7 +548,7 @@ void drawAABB(AABB *toDraw, u32 color)
 
     gDPPipeSync(g_dlistHead++);
     gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
-    
+
     guMtxF2L(*g_curMatFPtr, curMtx);
     gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
@@ -570,6 +570,36 @@ void drawAABB(AABB *toDraw, u32 color)
     gSPLine3D(g_dlistHead++, 1, 3, 0x00);
     gSPLine3D(g_dlistHead++, 4, 6, 0x00);
     gSPLine3D(g_dlistHead++, 5, 7, 0x00);
+    gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
+}
+
+void drawLine(Vec3 start, Vec3 end, u32 color)
+{
+    Vtx* verts = (Vtx*)allocGfx(sizeof(Vtx) * 2);
+    Mtx* curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    
+    verts[0].v.ob[0] = start[0];
+    verts[0].v.ob[1] = start[1];
+    verts[0].v.ob[2] = start[2];
+    *(u32*)(&verts[0].v.cn[0]) = color;
+    
+    verts[1].v.ob[0] = end[0];
+    verts[1].v.ob[1] = end[1];
+    verts[1].v.ob[2] = end[2];
+    *(u32*)(&verts[1].v.cn[0]) = color;
+
+    gDPPipeSync(g_dlistHead++);
+    gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
+
+    guMtxF2L(*g_curMatFPtr, curMtx);
+    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
+	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
+    gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
+    gSPClearGeometryMode(g_dlistHead++, G_LIGHTING);
+
+    gSPVertex(g_dlistHead++, OS_K0_TO_PHYSICAL(verts), 2, 0);
+    gSPLine3D(g_dlistHead++, 0, 1, 0x00);    
+    
     gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
 }
 

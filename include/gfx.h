@@ -77,6 +77,7 @@ u8* allocGfx(s32 size);
 void drawGfx(Gfx *toDraw);
 void drawModel(Model *toDraw, Animation* anim, u32 frame);
 void drawAABB(AABB *toDraw, u32 color);
+void drawLine(Vec3 start, Vec3 end, u32 color);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b);
 

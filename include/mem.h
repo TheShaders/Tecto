@@ -5,6 +5,7 @@
 #include <PR/os_pi.h>
 
 #define SEGMENT_COUNT 32
+#define ROUND_UP(val, multiple) (((val) + (multiple) - 1) & ~((multiple) - 1))
 
 extern OSPiHandle *g_romHandle;
 extern u8 memPoolStart[];

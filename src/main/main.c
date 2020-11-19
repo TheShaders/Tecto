@@ -3,6 +3,7 @@
 #include <gfx.h>
 #include <model.h>
 #include <mem.h>
+#include <collision.h>
 
 #include <segments/intro.h>
 
@@ -19,7 +20,7 @@ extern Animation character_anim_Walking;
 
 
 LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
-Vec3 g_lightDir = {127.0f, -32.0f, 0.0f};
+Vec3 g_lightDir = {0.0f, -127.0f, -127.0f};
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
@@ -38,12 +39,12 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         gSPLookAt(g_dlistHead++, &lookAt);
 
         gfxLookat(
-            0.0f, 300.0f, -1000.0f, // Eye pos
+            -1000.0f * cosf((M_PI / 180.0f) * angle), 300.0f, 1000.0f * sinf((M_PI / 180.0f) * angle), // Eye pos
             0.0f, 300.0f, 0.0f, // Look pos
             0.0f, 1.0f, 0.0f);
 
-        g_lightDir[0] = -127.0f * cosf((M_PI / 180.0f) * angle);
-        g_lightDir[2] = 127.0f * sinf((M_PI / 180.0f) * angle);
+        // g_lightDir[0] = -127.0f * cosf((M_PI / 180.0f) * angle);
+        // g_lightDir[2] = 127.0f * sinf((M_PI / 180.0f) * angle);
 
         lookAt.l[0].l.dir[0] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][0] + g_lightDir[1] * (*g_curMatFPtr)[1][0] + g_lightDir[2] * (*g_curMatFPtr)[2][0]);
         lookAt.l[0].l.dir[1] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][1] + g_lightDir[1] * (*g_curMatFPtr)[1][1] + g_lightDir[2] * (*g_curMatFPtr)[2][1]);
@@ -61,22 +62,11 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         gfxPushMat();
          gfxScale(0.5f, 0.5f, 0.5f);
-         gfxRotateAxisAngle(angle, 0.0f, 1.0f, 0.0f);
+        //  gfxRotateAxisAngle(angle, 0.0f, 1.0f, 0.0f);
          drawModel(&character_model, &character_anim_Walking, frame);
         gfxPopMat();
 
         tmpAngle = -angle * (M_PI / 180) / 4.0f;
-
-        // gSPLoadUcode(g_dlistHead++, gspL3DEX2_fifoTextStart, gspL3DEX2_fifoDataStart);
-        // gDPSetRenderMode(g_dlistHead++, G_RM_AA_ZB_XLU_LINE, G_RM_AA_ZB_XLU_LINE2);
-
-        // gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
-        // gSPModifyVertex(g_dlistHead++, 0, G_MWO_POINT_RGBA, GPACK_RGBA5551(255, 255, 255, 1));
-        // gSPModifyVertex(g_dlistHead++, 1, G_MWO_POINT_RGBA, GPACK_RGBA5551(255, 255, 255, 1));
-        // gSPModifyVertex(g_dlistHead++, 0, G_MWO_POINT_ZSCREEN, 0);
-        // gSPModifyVertex(g_dlistHead++, 1, G_MWO_POINT_ZSCREEN, 0);
-        // gDPSetCombineLERP(g_dlistHead++, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 1, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 1);
-        // gDPSetEnvColor(g_dlistHead++, 255, 255, 255, 255);
 
         for (i = 0; i < NUM_LOGOS; i++)
         {
@@ -91,6 +81,22 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             gfxPopMat();
             tmpAngle += (2 * M_PI) / NUM_LOGOS;
         }
+
+        gSPLoadUcodeL(g_dlistHead++, gspL3DEX2_fifo);
+        gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_CULL_BACK);
+        gDPPipeSync(g_dlistHead++);
+        gDPSetRenderMode(g_dlistHead++, G_RM_AA_ZB_XLU_LINE, G_RM_AA_ZB_XLU_LINE2);
+
+        gfxPushMat();
+         gfxTranslate(0.0f, 0.0f, 0.0f);
+        {
+            AABB aabb = {
+                .min = {-100.0f, -100.0f, -100.0f},
+                .max = { 100.0f,  100.0f,  100.0f},
+            };  
+            drawAABB(&aabb, 0xFF0000FF);
+        }
+        gfxPopMat();
     
         endFrame();
 

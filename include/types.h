@@ -11,6 +11,9 @@ typedef struct Animation_t Animation;
 typedef struct BoneTable_t BoneTable;
 typedef struct AnimTrigger_t AnimTrigger;
 
+// Prototypes for collision structs
+typedef struct AABB_t AABB;
+
 typedef float MtxF[4][4];
 typedef float Vec3[3];
 

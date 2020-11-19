@@ -86,7 +86,16 @@ SECTIONS
     }
     END_SEGMENT(gfx);
 
-    START_SEGMENT_AFTER(audio, gfx)
+    START_SEGMENT_AFTER(physics, gfx)
+    {
+        BUILD_ROOT/src/physics/collision.o(.text*);
+        BUILD_ROOT/src/physics/collision.o(.data*);
+        BUILD_ROOT/src/physics/collision.o(.rodata*);
+        . = ALIGN(16);
+    }
+    END_SEGMENT(physics);
+
+    START_SEGMENT_AFTER(audio, physics)
     {
         BUILD_ROOT/src/audio/audio.o(.text*);
         lib/libopus.a(.text*);
@@ -150,21 +159,21 @@ SECTIONS
     }
     END_NOLOAD(main);
 
-    START_NOLOAD_AFTER(libultra, main.noload)
-    {
-        SDK/ultra/usr/lib/libgultra_rom.a(.bss*);
-        . = ALIGN(16);
-    }
-    END_NOLOAD(libultra);
-
-    START_NOLOAD_AFTER(gfx, libultra.noload)
+    START_NOLOAD_AFTER(gfx, main.noload)
     {
         BUILD_ROOT/src/gfx/gfx.o(.bss*);
         . = ALIGN(16);
     }
     END_NOLOAD(gfx);
 
-    START_NOLOAD_AFTER(audio, gfx.noload)
+    START_NOLOAD_AFTER(physics, gfx.noload)
+    {
+        BUILD_ROOT/src/physics/collision.o(.bss*);
+        . = ALIGN(16);
+    }
+    END_NOLOAD(physics);
+
+    START_NOLOAD_AFTER(audio, physics.noload)
     {
         BUILD_ROOT/src/audio/audio.o(.bss*);
         lib/libopus.a(.bss*);
@@ -185,6 +194,13 @@ SECTIONS
         . = ALIGN(16);
     }
     END_NOLOAD(libnustd);
+
+    START_NOLOAD_AFTER(libultra, libgcc.noload)
+    {
+        SDK/ultra/usr/lib/libgultra_rom.a(.bss*);
+        . = ALIGN(16);
+    }
+    END_NOLOAD(libultra);
 
     memPoolStart = .;
 

@@ -7,6 +7,7 @@
 #include <audio.h>
 #include <task_sched.h>
 #include <model.h>
+#include <collision.h>
 
 u16 g_frameBuffers[NUM_FRAME_BUFFERS][SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
 u16 g_depthBuffer[SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
@@ -19,11 +20,12 @@ u64 taskOutputBuffer[OUTPUT_BUFF_LEN];
 u64 taskYieldBuffer[OS_YIELD_DATA_SIZE / sizeof(u64)];
 
 u8* introSegAddr;
+u8 *curGfxPoolPtr;
+u8 *curGfxPoolEnd;
 
 Gfx *g_dlistHead;
 
 MtxF *g_curMatFPtr;
-Mtx *g_curMatPtr;
 // The index of the context for the task being constructed
 u32 g_curGfxContext;
 // The index of the framebuffer being displayed next
@@ -115,10 +117,11 @@ void resetGfxFrame(void)
 {
     // Set up the master displaylist head
     g_dlistHead = &g_gfxContexts[g_curGfxContext].dlistBuffer[0];
+    curGfxPoolPtr = (u8*)&g_gfxContexts[g_curGfxContext].pool[0];
+    curGfxPoolEnd = (u8*)&g_gfxContexts[g_curGfxContext].pool[GFX_POOL_SIZE64];
 
     // Reset the matrix stack index
     g_curMatFPtr = &g_gfxContexts[g_curGfxContext].mtxFStack[0];
-    g_curMatPtr = &g_gfxContexts[g_curGfxContext].mtxStack[0];
 
     // Clear the modelview matrix
     gfxIdentity();
@@ -166,7 +169,7 @@ Vp viewport = {{
 
 const Gfx rdpInitDL[] = {
     gsDPSetOtherMode(
-        G_PM_1PRIMITIVE | G_CYC_1CYCLE | G_TP_PERSP | G_TD_CLAMP | G_TL_TILE | G_TF_BILERP |
+        G_PM_NPRIMITIVE | G_CYC_1CYCLE | G_TP_PERSP | G_TD_CLAMP | G_TL_TILE | G_TF_BILERP |
             G_TC_FILT | G_CK_NONE | G_CD_DISABLE | G_AD_DISABLE,
         G_AC_NONE | G_ZS_PIXEL | G_RM_OPA_SURF | G_RM_OPA_SURF2),
 #ifndef INTERLACED
@@ -272,6 +275,7 @@ void mtxfMul(MtxF out, MtxF a, MtxF b)
 
 void startFrame(void)
 {
+    Mtx* projMtx;
     resetGfxFrame();
 
     gSPSegment(g_dlistHead++, 0x00, 0x00000000);
@@ -301,9 +305,10 @@ void startFrame(void)
     gSPViewport(g_dlistHead++, OS_K0_TO_PHYSICAL(&viewport));
     gSPPerspNormalize(g_dlistHead++, g_perspNorm);
 
-    guMtxF2L(g_gfxContexts[g_curGfxContext].projMtxF, &g_gfxContexts[g_curGfxContext].projMtx);
+    projMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    guMtxF2L(g_gfxContexts[g_curGfxContext].projMtxF, projMtx);
     
-    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(&g_gfxContexts[g_curGfxContext].projMtx),
+    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(projMtx),
 	       G_MTX_PROJECTION|G_MTX_LOAD|G_MTX_NOPUSH);
 
     gSPSetLights1(g_dlistHead++, whiteLight);
@@ -490,12 +495,91 @@ Gfx* gfxSetEnvColor(Bone* bone, __attribute__((unused)) BoneLayer *layer)
 
 void drawGfx(Gfx* toDraw)
 {
-    guMtxF2L(*g_curMatFPtr, g_curMatPtr);
+    Mtx* curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    guMtxF2L(*g_curMatFPtr, curMtx);
 
-    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(g_curMatPtr++),
+    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
 
     gSPDisplayList(g_dlistHead++, toDraw);
+}
+
+void drawAABB(AABB *toDraw, u32 color)
+{
+    int i;
+    Vtx* verts = (Vtx*)allocGfx(sizeof(Vtx) * 8);
+    Mtx* curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+
+    for (i = 0; i < 8; i++)
+    {
+        *(u32*)(&verts[i].v.cn[0]) = color;
+    }
+    verts[0].v.ob[0] = toDraw->min[0];
+    verts[0].v.ob[1] = toDraw->min[1];
+    verts[0].v.ob[2] = toDraw->min[2];
+    
+    verts[1].v.ob[0] = toDraw->min[0];
+    verts[1].v.ob[1] = toDraw->min[1];
+    verts[1].v.ob[2] = toDraw->max[2];
+    
+    verts[2].v.ob[0] = toDraw->min[0];
+    verts[2].v.ob[1] = toDraw->max[1];
+    verts[2].v.ob[2] = toDraw->min[2];
+    
+    verts[3].v.ob[0] = toDraw->min[0];
+    verts[3].v.ob[1] = toDraw->max[1];
+    verts[3].v.ob[2] = toDraw->max[2];
+    
+    verts[4].v.ob[0] = toDraw->max[0];
+    verts[4].v.ob[1] = toDraw->min[1];
+    verts[4].v.ob[2] = toDraw->min[2];
+    
+    verts[5].v.ob[0] = toDraw->max[0];
+    verts[5].v.ob[1] = toDraw->min[1];
+    verts[5].v.ob[2] = toDraw->max[2];
+    
+    verts[6].v.ob[0] = toDraw->max[0];
+    verts[6].v.ob[1] = toDraw->max[1];
+    verts[6].v.ob[2] = toDraw->min[2];
+    
+    verts[7].v.ob[0] = toDraw->max[0];
+    verts[7].v.ob[1] = toDraw->max[1];
+    verts[7].v.ob[2] = toDraw->max[2];
+
+    gDPPipeSync(g_dlistHead++);
+    gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
+    
+    guMtxF2L(*g_curMatFPtr, curMtx);
+    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
+	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
+    gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
+    gSPClearGeometryMode(g_dlistHead++, G_LIGHTING);
+    gSPVertex(g_dlistHead++, OS_K0_TO_PHYSICAL(verts), 8, 0);
+    // Top
+    gSPLine3D(g_dlistHead++, 2, 3, 0x00);
+    gSPLine3D(g_dlistHead++, 2, 6, 0x00);
+    gSPLine3D(g_dlistHead++, 3, 7, 0x00);
+    gSPLine3D(g_dlistHead++, 6, 7, 0x00);
+    // Bottom
+    gSPLine3D(g_dlistHead++, 0, 1, 0x00);
+    gSPLine3D(g_dlistHead++, 0, 4, 0x00);
+    gSPLine3D(g_dlistHead++, 1, 5, 0x00);
+    gSPLine3D(g_dlistHead++, 4, 5, 0x00);
+    // Edges
+    gSPLine3D(g_dlistHead++, 0, 2, 0x00);
+    gSPLine3D(g_dlistHead++, 1, 3, 0x00);
+    gSPLine3D(g_dlistHead++, 4, 6, 0x00);
+    gSPLine3D(g_dlistHead++, 5, 7, 0x00);
+    gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
+}
+
+u8* allocGfx(s32 size)
+{
+    u8* retVal = curGfxPoolPtr;
+    curGfxPoolPtr += ROUND_UP(size, 8);
+    if (curGfxPoolPtr >= curGfxPoolEnd)
+        return NULL;
+    return retVal;
 }
 
 void endFrame()

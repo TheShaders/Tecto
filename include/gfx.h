@@ -5,6 +5,15 @@
 #include <config.h>
 #include <types.h>
 
+// Fix for gSPLoadUcodeL on gcc
+#ifdef gSPLoadUcodeL
+#undef gSPLoadUcodeL
+#endif
+
+#define	gSPLoadUcodeL(pkt, ucode)					\
+        gSPLoadUcode((pkt), OS_K0_TO_PHYSICAL(&ucode##TextStart),	\
+		            OS_K0_TO_PHYSICAL(&ucode##DataStart))
+
 #ifdef HIGH_RES
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 480
@@ -16,6 +25,8 @@
 #define OUTPUT_BUFF_LEN 1024
 
 #define DISPLAY_LIST_LEN 1024
+#define GFX_POOL_SIZE 65536
+#define GFX_POOL_SIZE64 (GFX_POOL_SIZE / 8)
 
 #define MATF_STACK_LEN 16
 #define MAT_BUFFER_LEN 128
@@ -35,16 +46,14 @@ struct GfxContext {
     Gfx dlistBuffer[DISPLAY_LIST_LEN];
     // Floating point modelview matrix stack
     MtxF mtxFStack[MATF_STACK_LEN];
-    // Fixed point modelview matrix buffer
-    Mtx mtxStack[MAT_BUFFER_LEN];
     // Floating point projection matrix
     MtxF projMtxF;
-    // Fixed point projection matrix
-    Mtx projMtx;
     // Graphics tasks done message
     OSMesg taskDoneMesg;
     // Graphics tasks done message queue
     OSMesgQueue taskDoneQueue;
+    // Graphics pool
+    u64 pool[GFX_POOL_SIZE64];
 };
 
 extern struct GfxContext g_gfxContexts[NUM_FRAME_BUFFERS];
@@ -63,8 +72,11 @@ void initGfx(void);
 void startFrame(void);
 void endFrame(void);
 
+u8* allocGfx(s32 size);
+
 void drawGfx(Gfx *toDraw);
 void drawModel(Model *toDraw, Animation* anim, u32 frame);
+void drawAABB(AABB *toDraw, u32 color);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b);
 

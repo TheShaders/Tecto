@@ -82,10 +82,6 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             tmpAngle += (2 * M_PI) / NUM_LOGOS;
         }
 
-        gSPLoadUcodeL(g_dlistHead++, gspL3DEX2_fifo);
-        gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_CULL_BACK);
-        gDPPipeSync(g_dlistHead++);
-        gDPSetRenderMode(g_dlistHead++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
 
         gfxPushMat();
          gfxTranslate(0.0f, 0.0f, 0.0f);
@@ -94,18 +90,41 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
                 .min = {-100.0f, -100.0f, -100.0f},
                 .max = { 100.0f,  100.0f,  100.0f},
             };
+            ColTri tri = {
+                .normal = {0.0f, 1.0f, 0.0f},
+                .originDist = 100.0f,
+                .vertex = {-100.0f, -100.0f, -100.0f},
+                .u = {0.0f, 0.0f, 200.0f},
+                .v = {200.0f, 0.0f, 0.0f},
+                .uu = 40000.0f,
+                .uv = 0.0f,
+                .vv = 40000.0f,
+            };
             Vec3 rayOrigin = { 200.0f * sinf((M_PI / 180.0f) * angle), 150.0f, 0.0f };
-            Vec3 rayDir = { 0.0f, -100.0f, 0.0f };
-            Vec3 rayEnd = { rayOrigin[0] + rayDir[0], rayOrigin[1] + rayDir[1], rayOrigin[2] + rayDir[2] };
+            Vec3 rayDir = { 0.0f, -1000.0f, 0.0f };
             Vec3 rayDirInv = { 1/rayDir[0], 1/rayDir[1], 1/rayDir[2] };
-            if (rayVsAABB(rayOrigin, rayDirInv, &aabb, 0.0f, 1.0f))
+            Vec3 rayEnd;
+            // f32 rayDist = rayVsAABB(rayOrigin, rayDirInv, &aabb, 0.0f, 1.0f);
+            f32 rayDist = rayVsTri(rayOrigin, rayDir, &tri, 0.0f, 1.0f);
+            gSPClearGeometryMode(g_dlistHead++, G_CULL_BACK);
+            if (rayDist >= 0)
             {
-                drawAABB(&aabb, 0x00FF00FF);
+                // drawAABB(&aabb, 0x00FF00FF);
+                drawColTri(&tri, 0x00FF00FF);
+                VEC3_SCALE(rayDir, rayDir, rayDist);
             }
             else
             {
-                drawAABB(&aabb, 0xFF0000FF);
+                // drawAABB(&aabb, 0xFF0000FF);
+                drawColTri(&tri, 0xFF0000FF);
             }
+                
+            gSPLoadUcodeL(g_dlistHead++, gspL3DEX2_fifo);
+            gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_CULL_BACK);
+            gDPPipeSync(g_dlistHead++);
+            gDPSetRenderMode(g_dlistHead++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
+
+            VEC3_ADD(rayEnd, rayOrigin, rayDir);
             drawLine(rayOrigin, rayEnd, 0x0000FFFF);
         }
         gfxPopMat();

@@ -507,8 +507,8 @@ void drawGfx(Gfx* toDraw)
 void drawAABB(AABB *toDraw, u32 color)
 {
     int i;
-    Vtx* verts = (Vtx*)allocGfx(sizeof(Vtx) * 8);
-    Mtx* curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 8);
+    Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
 
     for (i = 0; i < 8; i++)
     {
@@ -575,8 +575,8 @@ void drawAABB(AABB *toDraw, u32 color)
 
 void drawLine(Vec3 start, Vec3 end, u32 color)
 {
-    Vtx* verts = (Vtx*)allocGfx(sizeof(Vtx) * 2);
-    Mtx* curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 2);
+    Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
     
     verts[0].v.ob[0] = start[0];
     verts[0].v.ob[1] = start[1];
@@ -599,6 +599,41 @@ void drawLine(Vec3 start, Vec3 end, u32 color)
 
     gSPVertex(g_dlistHead++, OS_K0_TO_PHYSICAL(verts), 2, 0);
     gSPLine3D(g_dlistHead++, 0, 1, 0x00);    
+    
+    gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
+}
+
+void drawColTri(ColTri *tri, u32 color)
+{
+    Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 3);
+    Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+
+    verts[0].v.ob[0] = tri->vertex[0];
+    verts[0].v.ob[1] = tri->vertex[1];
+    verts[0].v.ob[2] = tri->vertex[2];
+    *(u32*)(&verts[0].v.cn[0]) = color;
+    
+    verts[1].v.ob[0] = tri->vertex[0] + tri->u[0];
+    verts[1].v.ob[1] = tri->vertex[1] + tri->u[1];
+    verts[1].v.ob[2] = tri->vertex[2] + tri->u[2];
+    *(u32*)(&verts[1].v.cn[0]) = color;
+    
+    verts[2].v.ob[0] = tri->vertex[0] + tri->v[0];
+    verts[2].v.ob[1] = tri->vertex[1] + tri->v[1];
+    verts[2].v.ob[2] = tri->vertex[2] + tri->v[2];
+    *(u32*)(&verts[2].v.cn[0]) = color;
+
+    gDPPipeSync(g_dlistHead++);
+    gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
+
+    guMtxF2L(*g_curMatFPtr, curMtx);
+    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
+	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
+    gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
+    gSPClearGeometryMode(g_dlistHead++, G_LIGHTING);
+
+    gSPVertex(g_dlistHead++, OS_K0_TO_PHYSICAL(verts), 3, 0);
+    gSP1Triangle(g_dlistHead++, 0, 1, 2, 0x00);
     
     gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
 }

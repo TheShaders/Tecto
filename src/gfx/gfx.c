@@ -195,12 +195,12 @@ const Gfx clearScreenDL[] = {
 
 const Gfx clearDepthBuffer[] = {
 	gsDPSetCycleType(G_CYC_FILL),
-    gsDPSetColorImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, OS_K0_TO_PHYSICAL(g_depthBuffer)),
+    gsDPSetColorImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, g_depthBuffer),
 
     gsDPSetFillColor(GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0)),
     gsDPFillRectangle(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1),
     gsDPPipeSync(),
-    gsDPSetDepthImage(OS_K0_TO_PHYSICAL(g_depthBuffer)),
+    gsDPSetDepthImage(g_depthBuffer),
     gsSPEndDisplayList(),
 };
 
@@ -280,8 +280,8 @@ void startFrame(void)
 
     gSPSegment(g_dlistHead++, 0x00, 0x00000000);
     setSegment(0x04, introSegAddr);
-    gSPSegment(g_dlistHead++, 0x04, OS_K0_TO_PHYSICAL(introSegAddr));
-    gSPSegment(g_dlistHead++, BUFFER_SEGMENT, OS_K0_TO_PHYSICAL(&g_frameBuffers[g_curGfxContext]));
+    gSPSegment(g_dlistHead++, 0x04, introSegAddr);
+    gSPSegment(g_dlistHead++, BUFFER_SEGMENT, &g_frameBuffers[g_curGfxContext]);
 
 #ifdef INTERLACED
     if (osViGetCurrentField())
@@ -293,22 +293,22 @@ void startFrame(void)
         gDPSetScissor(g_dlistHead++, G_SC_ODD_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 #endif
-    gSPDisplayList(g_dlistHead++, OS_K0_TO_PHYSICAL(rdpInitDL));
-    gSPDisplayList(g_dlistHead++, OS_K0_TO_PHYSICAL(clearDepthBuffer));
-    gSPDisplayList(g_dlistHead++, OS_K0_TO_PHYSICAL(clearScreenDL));
+    gSPDisplayList(g_dlistHead++, rdpInitDL);
+    gSPDisplayList(g_dlistHead++, clearDepthBuffer);
+    gSPDisplayList(g_dlistHead++, clearScreenDL);
     
     gDPSetCycleType(g_dlistHead++, G_CYC_1CYCLE);
     gDPSetRenderMode(g_dlistHead++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
     
     gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_CULL_BACK);
     gSPTexture(g_dlistHead++, 0, 0, 0, 0, G_OFF);
-    gSPViewport(g_dlistHead++, OS_K0_TO_PHYSICAL(&viewport));
+    gSPViewport(g_dlistHead++, &viewport);
     gSPPerspNormalize(g_dlistHead++, g_perspNorm);
 
     projMtx = (Mtx*)allocGfx(sizeof(Mtx));
     guMtxF2L(g_gfxContexts[g_curGfxContext].projMtxF, projMtx);
     
-    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(projMtx),
+    gSPMatrix(g_dlistHead++, projMtx,
 	       G_MTX_PROJECTION|G_MTX_LOAD|G_MTX_NOPUSH);
 
     gSPSetLights1(g_dlistHead++, whiteLight);
@@ -498,7 +498,7 @@ void drawGfx(Gfx* toDraw)
     Mtx* curMtx = (Mtx*)allocGfx(sizeof(Mtx));
     guMtxF2L(*g_curMatFPtr, curMtx);
 
-    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
+    gSPMatrix(g_dlistHead++, curMtx,
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
 
     gSPDisplayList(g_dlistHead++, toDraw);
@@ -550,11 +550,11 @@ void drawAABB(AABB *toDraw, u32 color)
     gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
 
     guMtxF2L(*g_curMatFPtr, curMtx);
-    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
+    gSPMatrix(g_dlistHead++, curMtx,
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
     gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
     gSPClearGeometryMode(g_dlistHead++, G_LIGHTING);
-    gSPVertex(g_dlistHead++, OS_K0_TO_PHYSICAL(verts), 8, 0);
+    gSPVertex(g_dlistHead++, verts, 8, 0);
     // Top
     gSPLine3D(g_dlistHead++, 2, 3, 0x00);
     gSPLine3D(g_dlistHead++, 2, 6, 0x00);
@@ -592,12 +592,12 @@ void drawLine(Vec3 start, Vec3 end, u32 color)
     gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
 
     guMtxF2L(*g_curMatFPtr, curMtx);
-    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
+    gSPMatrix(g_dlistHead++, curMtx,
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
     gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
     gSPClearGeometryMode(g_dlistHead++, G_LIGHTING);
 
-    gSPVertex(g_dlistHead++, OS_K0_TO_PHYSICAL(verts), 2, 0);
+    gSPVertex(g_dlistHead++, verts, 2, 0);
     gSPLine3D(g_dlistHead++, 0, 1, 0x00);    
     
     gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
@@ -629,12 +629,12 @@ void drawColTri(ColTri *tri, u32 color)
     gDPSetCombineLERP(g_dlistHead++, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1);
 
     guMtxF2L(*g_curMatFPtr, curMtx);
-    gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
+    gSPMatrix(g_dlistHead++, curMtx,
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
     gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
     gSPClearGeometryMode(g_dlistHead++, G_SHADING_SMOOTH);
 
-    gSPVertex(g_dlistHead++, OS_K0_TO_PHYSICAL(verts), 3, 0);
+    gSPVertex(g_dlistHead++, verts, 3, 0);
     gSP1Triangle(g_dlistHead++, 0, 1, 2, 0x00);
     
     gSPSetGeometryMode(g_dlistHead++, G_SHADING_SMOOTH);

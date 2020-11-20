@@ -611,31 +611,33 @@ void drawColTri(ColTri *tri, u32 color)
     verts[0].v.ob[0] = tri->vertex[0];
     verts[0].v.ob[1] = tri->vertex[1];
     verts[0].v.ob[2] = tri->vertex[2];
-    *(u32*)(&verts[0].v.cn[0]) = color;
     
     verts[1].v.ob[0] = tri->vertex[0] + tri->u[0];
     verts[1].v.ob[1] = tri->vertex[1] + tri->u[1];
     verts[1].v.ob[2] = tri->vertex[2] + tri->u[2];
-    *(u32*)(&verts[1].v.cn[0]) = color;
     
     verts[2].v.ob[0] = tri->vertex[0] + tri->v[0];
     verts[2].v.ob[1] = tri->vertex[1] + tri->v[1];
     verts[2].v.ob[2] = tri->vertex[2] + tri->v[2];
-    *(u32*)(&verts[2].v.cn[0]) = color;
 
+    verts[0].n.n[0] = 127.0f * tri->normal[0];
+    verts[0].n.n[1] = 127.0f * tri->normal[1];
+    verts[0].n.n[2] = 127.0f * tri->normal[2];
+    
     gDPPipeSync(g_dlistHead++);
-    gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
+    gDPSetColor(g_dlistHead++, G_SETENVCOLOR, color);
+    gDPSetCombineLERP(g_dlistHead++, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1);
 
     guMtxF2L(*g_curMatFPtr, curMtx);
     gSPMatrix(g_dlistHead++, OS_K0_TO_PHYSICAL(curMtx),
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
     gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
-    gSPClearGeometryMode(g_dlistHead++, G_LIGHTING);
+    gSPClearGeometryMode(g_dlistHead++, G_SHADING_SMOOTH);
 
     gSPVertex(g_dlistHead++, OS_K0_TO_PHYSICAL(verts), 3, 0);
     gSP1Triangle(g_dlistHead++, 0, 1, 2, 0x00);
     
-    gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
+    gSPSetGeometryMode(g_dlistHead++, G_SHADING_SMOOTH);
 }
 
 u8* allocGfx(s32 size)

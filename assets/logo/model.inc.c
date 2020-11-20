@@ -215,7 +215,6 @@ Gfx logo_logo_mesh_tri_3[] = {
 Gfx logo_logo_mesh[] = {
 	gsDPPipeSync(),
 	gsDPSetCombineLERP(ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1),
-    gsSPSetGeometryMode(G_LIGHTING),
 	gsDPSetEnvColor(5, 147, 48, 255),
 	gsSPDisplayList(logo_logo_mesh_tri_0),
 	gsDPPipeSync(),
@@ -227,7 +226,6 @@ Gfx logo_logo_mesh[] = {
 	gsDPPipeSync(),
 	gsDPSetEnvColor(254, 191, 1, 255),
 	gsSPDisplayList(logo_logo_mesh_tri_3),
-    gsSPClearGeometryMode(G_LIGHTING),
 	gsDPPipeSync(),
 	gsSPEndDisplayList(),
 };

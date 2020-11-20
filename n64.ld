@@ -141,9 +141,11 @@ SECTIONS
         SDK/ultra/usr/lib/PR/rspboot.o(.text*);
         SDK/ultra/usr/lib/PR/gspF3DEX2.fifo.o(.text*);
         SDK/ultra/usr/lib/PR/gspL3DEX2.fifo.o(.text*);
+        SDK/ultra/usr/lib/PR/gspS2DEX2.fifo.o(.text*);
         SDK/ultra/usr/lib/PR/rspboot.o(.data*);
         SDK/ultra/usr/lib/PR/gspF3DEX2.fifo.o(.data*);
         SDK/ultra/usr/lib/PR/gspL3DEX2.fifo.o(.data*);
+        SDK/ultra/usr/lib/PR/gspS2DEX2.fifo.o(.data*);
         . = ALIGN(16);
     }
     END_SEGMENT(ucode);

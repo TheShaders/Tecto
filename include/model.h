@@ -10,13 +10,6 @@
 // Model defines //
 ///////////////////
 
-// Draw layers
-#define LAYER_OPA_SURF  0
-#define LAYER_OPA_DECAL 1
-#define LAYER_TEX_EDGE  2
-#define LAYER_XLU_SURF  3
-#define LAYER_XLU_DECAL 4
-
 typedef struct BoneLayer_t {
     u32 layer;        // Draw layer of this displaylist
     Gfx *displaylist; // Displaylist for this layer of the bone

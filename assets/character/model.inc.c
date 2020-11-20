@@ -556,43 +556,43 @@ Gfx character_Torso_mesh[] = {
 
 BoneLayer character_model_bone2_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         character_Arm_1_mesh,
     },
 };
 BoneLayer character_model_bone3_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         character_Arm_2_mesh,
     },
 };
 BoneLayer character_model_bone4_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         character_Hand_mesh,
     },
 };
 BoneLayer character_model_bone5_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         character_Foot_L_mesh,
     },
 };
 BoneLayer character_model_bone6_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         character_Foot_R_mesh,
     },
 };
 BoneLayer character_model_bone7_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         character_Head_mesh,
     },
 };
 BoneLayer character_model_bone8_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         character_Torso_mesh,
     },
 };

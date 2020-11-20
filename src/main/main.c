@@ -20,7 +20,7 @@ extern Animation character_anim_Walking;
 
 
 LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
-Vec3 g_lightDir = {0.0f, -127.0f, -127.0f};
+Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
@@ -34,10 +34,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     {
         startFrame();
 
-        gSPSetGeometryMode(g_dlistHead++, G_LIGHTING | G_ZBUFFER);
-
         gSPLookAt(g_dlistHead++, &lookAt);
-
         gfxLookat(
             1000.0f * sinf((M_PI / 180.0f) * angle * 0), 300.0f, 1000.0f * cosf((M_PI / 180.0f) * angle * 0), // Eye pos
             0.0f, 300.0f, 0.0f, // Look pos
@@ -73,10 +70,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             // f32 tmpAngle2 = angle - i * (360.0f / NUM_LOGOS);
             gfxPushMat();
              gfxPosition(0.0f, angle - i * (360.0f / NUM_LOGOS), 0.0f, 1.0f, sinf(tmpAngle) * 200.0f, cosf(tmpAngle) * 200.0f, 0.0f);
-            //  gSPModifyVertex(g_dlistHead++, 0, G_MWO_POINT_XYSCREEN, ((sins(i * 2048       ) + SCREEN_WIDTH / 2) << (16 + 2)) | ((coss(i * 2048       ) + SCREEN_HEIGHT / 2) << 2));
-            //  gSPModifyVertex(g_dlistHead++, 1, G_MWO_POINT_XYSCREEN, ((sins(i * 2048 + 2048) + SCREEN_WIDTH / 2) << (16 + 2)) | ((coss(i * 2048 + 2048) + SCREEN_HEIGHT / 2) << 2));
-            //  gSPLine3D(g_dlistHead++, 0, 1, 0x0);
-            //  drawGfx(logo_logo_mesh);
+            //  drawGfx(LAYER_OPA_SURF, logo_logo_mesh);
                 // drawModel(&testmodel, &testmodelAnim, 0);
             gfxPopMat();
             tmpAngle += (2 * M_PI) / NUM_LOGOS;
@@ -104,28 +98,30 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             Vec3 rayDir = { 0.0f, -1000.0f, 0.0f };
             Vec3 rayDirInv = { 1/rayDir[0], 1/rayDir[1], 1/rayDir[2] };
             Vec3 rayEnd;
-            // f32 rayDist = rayVsAABB(rayOrigin, rayDirInv, &aabb, 0.0f, 1.0f);
+            s32 hitAABB = (rayVsAABB(rayOrigin, rayDirInv, &aabb, 0.0f, 1.0f) >= 0.0f);
             f32 rayDist = rayVsTri(rayOrigin, rayDir, &tri, 0.0f, 1.0f);
-            gSPClearGeometryMode(g_dlistHead++, G_CULL_BACK);
+
+            if (hitAABB)
+            {
+                drawAABB(LAYER_OPA_LINE, &aabb, 0x00FF00FF);
+            }
+            else
+            {
+                drawAABB(LAYER_OPA_LINE, &aabb, 0xFF0000FF);                
+            }
+
             if (rayDist >= 0)
             {
-                // drawAABB(&aabb, 0x00FF00FF);
-                drawColTri(&tri, 0x00FF00FF);
+                drawColTri(LAYER_OPA_SURF, &tri, 0x00FF00FF);
                 VEC3_SCALE(rayDir, rayDir, rayDist);
             }
             else
             {
-                // drawAABB(&aabb, 0xFF0000FF);
-                drawColTri(&tri, 0xFF0000FF);
+                drawColTri(LAYER_OPA_SURF, &tri, 0xFF0000FF);
             }
-                
-            gSPLoadUcodeL(g_dlistHead++, gspL3DEX2_fifo);
-            gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_CULL_BACK);
-            gDPPipeSync(g_dlistHead++);
-            gDPSetRenderMode(g_dlistHead++, G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2);
 
             VEC3_ADD(rayEnd, rayOrigin, rayDir);
-            drawLine(rayOrigin, rayEnd, 0x0000FFFF);
+            drawLine(LAYER_OPA_LINE, rayOrigin, rayEnd, 0x0000FFFF);
         }
         gfxPopMat();
     

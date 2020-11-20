@@ -22,13 +22,13 @@ typedef struct AABB_t {
     Vec3 max;
 } AABB;
 
-// Singular collision tri, several piece of redundant info that is used to accelerate processing
+// Singular collision tri, contains several pieces of redundant info that are used to accelerate calculations
 typedef struct ColTri_t {
     // Plane parameters
     Vec3 normal;
     f32 originDist;
     // Tri parameters
-    Vec3 vertex; // One of the tri's vertices (only one required for barycentric coordinates)
+    Vec3 vertex; // One of the tri's vertices (only one vertex is required for barycentric coordinates)
     Vec3 u; // Edge vectors
     Vec3 v;
     f32 uu; // Edge dot products

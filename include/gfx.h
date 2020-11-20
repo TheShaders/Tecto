@@ -5,6 +5,21 @@
 #include <config.h>
 #include <types.h>
 
+// Draw layers
+#define LAYER_OPA_SURF   0
+#define LAYER_OPA_LINE   1
+#define LAYER_OPA_DECAL  2
+#define LAYER_TEX_EDGE   3
+#define LAYER_XLU_SURF   4
+#define LAYER_XLU_LINE   5
+#define LAYER_XLU_DECAL  6
+#define LAYER_OPA_SPRITE 7
+#define LAYER_XLU_SPRITE 8
+
+#define NUM_LAYERS       9
+
+#define DRAW_LAYER_BUFFER_LEN 32
+
 // Fix for gSPLoadUcodeL on gcc
 #ifdef gSPLoadUcodeL
 #undef gSPLoadUcodeL
@@ -73,12 +88,14 @@ void startFrame(void);
 void endFrame(void);
 
 u8* allocGfx(s32 size);
+void addGfxToDrawLayer(u32 drawLayer, Gfx* toAdd);
+void addMtxToDrawLayer(u32 drawLayer, Mtx* mtx);
 
-void drawGfx(Gfx *toDraw);
+void drawGfx(u32 layer, Gfx *toDraw);
 void drawModel(Model *toDraw, Animation* anim, u32 frame);
-void drawAABB(AABB *toDraw, u32 color);
-void drawLine(Vec3 start, Vec3 end, u32 color);
-void drawColTri(ColTri *tri, u32 color);
+void drawAABB(u32 layer, AABB *toDraw, u32 color);
+void drawLine(u32 layer, Vec3 start, Vec3 end, u32 color);
+void drawColTri(u32 layer, ColTri *tri, u32 color);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b);
 

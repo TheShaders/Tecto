@@ -1,5 +1,6 @@
 #include <ultra64.h>
 #include <PR/sched.h>
+#include <PR/gs2dex.h>
 #include <malloc.h>
 
 #include <gfx.h>
@@ -37,6 +38,22 @@ OSMesgQueue dmaMesgQueue;
 OSMesg dmaMessage;
 
 OSIoMesg dmaIoMessage;
+
+static Gfx drawLayerRenderModes1Cycle[NUM_LAYERS][2] = {
+    { gsDPSetRenderMode(G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_ZB_OPA_DECAL, G_RM_ZB_OPA_DECAL2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_AA_ZB_TEX_EDGE, G_RM_AA_ZB_TEX_EDGE2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_AA_ZB_XLU_DECAL, G_RM_AA_ZB_XLU_DECAL2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_SPRITE, G_RM_SPRITE2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_XLU_SPRITE, G_RM_XLU_SPRITE2), gsSPEndDisplayList() },
+};
+
+static Gfx* drawLayerStarts[NUM_LAYERS];
+static Gfx* drawLayerHeads[NUM_LAYERS];
+static u32 drawLayerSlotsLeft[NUM_LAYERS];
 
 void initGfx(void)
 {
@@ -111,6 +128,52 @@ void initGfx(void)
 
     // Wait for the DMA to complete
     osRecvMesg(&dmaMesgQueue, NULL, OS_MESG_BLOCK);
+}
+
+void setupDrawLayers(void)
+{
+    int i;
+    for (i = 0; i < NUM_LAYERS; i++)
+    {
+        // Allocate the room for the draw layer's slots plus a gSPBranchList to the next buffer
+        drawLayerHeads[i] = drawLayerStarts[i] = (Gfx*)allocGfx((DRAW_LAYER_BUFFER_LEN + 1) * sizeof(Gfx));
+        drawLayerSlotsLeft[i] = DRAW_LAYER_BUFFER_LEN;
+    }
+}
+
+void removeDrawLayerSlot(u32 drawLayer)
+{
+    // Remove a slot from the draw layer's current buffer
+    // If there are no slots left, allocate a new buffer for this layer
+    if (--drawLayerSlotsLeft[drawLayer] == 0)
+    {
+        // Allocate the draw layer's new buffer
+        Gfx* newBuffer = (Gfx*)allocGfx((DRAW_LAYER_BUFFER_LEN + 1) * sizeof(Gfx));
+        // Branch to the new buffer from the old one
+        gSPBranchList(drawLayerHeads[drawLayer]++, newBuffer);
+        // Update the draw layer's buffer pointer and remaining slot count
+        drawLayerHeads[drawLayer] = newBuffer;
+        drawLayerSlotsLeft[drawLayer] = DRAW_LAYER_BUFFER_LEN;
+    }
+}
+
+void addGfxToDrawLayer(u32 drawLayer, Gfx* toAdd)
+{
+    // Add the displaylist to the current draw layer's buffer
+    gSPDisplayList(drawLayerHeads[drawLayer]++, toAdd);
+
+    // Remove a slot from the current draw layer
+    removeDrawLayerSlot(drawLayer);
+}
+
+void addMtxToDrawLayer(u32 drawLayer, Mtx* mtx)
+{
+    // Add the matrix to the current draw layer's buffer
+    gSPMatrix(drawLayerHeads[drawLayer]++, mtx, 
+	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
+
+    // Remove a slot from the current draw layer
+    removeDrawLayerSlot(drawLayer);
 }
 
 void resetGfxFrame(void)
@@ -273,6 +336,14 @@ void mtxfMul(MtxF out, MtxF a, MtxF b)
     out[3][3] = a03*b30+a13*b31+a23*b32+a33*b33;
 }
 
+void rspUcodeLoadInit(void)
+{
+    gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_CULL_BACK | G_LIGHTING);
+    gSPTexture(g_dlistHead++, 0, 0, 0, 0, G_OFF);
+    
+    gSPSetLights1(g_dlistHead++, whiteLight);
+}
+
 void startFrame(void)
 {
     Mtx* projMtx;
@@ -298,10 +369,7 @@ void startFrame(void)
     gSPDisplayList(g_dlistHead++, clearScreenDL);
     
     gDPSetCycleType(g_dlistHead++, G_CYC_1CYCLE);
-    gDPSetRenderMode(g_dlistHead++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
     
-    gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_CULL_BACK);
-    gSPTexture(g_dlistHead++, 0, 0, 0, 0, G_OFF);
     gSPViewport(g_dlistHead++, &viewport);
     gSPPerspNormalize(g_dlistHead++, g_perspNorm);
 
@@ -310,13 +378,10 @@ void startFrame(void)
     
     gSPMatrix(g_dlistHead++, projMtx,
 	       G_MTX_PROJECTION|G_MTX_LOAD|G_MTX_NOPUSH);
+    
+    rspUcodeLoadInit();
 
-    gSPSetLights1(g_dlistHead++, whiteLight);
-    gDPSetRenderMode(g_dlistHead++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
-    // gDPSetBlendColor(g_dlistHead++, 255, 0, 0, 255);
-    // gDPSetRenderMode(g_dlistHead++, AA_EN | Z_CMP | Z_UPD | IM_RD | CVG_DST_CLAMP |
-        // ZMODE_OPA | ALPHA_CVG_SEL |
-        // GBL_c1(G_BL_CLR_BL, G_BL_A_IN, G_BL_CLR_MEM, G_BL_A_MEM), GBL_c1(G_BL_CLR_BL, G_BL_A_IN, G_BL_CLR_MEM, G_BL_A_MEM));
+    setupDrawLayers();
 }
 
 // Draws a model (TODO add posing)
@@ -449,7 +514,7 @@ void drawModel(Model *toDraw, Animation *anim, u32 frame)
             }
             
             // Draw the layer
-            drawGfx(curBoneLayer->displaylist);
+            drawGfx(curBoneLayer->layer, curBoneLayer->displaylist);
 
             // Check if this bone has an after drawn callback, and if so call it
             if (curBone->afterCb)
@@ -493,22 +558,23 @@ Gfx* gfxSetEnvColor(Bone* bone, __attribute__((unused)) BoneLayer *layer)
     return NULL;
 }
 
-void drawGfx(Gfx* toDraw)
+void drawGfx(u32 layer, Gfx* toDraw)
 {
     Mtx* curMtx = (Mtx*)allocGfx(sizeof(Mtx));
     guMtxF2L(*g_curMatFPtr, curMtx);
 
-    gSPMatrix(g_dlistHead++, curMtx,
-	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
-
-    gSPDisplayList(g_dlistHead++, toDraw);
+    addMtxToDrawLayer(layer, curMtx);
+    addGfxToDrawLayer(layer, toDraw);
 }
 
-void drawAABB(AABB *toDraw, u32 color)
+void drawAABB(u32 layer, AABB *toDraw, u32 color)
 {
     int i;
     Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 8);
     Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 20);
+
+    addGfxToDrawLayer(layer, dlist);
 
     for (i = 0; i < 8; i++)
     {
@@ -546,37 +612,41 @@ void drawAABB(AABB *toDraw, u32 color)
     verts[7].v.ob[1] = toDraw->max[1];
     verts[7].v.ob[2] = toDraw->max[2];
 
-    gDPPipeSync(g_dlistHead++);
-    gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
+    gDPPipeSync(dlist++);
+    gDPSetCombineMode(dlist++, G_CC_SHADE, G_CC_SHADE);
 
     guMtxF2L(*g_curMatFPtr, curMtx);
-    gSPMatrix(g_dlistHead++, curMtx,
+    gSPMatrix(dlist++, curMtx,
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
-    gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
-    gSPClearGeometryMode(g_dlistHead++, G_LIGHTING);
-    gSPVertex(g_dlistHead++, verts, 8, 0);
+    gSPTexture(dlist++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
+    gSPClearGeometryMode(dlist++, G_LIGHTING);
+    gSPVertex(dlist++, verts, 8, 0);
     // Top
-    gSPLine3D(g_dlistHead++, 2, 3, 0x00);
-    gSPLine3D(g_dlistHead++, 2, 6, 0x00);
-    gSPLine3D(g_dlistHead++, 3, 7, 0x00);
-    gSPLine3D(g_dlistHead++, 6, 7, 0x00);
+    gSPLine3D(dlist++, 2, 3, 0x00);
+    gSPLine3D(dlist++, 2, 6, 0x00);
+    gSPLine3D(dlist++, 3, 7, 0x00);
+    gSPLine3D(dlist++, 6, 7, 0x00);
     // Bottom
-    gSPLine3D(g_dlistHead++, 0, 1, 0x00);
-    gSPLine3D(g_dlistHead++, 0, 4, 0x00);
-    gSPLine3D(g_dlistHead++, 1, 5, 0x00);
-    gSPLine3D(g_dlistHead++, 4, 5, 0x00);
+    gSPLine3D(dlist++, 0, 1, 0x00);
+    gSPLine3D(dlist++, 0, 4, 0x00);
+    gSPLine3D(dlist++, 1, 5, 0x00);
+    gSPLine3D(dlist++, 4, 5, 0x00);
     // Edges
-    gSPLine3D(g_dlistHead++, 0, 2, 0x00);
-    gSPLine3D(g_dlistHead++, 1, 3, 0x00);
-    gSPLine3D(g_dlistHead++, 4, 6, 0x00);
-    gSPLine3D(g_dlistHead++, 5, 7, 0x00);
-    gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
+    gSPLine3D(dlist++, 0, 2, 0x00);
+    gSPLine3D(dlist++, 1, 3, 0x00);
+    gSPLine3D(dlist++, 4, 6, 0x00);
+    gSPLine3D(dlist++, 5, 7, 0x00);
+    gSPSetGeometryMode(dlist++, G_LIGHTING);
+    gSPEndDisplayList(dlist++);
 }
 
-void drawLine(Vec3 start, Vec3 end, u32 color)
+void drawLine(u32 layer, Vec3 start, Vec3 end, u32 color)
 {
     Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 2);
     Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 9);
+
+    addGfxToDrawLayer(layer, dlist);
     
     verts[0].v.ob[0] = start[0];
     verts[0].v.ob[1] = start[1];
@@ -588,25 +658,29 @@ void drawLine(Vec3 start, Vec3 end, u32 color)
     verts[1].v.ob[2] = end[2];
     *(u32*)(&verts[1].v.cn[0]) = color;
 
-    gDPPipeSync(g_dlistHead++);
-    gDPSetCombineMode(g_dlistHead++, G_CC_SHADE, G_CC_SHADE);
+    gDPPipeSync(dlist++);
+    gDPSetCombineMode(dlist++, G_CC_SHADE, G_CC_SHADE);
 
     guMtxF2L(*g_curMatFPtr, curMtx);
-    gSPMatrix(g_dlistHead++, curMtx,
+    gSPMatrix(dlist++, curMtx,
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
-    gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
-    gSPClearGeometryMode(g_dlistHead++, G_LIGHTING);
+    gSPTexture(dlist++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
+    gSPClearGeometryMode(dlist++, G_LIGHTING);
 
-    gSPVertex(g_dlistHead++, verts, 2, 0);
-    gSPLine3D(g_dlistHead++, 0, 1, 0x00);    
+    gSPVertex(dlist++, verts, 2, 0);
+    gSPLine3D(dlist++, 0, 1, 0x00);    
     
-    gSPSetGeometryMode(g_dlistHead++, G_LIGHTING);
+    gSPSetGeometryMode(dlist++, G_LIGHTING);
+    gSPEndDisplayList(dlist++);
 }
 
-void drawColTri(ColTri *tri, u32 color)
+void drawColTri(u32 layer, ColTri *tri, u32 color)
 {
     Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 3);
     Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 10);
+    
+    addGfxToDrawLayer(layer, dlist);
 
     verts[0].v.ob[0] = tri->vertex[0];
     verts[0].v.ob[1] = tri->vertex[1];
@@ -624,20 +698,21 @@ void drawColTri(ColTri *tri, u32 color)
     verts[0].n.n[1] = 127.0f * tri->normal[1];
     verts[0].n.n[2] = 127.0f * tri->normal[2];
     
-    gDPPipeSync(g_dlistHead++);
-    gDPSetColor(g_dlistHead++, G_SETENVCOLOR, color);
-    gDPSetCombineLERP(g_dlistHead++, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1);
+    gDPPipeSync(dlist++);
+    gDPSetColor(dlist++, G_SETENVCOLOR, color);
+    gDPSetCombineLERP(dlist++, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1);
 
     guMtxF2L(*g_curMatFPtr, curMtx);
-    gSPMatrix(g_dlistHead++, curMtx,
+    gSPMatrix(dlist++, curMtx,
 	       G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
-    gSPTexture(g_dlistHead++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
-    gSPClearGeometryMode(g_dlistHead++, G_SHADING_SMOOTH);
+    gSPTexture(dlist++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
+    gSPClearGeometryMode(dlist++, G_SHADING_SMOOTH);
 
-    gSPVertex(g_dlistHead++, verts, 3, 0);
-    gSP1Triangle(g_dlistHead++, 0, 1, 2, 0x00);
+    gSPVertex(dlist++, verts, 3, 0);
+    gSP1Triangle(dlist++, 0, 1, 2, 0x00);
     
-    gSPSetGeometryMode(g_dlistHead++, G_SHADING_SMOOTH);
+    gSPSetGeometryMode(dlist++, G_SHADING_SMOOTH);
+    gSPEndDisplayList(dlist++);
 }
 
 u8* allocGfx(s32 size)
@@ -651,6 +726,41 @@ u8* allocGfx(s32 size)
 
 void endFrame()
 {
+    int i;
+
+    // Finalize the draw layer displaylists and link them to the main one
+    for (i = 0; i < NUM_LAYERS; i++)
+    {
+        switch (i)
+        {
+            // Switch to l3dex2 for line layers
+            case LAYER_OPA_LINE:
+            case LAYER_XLU_LINE:
+                gSPLoadUcodeL(g_dlistHead++, gspL3DEX2_fifo);
+                rspUcodeLoadInit();
+                break;
+            // Switch back to f3dex2 for sprite layers
+            case (LAYER_OPA_LINE + 1):
+            case (LAYER_XLU_LINE + 1):
+                gSPLoadUcodeL(g_dlistHead++, gspF3DEX2_fifo);
+                rspUcodeLoadInit();
+                break;
+            // Switch to s2dex2 for the two sprite layers (only one switch needed because they are the last two layers)
+            case LAYER_OPA_SPRITE:
+                gSPLoadUcodeL(g_dlistHead++, gspS2DEX2_fifo);
+                break;
+        }
+
+        // Set up the render mode for this draw layer
+        gSPDisplayList(g_dlistHead++, drawLayerRenderModes1Cycle[i]);
+
+        // Link this layer's displaylist to the main displaylist
+        gSPDisplayList(g_dlistHead++, drawLayerStarts[i]);
+
+        // Terminate this draw layer's displaylist
+        gSPEndDisplayList(drawLayerHeads[i]);
+    }
+
     gDPFullSync(g_dlistHead++);
     gSPEndDisplayList(g_dlistHead++);
 

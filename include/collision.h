@@ -36,27 +36,24 @@ typedef struct ColTri_t {
     f32 vv;
 } ColTri;
 
-// Common data for a node in a bounding volume hierarchy tree
-typedef struct BVHNodeBase_t {
-    u8 nodeType;
-    u8 reserved[3];
+// A node in a bounding volume hierarchy tree
+typedef struct BVHNode_t {
+    u16 triCount; // 0 if this is not a leaf node, otherwise the number of triangles in this node
+    u16 childIndex; // Either the index of the first triangle for this node, or the index of the first node child
     AABB aabb;
-} BVHNodeBase;
+} BVHNode;
 
-// BVH node that has other child nodes
-typedef struct BVHParentNode_t {
-    BVHNodeBase base;
-    u32 childCount;
-    BVHNodeBase *children;
-} BVHParentNode;
+// Bounding volume hierarchy tree
+typedef struct BVHTree_t {
+    u16 triCount;
+    u16 nodeCount;
+    ColTri* tris;
+    BVHNode* nodes;
+} BVHTree;
 
-// BVH leaf node that points to actual collision data
-typedef struct BVHLeafNode_t {
-    BVHNodeBase base;
-    ColTri *tris;
-} BVHLeafNode;
-
+f32 verticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax);
 f32 rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax);
+f32 verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float tmax);
 f32 rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax);
 
 #endif

@@ -14,9 +14,8 @@ typedef struct AnimTrigger_t AnimTrigger;
 // Prototypes for collision structs
 typedef struct AABB_t AABB;
 typedef struct ColTri_t ColTri;
-typedef struct BVHNodeBase_t BVHNodeBase;
-typedef struct BVHParentNode_t BVHParentNode;
-typedef struct BVHLeafNode_t BVHLeafNode;
+typedef struct BVHNode_t BVHNodeBase;
+typedef struct BVHTree_t BVHTree;
 
 typedef float MtxF[4][4];
 typedef float Vec3[3];

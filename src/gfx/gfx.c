@@ -567,12 +567,19 @@ void drawGfx(u32 layer, Gfx* toDraw)
     addGfxToDrawLayer(layer, toDraw);
 }
 
+#define USE_TRIS_FOR_AABB
+
 void drawAABB(u32 layer, AABB *toDraw, u32 color)
 {
     int i;
     Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 8);
     Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    
+#ifdef USE_TRIS_FOR_AABB
     Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 20);
+#else
+    Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 20);
+#endif
 
     addGfxToDrawLayer(layer, dlist);
 
@@ -621,6 +628,14 @@ void drawAABB(u32 layer, AABB *toDraw, u32 color)
     gSPTexture(dlist++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
     gSPClearGeometryMode(dlist++, G_LIGHTING);
     gSPVertex(dlist++, verts, 8, 0);
+#ifdef USE_TRIS_FOR_AABB
+    // Top and left
+    gSP2Triangles(dlist++, 2, 3, 6, 0x00, 0, 1, 2, 0x00);
+    // Front and right
+    gSP2Triangles(dlist++, 1, 7, 3, 0x00, 5, 6, 7, 0x00);
+    // Back and bottom
+    gSP2Triangles(dlist++, 0, 6, 4, 0x00, 1, 4, 5, 0x00);
+#else
     // Top
     gSPLine3D(dlist++, 2, 3, 0x00);
     gSPLine3D(dlist++, 2, 6, 0x00);
@@ -636,6 +651,7 @@ void drawAABB(u32 layer, AABB *toDraw, u32 color)
     gSPLine3D(dlist++, 1, 3, 0x00);
     gSPLine3D(dlist++, 4, 6, 0x00);
     gSPLine3D(dlist++, 5, 7, 0x00);
+#endif
     gSPSetGeometryMode(dlist++, G_LIGHTING);
     gSPEndDisplayList(dlist++);
 }
@@ -674,29 +690,13 @@ void drawLine(u32 layer, Vec3 start, Vec3 end, u32 color)
     gSPEndDisplayList(dlist++);
 }
 
-void drawColTri(u32 layer, ColTri *tri, u32 color)
+void drawColTris(u32 layer, ColTri *tris, u32 count, u32 color)
 {
-    Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 3);
     Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
-    Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 10);
+    Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * (8 + count * 2));
+    u32 i;
     
     addGfxToDrawLayer(layer, dlist);
-
-    verts[0].v.ob[0] = tri->vertex[0];
-    verts[0].v.ob[1] = tri->vertex[1];
-    verts[0].v.ob[2] = tri->vertex[2];
-    
-    verts[1].v.ob[0] = tri->vertex[0] + tri->u[0];
-    verts[1].v.ob[1] = tri->vertex[1] + tri->u[1];
-    verts[1].v.ob[2] = tri->vertex[2] + tri->u[2];
-    
-    verts[2].v.ob[0] = tri->vertex[0] + tri->v[0];
-    verts[2].v.ob[1] = tri->vertex[1] + tri->v[1];
-    verts[2].v.ob[2] = tri->vertex[2] + tri->v[2];
-
-    verts[0].n.n[0] = 127.0f * tri->normal[0];
-    verts[0].n.n[1] = 127.0f * tri->normal[1];
-    verts[0].n.n[2] = 127.0f * tri->normal[2];
     
     gDPPipeSync(dlist++);
     gDPSetColor(dlist++, G_SETENVCOLOR, color);
@@ -708,8 +708,29 @@ void drawColTri(u32 layer, ColTri *tri, u32 color)
     gSPTexture(dlist++, 0xFFFF, 0xFFFF, 0, 0, G_OFF);
     gSPClearGeometryMode(dlist++, G_SHADING_SMOOTH);
 
-    gSPVertex(dlist++, verts, 3, 0);
-    gSP1Triangle(dlist++, 0, 1, 2, 0x00);
+    for (i = 0; i < count; i++)
+    {
+        Vtx *verts = (Vtx*)allocGfx(sizeof(Vtx) * 3);
+
+        verts[0].v.ob[0] = tris[i].vertex[0];
+        verts[0].v.ob[1] = tris[i].vertex[1];
+        verts[0].v.ob[2] = tris[i].vertex[2];
+        
+        verts[1].v.ob[0] = tris[i].vertex[0] + tris[i].u[0];
+        verts[1].v.ob[1] = tris[i].vertex[1] + tris[i].u[1];
+        verts[1].v.ob[2] = tris[i].vertex[2] + tris[i].u[2];
+        
+        verts[2].v.ob[0] = tris[i].vertex[0] + tris[i].v[0];
+        verts[2].v.ob[1] = tris[i].vertex[1] + tris[i].v[1];
+        verts[2].v.ob[2] = tris[i].vertex[2] + tris[i].v[2];
+
+        verts[0].n.n[0] = 127.0f * tris[i].normal[0];
+        verts[0].n.n[1] = 127.0f * tris[i].normal[1];
+        verts[0].n.n[2] = 127.0f * tris[i].normal[2];
+
+        gSPVertex(dlist++, verts, 3, 0);
+        gSP1Triangle(dlist++, 0, 1, 2, 0x00);
+    }
     
     gSPSetGeometryMode(dlist++, G_SHADING_SMOOTH);
     gSPEndDisplayList(dlist++);

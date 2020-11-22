@@ -47,8 +47,8 @@ SECTIONS
 
     START_SEGMENT(header, 0xA4000000)
     {
-        BUILD_ROOT/src/header/header.o(.data);
-        BUILD_ROOT/boot/boot.6102.o;
+        KEEP(BUILD_ROOT/src/header/header.o(.data));
+        KEEP(BUILD_ROOT/boot/boot.6102.o);
     }
     END_SEGMENT(header);
 
@@ -57,7 +57,7 @@ SECTIONS
     START_SEGMENT(main, 0x80000400)
     {
         BUILD_ROOT/src/entry/entry.o(.text*);
-        BUILD_ROOT/src/main/main.o(.text*);
+        KEEP(BUILD_ROOT/src/main/main.o(.text*));
         BUILD_ROOT/src/main/mem.o(.text*);
         BUILD_ROOT/src/main/init.o(.text*);
         BUILD_ROOT/src/main/task_sched.o(.text*);

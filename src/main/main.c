@@ -17,7 +17,7 @@ extern Model testmodel;
 extern Model character_model;
 extern Animation testmodelAnim;
 extern Animation character_anim_Walking;
-
+extern BVHTree test_collision_tree;
 
 LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
 Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
@@ -79,27 +79,44 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         gfxPushMat();
          gfxTranslate(0.0f, 0.0f, 0.0f);
+         gfxScale(10.0f, 10.0f, 10.0f);
         {
+            int index;
+            BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&test_collision_tree);
+            ColTri *tris = segmentedToVirtual(test_collision_virtual->tris);
+            BVHNode *nodes = segmentedToVirtual(test_collision_virtual->nodes);
+            drawColTris(LAYER_OPA_SURF, tris, test_collision_virtual->triCount, 0xFF0000FF);
+            for (index = 0; index < test_collision_virtual->nodeCount; index++)
+            {
+                if (nodes[index].triCount == 0 && nodes[nodes[index].childIndex].triCount == 0 && nodes[nodes[nodes[index].childIndex].childIndex].triCount)
+                {
+                    drawAABB(LAYER_OPA_LINE, &nodes[index].aabb, 0x00FF00FF);
+                }
+            }
+        }
+        if (0) {
             AABB aabb = {
                 .min = {-100.0f, -100.0f, -100.0f},
                 .max = { 100.0f,  100.0f,  100.0f},
             };
             ColTri tri = {
-                .normal = {0.0f, 1.0f, 0.0f},
-                .originDist = 100.0f,
+                .normal = {-0.7071f, 0.7071f, 0.0f},
+                .originDist = 0.0f,
                 .vertex = {-100.0f, -100.0f, -100.0f},
                 .u = {0.0f, 0.0f, 200.0f},
-                .v = {200.0f, 0.0f, 0.0f},
+                .v = {200.0f, 200.0f, 0.0f},
                 .uu = 40000.0f,
                 .uv = 0.0f,
-                .vv = 40000.0f,
+                .vv = 80000.0f,
             };
-            Vec3 rayOrigin = { 200.0f * sinf((M_PI / 180.0f) * angle), 150.0f, 0.0f };
+            Vec3 rayOrigin = { 200.0f * sinf((M_PI / 180.0f) * angle), 80.0f, 0.0f };
             Vec3 rayDir = { 0.0f, -1000.0f, 0.0f };
             Vec3 rayDirInv = { 1/rayDir[0], 1/rayDir[1], 1/rayDir[2] };
             Vec3 rayEnd;
-            s32 hitAABB = (rayVsAABB(rayOrigin, rayDirInv, &aabb, 0.0f, 1.0f) >= 0.0f);
-            f32 rayDist = rayVsTri(rayOrigin, rayDir, &tri, 0.0f, 1.0f);
+            // s32 hitAABB = (rayVsAABB(rayOrigin, rayDirInv, &aabb, 0.0f, 1.0f) >= 0.0f);
+            s32 hitAABB = (verticalRayVsAABB(rayOrigin, rayDirInv[1], &aabb, 0.0f, 1.0f) >= 0.0f);
+            // f32 rayDist = rayVsTri(rayOrigin, rayDir, &tri, 0.0f, 1.0f);
+            f32 rayDist = verticalRayVsTri(rayOrigin, rayDir[1], &tri, 0.0f, 1.0f);
 
             if (hitAABB)
             {
@@ -112,12 +129,12 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
             if (rayDist >= 0)
             {
-                drawColTri(LAYER_OPA_SURF, &tri, 0x00FF00FF);
+                drawColTris(LAYER_OPA_SURF, &tri, 1, 0x00FF00FF);
                 VEC3_SCALE(rayDir, rayDir, rayDist);
             }
             else
             {
-                drawColTri(LAYER_OPA_SURF, &tri, 0xFF0000FF);
+                drawColTris(LAYER_OPA_SURF, &tri, 1, 0xFF0000FF);
             }
 
             VEC3_ADD(rayEnd, rayOrigin, rayDir);

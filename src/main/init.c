@@ -1,6 +1,5 @@
 // libultra
 #include <ultra64.h>
-#include <malloc.h>
 
 // game code
 #include <main.h>
@@ -36,7 +35,7 @@ void init(void)
     bzero(_gfxSegmentBssStart, (u32)_gfxSegmentBssEnd - (u32)_gfxSegmentBssStart);
     bzero(_libultraSegmentBssStart, (u32)_libultraSegmentBssEnd - (u32)_libultraSegmentBssStart);
 
-    InitHeap(memPoolStart, 0x10000);//(u32) 0x80400000 - (u32) memPoolStart);
+    initMemAllocator(memPoolStart, MEM_END);
     g_romHandle = osCartRomInit();
 
     osCreateThread(&g_threads[IDLE_THREAD_INDEX], IDLE_THREAD, idle, NULL, idleThreadStack + IDLE_THREAD_STACKSIZE, 10);

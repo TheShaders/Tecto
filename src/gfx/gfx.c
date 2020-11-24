@@ -1,7 +1,6 @@
 #include <ultra64.h>
 #include <PR/sched.h>
 #include <PR/gs2dex.h>
-#include <malloc.h>
 
 #include <gfx.h>
 #include <mem.h>
@@ -111,7 +110,7 @@ void initGfx(void)
     osCreateMesgQueue(&dmaMesgQueue, &dmaMessage, 1);
 
     // Allocate RAM for the intro segment to be DMA'd to
-    introSegAddr = mt_malloc((u32)_introSegmentRomEnd - (u32)_introSegmentRomStart);
+    introSegAddr = allocRegion((u32)_introSegmentRomEnd - (u32)_introSegmentRomStart, ALLOC_GFX);
     
     // Invalidate the data cache for the region being DMA'd to
     osInvalDCache(introSegAddr, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart); 
@@ -398,7 +397,7 @@ void drawModel(Model *toDraw, Animation *anim, u32 frame)
     // Get the virtual address of the model
     toDraw = segmentedToVirtual(toDraw);
     // Allocate space for this model's bone matrices
-    boneMatrices = calloc(toDraw->numBones, sizeof(MtxF));
+    boneMatrices = allocRegion(toDraw->numBones * sizeof(MtxF), ALLOC_GFX);
 
     // Draw the model's bones
     curBone = bones = segmentedToVirtual(&toDraw->bones[0]);
@@ -542,7 +541,7 @@ void drawModel(Model *toDraw, Animation *anim, u32 frame)
     }
 
     // Free the memory used for the bone matrices
-    free(boneMatrices);
+    freeAlloc(boneMatrices);
 }
 
 Gfx* gfxSetEnvColor(Bone* bone, __attribute__((unused)) BoneLayer *layer)
@@ -576,7 +575,7 @@ void drawAABB(u32 layer, AABB *toDraw, u32 color)
     Mtx *curMtx = (Mtx*)allocGfx(sizeof(Mtx));
     
 #ifdef USE_TRIS_FOR_AABB
-    Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 20);
+    Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 11);
 #else
     Gfx *dlist = (Gfx*)allocGfx(sizeof(Gfx) * 20);
 #endif

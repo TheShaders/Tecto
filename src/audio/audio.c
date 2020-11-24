@@ -1,6 +1,5 @@
 #include <audio.h>
 #include <ultra64.h>
-#include <malloc.h>
 #include <mem.h>
 
 #define SINE_FREQ 440
@@ -25,8 +24,6 @@ extern u8 _songSegmentRomStart[], _songSegmentRomEnd[];
 
 void audioInit(void)
 {
-    int err;
-
     osCreateMesgQueue(&audioMsgQueue, &audioMsg, 1);
     osSetEventMesg(OS_EVENT_AI, &audioMsgQueue, NULL);
 
@@ -37,29 +34,8 @@ void audioInit(void)
     // Set up the audio frequency
     realSampleRate = osAiSetFrequency(SAMPLE_RATE);
     
-
     // Create message queue for DMA reads/writes
     // osCreateMesgQueue(&audioDmaMesgQueue, &audioDmaMessage, 1);
-
-    // decoder = opus_decoder_create(SAMPLE_RATE, 2, &err);
-
-    // song = mt_malloc((u32)_songSegmentRomEnd - (u32)_songSegmentRomStart);
-    
-    // // Invalidate the data cache for the region being DMA'd to
-    // osInvalDCache(song, (u32)_songSegmentRomEnd - (u32)_songSegmentRomStart); 
-
-    // // Set up the intro segment DMA
-    // audioDmaIoMessage.hdr.pri = OS_MESG_PRI_NORMAL;
-    // audioDmaIoMessage.hdr.retQueue = &audioDmaMesgQueue;
-    // audioDmaIoMessage.dramAddr = song;
-    // audioDmaIoMessage.devAddr = (u32)_songSegmentRomStart;
-    // audioDmaIoMessage.size = (u32)_songSegmentRomEnd - (u32)_songSegmentRomStart;
-
-    // // Start the DMA
-    // osEPiStartDma(g_romHandle, &audioDmaIoMessage, OS_READ);
-
-    // // Wait for the DMA to complete
-    // osRecvMesg(&audioDmaMesgQueue, NULL, OS_MESG_BLOCK);
 }
 
 void fillAudioBuffer(u32 bufferIndex)
@@ -69,7 +45,7 @@ void fillAudioBuffer(u32 bufferIndex)
 
     do
     {
-        audioPtr[0] = audioPtr[1] = sins(audioPhaseAngle) / 4; // Left
+        audioPtr[0] = audioPtr[1] = 0 * sins(audioPhaseAngle) / 4; // Left
         audioPtr += 2;
         // *audioPtr++ = sins(2 * audioPhaseAngle) / 4; // Right
         audioPhaseAngle += (0x10000L * SINE_FREQ / SAMPLE_RATE);

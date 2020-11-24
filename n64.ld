@@ -98,11 +98,8 @@ SECTIONS
     START_SEGMENT_AFTER(audio, physics)
     {
         BUILD_ROOT/src/audio/audio.o(.text*);
-        lib/libopus.a(.text*);
         BUILD_ROOT/src/audio/audio.o(.data*);
         BUILD_ROOT/src/audio/audio.o(.rodata*);
-        lib/libopus.a(.data*);
-        lib/libopus.a(.rodata*);
         . = ALIGN(16);
     }
     END_SEGMENT(audio);
@@ -169,7 +166,6 @@ SECTIONS
     START_NOLOAD_AFTER(audio, physics.noload)
     {
         BUILD_ROOT/src/audio/audio.o(.bss*);
-        lib/libopus.a(.bss*);
         . = ALIGN(16);
     }
     END_NOLOAD(audio);

@@ -35,7 +35,7 @@ void init(void)
     bzero(_gfxSegmentBssStart, (u32)_gfxSegmentBssEnd - (u32)_gfxSegmentBssStart);
     bzero(_libultraSegmentBssStart, (u32)_libultraSegmentBssEnd - (u32)_libultraSegmentBssStart);
 
-    initMemAllocator(memPoolStart, MEM_END);
+    initMemAllocator(memPoolStart, (void*) MEM_END);
     g_romHandle = osCartRomInit();
 
     osCreateThread(&g_threads[IDLE_THREAD_INDEX], IDLE_THREAD, idle, NULL, idleThreadStack + IDLE_THREAD_STACKSIZE, 10);

@@ -100,7 +100,7 @@ CFLAGS     := -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -m
 CXXFLAGS   := 
 ASFLAGS    := -mtune=vr4300 -march=vr4300 -mabi=32 -mips3
 LDFLAGS    := -T $(LD_CPP) -mips3 --accept-unknown-input-arch --no-check-sections -Map $(BUILD_ROOT)/$(TARGET).map \
-			  -L $(SDK)/ultra/usr/lib -lgultra_rom -L $(SDK)/nintendo/n64kit/nustd/lib -lnustd -L lib -lopus -L $(N64CHAIN)/lib/gcc/mips64-elf/10.1.0 -lgcc
+			  -L $(SDK)/ultra/usr/lib -lgultra_rom -L $(SDK)/nintendo/n64kit/nustd/lib -lnustd -L lib -L $(N64CHAIN)/lib/gcc/mips64-elf/10.1.0 -lgcc
 LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DSDK=$(SDK) -DCHAIN=$(N64CHAIN) -Umips
 OCOPYFLAGS := --pad-to=0x400000 --gap-fill=0xFF
 

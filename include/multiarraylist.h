@@ -18,6 +18,8 @@ typedef struct MultiArrayList_t {
     u16 elementCount;
 } MultiArrayList;
 
+int lowest_bit(size_t value);
+
 // Initializes a new multiarraylist
 void multiarraylist_init(MultiArrayList *arr, archetype_t archetype);
 

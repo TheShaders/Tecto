@@ -24,10 +24,39 @@ extern BVHTree test_collision_tree;
 LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
 Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
 
-MultiArrayList arr;
+MultiArrayList *multiArr[2];
 size_t posOffset;
 size_t velOffset;
 
+int numPosVels = 0;
+float totalPos = 0.0f;
+
+void posVelCallback(size_t count, void **componentArrays)
+{
+    Position *posArr = componentArrays[0];
+    Velocity *velArr = componentArrays[1];
+    while (count)
+    {
+        totalPos += *posArr[0] + *posArr[1] + *posArr[2];
+        posArr += 3;
+        count--;
+    }
+}
+
+void setPos(size_t count, void **componentArrays)
+{
+    Position *posArr = componentArrays[0];
+    while (count)
+    {
+        *posArr[0] = 1.0f;
+        *posArr[1] = 2.0f;
+        *posArr[2] = 3.0f;
+        count--;
+    }
+}
+
+static const archetype_t PosVelArchetype = Bit_Position | Bit_Velocity;
+static const archetype_t CollisionArchetype = Bit_Position | Bit_Velocity | Bit_Collision;
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
@@ -37,11 +66,18 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     float tmpAngle;
     initGfx();
 
-    multiarraylist_init(&arr, Bit_Position | Bit_Velocity);
-    multiarraylist_alloccount(&arr, 10000);
+    registerArchetype(PosVelArchetype);
+    multiArr[0] = getArchetypeArray(PosVelArchetype);
+    multiarraylist_alloccount(multiArr[0], 10000);
+    
+    registerArchetype(CollisionArchetype);
+    multiArr[1] = getArchetypeArray(CollisionArchetype);
+    multiarraylist_alloccount(multiArr[1], 5000);
 
-    posOffset = multiarraylist_get_component_offset(&arr, Component_Position);
-    velOffset = multiarraylist_get_component_offset(&arr, Component_Velocity);
+    iterateOverComponents(setPos, Bit_Position | Bit_Velocity, 0);
+
+    // Iterate over all entities that have position and velocity, but not collision
+    iterateOverComponents(posVelCallback, Bit_Position | Bit_Velocity, Bit_Collision);
 
     while (1)
     {

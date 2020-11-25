@@ -8,7 +8,7 @@
 // Seems like the best option because it doesn't require a lookup table (slow ram performance)
 // or multiplication (delay slots)
 // https://stackoverflow.com/questions/757059/position-of-least-significant-bit-that-is-set
-int lowest_bit(u32 value)
+int lowest_bit(size_t value)
 {
     int i16 = !(value & 0xffff) << 4;
     value >>= i16;

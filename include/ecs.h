@@ -3,6 +3,8 @@
 
 #include <types.h>
 
+#define MAX_ARCHETYPES 1024
+
 #define COMPONENT(Name, Type) Component_##Name,
 
 enum Components
@@ -22,6 +24,16 @@ enum ComponentBits
 
 #undef COMPONENT
 
-extern size_t g_componentSizes[];
+// Callback provided to the ecs to be called for every array of a given component selection when iterating
+typedef void (*EntityArrayCallback)(size_t count, void **componentArrays);
+
+// Calls the given callback for each array that fits the given archetype and does not fit the reject archetype
+void iterateOverComponents(EntityArrayCallback callback, archetype_t componentMask, archetype_t rejectMask);
+// Registers a new archetype
+void registerArchetype(archetype_t archetype);
+// Gets the arraylist for a given archetype
+MultiArrayList* getArchetypeArray(archetype_t archetype);
+
+extern const size_t g_componentSizes[];
 
 #endif

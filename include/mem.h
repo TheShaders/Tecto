@@ -23,6 +23,7 @@ typedef u8 owner_t;
 #define MEM_CHUNK_SIZE 65536
 #define SEGMENT_COUNT 32
 #define ROUND_UP(val, multiple) (((val) + (multiple) - 1) & ~((multiple) - 1))
+#define ROUND_DOWN(val, multiple) (((val) / (multiple)) * (multiple))
 
 extern OSPiHandle *g_romHandle;
 extern u8 memPoolStart[];

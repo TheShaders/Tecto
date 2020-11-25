@@ -61,6 +61,7 @@ SECTIONS
         BUILD_ROOT/src/main/mem.o(.text*);
         BUILD_ROOT/src/main/init.o(.text*);
         BUILD_ROOT/src/main/task_sched.o(.text*);
+        BUILD_ROOT/src/main/multiarraylist.o(.text*);
         BUILD_ROOT/src/math/asmmath.o(.text*);
         /* BUILD_ROOT/src/usb/usb.o(.text*); */
         BUILD_ROOT/src/main/main.o(.data*);
@@ -71,6 +72,8 @@ SECTIONS
         BUILD_ROOT/src/main/init.o(.rodata*);
         BUILD_ROOT/src/main/task_sched.o(.data*);
         BUILD_ROOT/src/main/task_sched.o(.rodata*);
+        BUILD_ROOT/src/main/multiarraylist.o(.data*);
+        BUILD_ROOT/src/main/multiarraylist.o(.rodata*);
         /* BUILD_ROOT/src/usb/usb.o(.data*);
         BUILD_ROOT/src/usb/usb.o(.rodata*); */
         . = ALIGN(16);
@@ -86,7 +89,16 @@ SECTIONS
     }
     END_SEGMENT(gfx);
 
-    START_SEGMENT_AFTER(physics, gfx)
+    START_SEGMENT_AFTER(ecs, gfx)
+    {
+        BUILD_ROOT/src/ecs/ecs.o(.text*);
+        BUILD_ROOT/src/ecs/ecs.o(.data*);
+        BUILD_ROOT/src/ecs/ecs.o(.rodata*);
+        . = ALIGN(16);
+    }
+    END_SEGMENT(ecs);
+
+    START_SEGMENT_AFTER(physics, ecs)
     {
         BUILD_ROOT/src/physics/collision.o(.text*);
         BUILD_ROOT/src/physics/collision.o(.data*);
@@ -156,7 +168,14 @@ SECTIONS
     }
     END_NOLOAD(gfx);
 
-    START_NOLOAD_AFTER(physics, gfx.noload)
+    START_NOLOAD_AFTER(ecs, gfx.noload)
+    {
+        BUILD_ROOT/src/ecs/ecs.o(.bss*);
+        . = ALIGN(16);
+    }
+    END_NOLOAD(ecs);
+
+    START_NOLOAD_AFTER(physics, ecs.noload)
     {
         BUILD_ROOT/src/physics/collision.o(.bss*);
         . = ALIGN(16);

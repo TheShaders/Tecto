@@ -4,6 +4,8 @@
 #include <model.h>
 #include <mem.h>
 #include <collision.h>
+#include <ecs.h>
+#include <multiarraylist.h>
 
 #include <segments/intro.h>
 
@@ -22,6 +24,11 @@ extern BVHTree test_collision_tree;
 LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
 Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
 
+MultiArrayList arr;
+size_t posOffset;
+size_t velOffset;
+
+
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
     u32 frame = 0;
@@ -29,6 +36,12 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     float angle = 0.0f;
     float tmpAngle;
     initGfx();
+
+    multiarraylist_init(&arr, Bit_Position | Bit_Velocity);
+    multiarraylist_alloccount(&arr, 10000);
+
+    posOffset = multiarraylist_get_component_offset(&arr, Component_Position);
+    velOffset = multiarraylist_get_component_offset(&arr, Component_Velocity);
 
     while (1)
     {

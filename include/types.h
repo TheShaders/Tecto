@@ -1,6 +1,8 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
+#include <PR/ultratypes.h>
+
 // Prototypes for model structs
 typedef struct BoneLayer_t BoneLayer;
 typedef struct Bone_t Bone;
@@ -19,5 +21,16 @@ typedef struct BVHTree_t BVHTree;
 
 typedef float MtxF[4][4];
 typedef float Vec3[3];
+
+// Prototypes for entity component system
+typedef u32 entity_t;
+typedef entity_t archetype_t;
+typedef struct MultiArrayListBlock_t MultiArrayListBlock;
+typedef struct MultiArrayList_t MultiArrayList;
+
+// Components
+#define COMPONENT(Name, Type) typedef Type Name;
+#include "components.inc.h"
+#undef COMPONENT
 
 #endif

@@ -28,6 +28,9 @@ indent +=
 ### Tools ###
 
 # System tools
+CD := cd
+CP := cp
+RM := rm
 MKDIR := New-Item -Path 
 MKDIR_OPTS := -Force -Type Directory | Out-Null
 
@@ -145,7 +148,7 @@ $(Z64) : $(ELF)
 	@$(OBJCOPY) $< $@ -O binary $(OCOPYFLAGS)
 	@$(PRINT) $(GREEN) Calculating checksums $(ENDGREEN) $(ENDLINE)
 	@$(CKSUM) $@
-	@$(PRINT) $(WHITE) ROM Built! $(ENDWHITE)
+	@$(PRINT) $(WHITE) ROM Built! $(ENDWHITE) $(ENDLINE)
 
 # byteswap z64
 $(V64) : $(Z64)
@@ -161,7 +164,13 @@ clean:
 	@$(PRINT) $(YELLOW) Cleaning build $(ENDYELLOW) $(ENDLINE)
 	@$(RMDIR) $(BUILD_ROOT) $(RMDIR_OPTS)
 
-.PHONY: all clean
+load: $(Z64)
+	@$(PRINT) $(GREEN) Loading $(Z64) onto Everdrive $(ENDGREEN) $(ENDLINE)
+	@$(CP) $(Z64) $(TARGET)
+	@$(USB64) -rom=$(TARGET) -start
+	@$(RM) $(TARGET)
+
+.PHONY: all clean load
 
 -include $(D_FILES)
 

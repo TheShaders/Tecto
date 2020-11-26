@@ -27,7 +27,7 @@ int numberOfSetBits(uint32_t i)
      return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
 }
 
-void iterateOverComponents(EntityArrayCallback callback, archetype_t componentMask, archetype_t rejectMask)
+void iterateOverComponents(EntityArrayCallback callback, void *arg, archetype_t componentMask, archetype_t rejectMask)
 {
     int componentIndex, curArchetypeIndex;
     int numComponents = numberOfSetBits(componentMask);
@@ -73,7 +73,7 @@ void iterateOverComponents(EntityArrayCallback callback, archetype_t componentMa
                     curAddresses[i] = (void*)(curOffsets[i] + (uintptr_t)curBlock);
                 }
                 // Call the provided callback
-                callback(curBlock->numElements, curAddresses);
+                callback(curBlock->numElements, arg, curAddresses);
                 // Advance to the next block
                 curBlock = curBlock->next;
             }
@@ -160,7 +160,7 @@ void createEntities(archetype_t archetype, int count)
     archetypeEntityCounts[archetypeIndex] += count;
 }
 
-void createEntitiesCallback(archetype_t archetype, int count, EntityArrayCallback callback)
+void createEntitiesCallback(archetype_t archetype, void *arg, int count, EntityArrayCallback callback)
 {
     // The index of this archetype
     int archetypeIndex = getArchetypeIndex(archetype);
@@ -215,7 +215,7 @@ void createEntitiesCallback(archetype_t archetype, int count, EntityArrayCallbac
             componentArrays[i] = (void*)((uintptr_t)curBlock + componentOffsets[i] + componentSizes[i] * startingElementCount);
         }
 
-        callback(curBlock->numElements - startingElementCount, componentArrays);
+        callback(curBlock->numElements - startingElementCount, arg, componentArrays);
         curBlock = curBlock->next;
 
         // Call the callback for any following blocks, which were allocated
@@ -226,7 +226,7 @@ void createEntitiesCallback(archetype_t archetype, int count, EntityArrayCallbac
                 componentArrays[i] = (void*)((uintptr_t)curBlock + componentOffsets[i]);
             }
 
-            callback(curBlock->numElements, componentArrays);
+            callback(curBlock->numElements, arg, componentArrays);
             curBlock = curBlock->next;
         }
     }

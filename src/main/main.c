@@ -28,7 +28,7 @@ Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
 int numPosVels = 0;
 float totalPos = 0.0f;
 
-void posVelCallback(size_t count, void **componentArrays)
+void posVelCallback(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
     Position *posArr = componentArrays[0];
     Velocity *velArr = componentArrays[1];
@@ -40,7 +40,7 @@ void posVelCallback(size_t count, void **componentArrays)
     }
 }
 
-void setPos(size_t count, void **componentArrays)
+void setPos(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
     Position *posArr = componentArrays[0];
     while (count)
@@ -53,7 +53,7 @@ void setPos(size_t count, void **componentArrays)
     }
 }
 
-void setPos2(size_t count, void **componentArrays)
+void setPos2(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
     Position *posArr = componentArrays[0];
     while (count)
@@ -66,7 +66,7 @@ void setPos2(size_t count, void **componentArrays)
     }
 }
 
-void setPos3(size_t count, void **componentArrays)
+void setPos3(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
     Position *posArr = componentArrays[0];
     while (count)
@@ -102,22 +102,22 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
     debug_printf("Main\n");
     debug_printf("Creating " xstr(POSVEL_TO_ALLOC) " entities with pos and vel, setting their pos via callback\n");
-    createEntitiesCallback(PosVelArchetype, POSVEL_TO_ALLOC, setPos);
+    createEntitiesCallback(PosVelArchetype, NULL, POSVEL_TO_ALLOC, setPos);
 
     debug_printf("Creating " xstr(POSVELCOL_TO_ALLOC) " entities with pos, vel, and col\n");
     createEntities(CollisionArchetype, POSVELCOL_TO_ALLOC);
 
     debug_printf("Setting position of pos+vel+col entities\n");
-    iterateOverComponents(setPos2, Bit_Position | Bit_Velocity | Bit_Collision, 0);
+    iterateOverComponents(setPos2, NULL, Bit_Position | Bit_Velocity | Bit_Collision, 0);
 
     debug_printf("Creating 1 entity with only position\n");
     createEntity(Bit_Position);
     debug_printf("Setting position of only pos entities\n");
-    iterateOverComponents(setPos3, Bit_Position, Bit_Collision | Bit_Velocity);
+    iterateOverComponents(setPos3, NULL, Bit_Position, Bit_Collision | Bit_Velocity);
 
-    // Iterate over all entities that have position and velocity, but not collision
+    // Iterate over all entities that have position
     debug_printf("Iterating over components with position\n");
-    iterateOverComponents(posVelCallback, Bit_Position, 0);
+    iterateOverComponents(posVelCallback, NULL, Bit_Position, 0);
     debug_printf("Total position: %f\n", totalPos);
 
     while (1)

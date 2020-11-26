@@ -28,17 +28,17 @@ enum ComponentBits
 #undef COMPONENT
 
 // Callback provided to the ecs to be called for every array of a given component selection when iterating
-typedef void (*EntityArrayCallback)(size_t count, void **componentArrays);
+typedef void (*EntityArrayCallback)(size_t count, void* arg, void **componentArrays);
 
 // Creates a single entity, try to avoid using as creating entities in batches is more efficient
 Entity *createEntity(archetype_t archetype);
 // Creates a number of entities
 void createEntities(archetype_t archetype, int count);
 // Creates a number of entities, and calls the provided callback for each block of allocated entities
-void createEntitiesCallback(archetype_t archetype, int count, EntityArrayCallback callback);
+void createEntitiesCallback(archetype_t archetype, void *arg, int count, EntityArrayCallback callback);
 
 // Calls the given callback for each array that fits the given archetype and does not fit the reject archetype
-void iterateOverComponents(EntityArrayCallback callback, archetype_t componentMask, archetype_t rejectMask);
+void iterateOverComponents(EntityArrayCallback callback, void *arg, archetype_t componentMask, archetype_t rejectMask);
 // Registers a new archetype
 void registerArchetype(archetype_t archetype);
 // Gets the arraylist for a given archetype

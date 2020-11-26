@@ -23,8 +23,8 @@ typedef float MtxF[4][4];
 typedef float Vec3[3];
 
 // Prototypes for entity component system
-typedef u32 entity_t;
-typedef entity_t archetype_t;
+typedef struct Entity_t Entity;
+typedef u32 archetype_t;
 typedef struct MultiArrayListBlock_t MultiArrayListBlock;
 typedef struct MultiArrayList_t MultiArrayList;
 

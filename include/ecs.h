@@ -3,7 +3,10 @@
 
 #include <types.h>
 
-#define MAX_ARCHETYPES 1024
+#define MAX_ARCHETYPES 256
+
+// TODO dynamically allocate entity memory
+#define MAX_ENTITIES 65536
 
 #define COMPONENT(Name, Type) Component_##Name,
 
@@ -26,6 +29,13 @@ enum ComponentBits
 
 // Callback provided to the ecs to be called for every array of a given component selection when iterating
 typedef void (*EntityArrayCallback)(size_t count, void **componentArrays);
+
+// Creates a single entity, try to avoid using as creating entities in batches is more efficient
+Entity *createEntity(archetype_t archetype);
+// Creates a number of entities
+void createEntities(archetype_t archetype, int count);
+// Creates a number of entities, and calls the provided callback for each block of allocated entities
+void createEntitiesCallback(archetype_t archetype, int count, EntityArrayCallback callback);
 
 // Calls the given callback for each array that fits the given archetype and does not fit the reject archetype
 void iterateOverComponents(EntityArrayCallback callback, archetype_t componentMask, archetype_t rejectMask);

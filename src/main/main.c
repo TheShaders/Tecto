@@ -25,10 +25,6 @@ extern BVHTree test_collision_tree;
 LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
 Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
 
-MultiArrayList *multiArr[2];
-size_t posOffset;
-size_t velOffset;
-
 int numPosVels = 0;
 float totalPos = 0.0f;
 
@@ -38,7 +34,7 @@ void posVelCallback(size_t count, void **componentArrays)
     Velocity *velArr = componentArrays[1];
     while (count)
     {
-        totalPos += *posArr[0] + *posArr[1] + *posArr[2];
+        totalPos += (*posArr)[0] + (*posArr)[1] + (*posArr)[2];
         posArr++;
         count--;
     }
@@ -49,15 +45,45 @@ void setPos(size_t count, void **componentArrays)
     Position *posArr = componentArrays[0];
     while (count)
     {
-        *posArr[0] = 1.0f;
-        *posArr[1] = 2.0f;
-        *posArr[2] = 3.0f;
+        (*posArr)[0] = 1.0f;
+        (*posArr)[1] = 2.0f;
+        (*posArr)[2] = 3.0f;
+        posArr++;
+        count--;
+    }
+}
+
+void setPos2(size_t count, void **componentArrays)
+{
+    Position *posArr = componentArrays[0];
+    while (count)
+    {
+        (*posArr)[0] = 2.0f;
+        (*posArr)[1] = 4.0f;
+        (*posArr)[2] = 6.0f;
+        posArr++;
+        count--;
+    }
+}
+
+void setPos3(size_t count, void **componentArrays)
+{
+    Position *posArr = componentArrays[0];
+    while (count)
+    {
+        (*posArr)[0] = 100.0f;
+        (*posArr)[1] = 200.0f;
+        (*posArr)[2] = 300.0f;
+        posArr++;
         count--;
     }
 }
 
 static const archetype_t PosVelArchetype = Bit_Position | Bit_Velocity;
 static const archetype_t CollisionArchetype = Bit_Position | Bit_Velocity | Bit_Collision;
+
+#define xstr(a) str(a)
+#define str(a) #a
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
@@ -67,18 +93,32 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     float tmpAngle;
     initGfx();
 
-    registerArchetype(PosVelArchetype);
-    multiArr[0] = getArchetypeArray(PosVelArchetype);
-    multiarraylist_alloccount(multiArr[0], 10000);
-    
-    registerArchetype(CollisionArchetype);
-    multiArr[1] = getArchetypeArray(CollisionArchetype);
-    multiarraylist_alloccount(multiArr[1], 5000);
+    #define POSVEL_TO_ALLOC 10000
+    #define POSVELCOL_TO_ALLOC 5000
 
-    iterateOverComponents(setPos, Bit_Position | Bit_Velocity, 0);
+    registerArchetype(PosVelArchetype);
+    registerArchetype(CollisionArchetype);
+    registerArchetype(Bit_Position);
+
+    debug_printf("Main\n");
+    debug_printf("Creating " xstr(POSVEL_TO_ALLOC) " entities with pos and vel, setting their pos via callback\n");
+    createEntitiesCallback(PosVelArchetype, POSVEL_TO_ALLOC, setPos);
+
+    debug_printf("Creating " xstr(POSVELCOL_TO_ALLOC) " entities with pos, vel, and col\n");
+    createEntities(CollisionArchetype, POSVELCOL_TO_ALLOC);
+
+    debug_printf("Setting position of pos+vel+col entities\n");
+    iterateOverComponents(setPos2, Bit_Position | Bit_Velocity | Bit_Collision, 0);
+
+    debug_printf("Creating 1 entity with only position\n");
+    createEntity(Bit_Position);
+    debug_printf("Setting position of only pos entities\n");
+    iterateOverComponents(setPos3, Bit_Position, Bit_Collision | Bit_Velocity);
 
     // Iterate over all entities that have position and velocity, but not collision
-    iterateOverComponents(posVelCallback, Bit_Position | Bit_Velocity, Bit_Collision);
+    debug_printf("Iterating over components with position\n");
+    iterateOverComponents(posVelCallback, Bit_Position, 0);
+    debug_printf("Total position: %f\n", totalPos);
 
     while (1)
     {

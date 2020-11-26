@@ -98,7 +98,7 @@ ELF      := $(Z64:.z64=.elf)
 CFLAGS     := -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -mhard-float -fno-stack-protector -fno-common -fno-zero-initialized-in-bss \
 			  -I include -I . -I src/ -I $(SDK)/ultra/usr/include -I $(SDK)/nintendo/n64kit/nustd/include -fno-PIC -mno-abicalls -fno-strict-aliasing -fno-inline-functions -ffreestanding -fwrapv -Wall -Wextra \
 			  -mno-check-zero-division -mno-split-addresses -mno-relax-pic-calls -mfp32 -mgp32 -mbranch-cost=1 \
-			  -fno-dse -fno-check-pointer-bounds -Wno-chkp -mno-odd-spreg -O2 -D_FINALROM \
+			  -fno-dse -fno-check-pointer-bounds -Wno-chkp -mno-odd-spreg -D_FINALROM \
 			  -D_MIPS_SZLONG=32 -D_MIPS_SZINT=32 -D_LANGUAGE_C -D_ULTRA64 -D__EXTENSIONS__ -DF3DEX_GBI_2
 CXXFLAGS   := 
 ASFLAGS    := -mtune=vr4300 -march=vr4300 -mabi=32 -mips3
@@ -106,6 +106,9 @@ LDFLAGS    := -T $(LD_CPP) -mips3 --accept-unknown-input-arch --no-check-section
 			  -L $(SDK)/ultra/usr/lib -lgultra_rom -L $(SDK)/nintendo/n64kit/nustd/lib -lnustd -L lib -L $(N64CHAIN)/lib/gcc/mips64-elf/10.1.0 -lgcc
 LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DSDK=$(SDK) -DCHAIN=$(N64CHAIN) -Umips
 OCOPYFLAGS := --pad-to=0x400000 --gap-fill=0xFF
+OPT_FLAGS  := -O2
+
+$(BUILD_ROOT)/src/usb/usb.o: OPT_FLAGS := -O0
 
 ### Rules ###
 
@@ -120,7 +123,7 @@ $(BUILD_ROOT) $(BUILD_DIRS) :
 # .c -> .o
 $(BUILD_ROOT)/%.o : %.c | $(BUILD_DIRS)
 	@$(PRINT) $(GREEN) Compiling C source file: $(ENDGREEN) $(BLUE) $< $(ENDBLUE) $(ENDLINE)
-	@$(CC) $< -o $@ -c -MMD -MF $(@:.o=.d) $(CFLAGS)
+	@$(CC) $< -o $@ -c -MMD -MF $(@:.o=.d) $(CFLAGS) $(OPT_FLAGS)
 
 # .bin -> .o
 $(BUILD_ROOT)/%.o : %.bin | $(BUILD_DIRS)

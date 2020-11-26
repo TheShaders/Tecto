@@ -6,6 +6,7 @@
 #include <collision.h>
 #include <ecs.h>
 #include <multiarraylist.h>
+#include <debug.h>
 
 #include <segments/intro.h>
 
@@ -38,7 +39,7 @@ void posVelCallback(size_t count, void **componentArrays)
     while (count)
     {
         totalPos += *posArr[0] + *posArr[1] + *posArr[2];
-        posArr += 3;
+        posArr++;
         count--;
     }
 }

@@ -8,6 +8,7 @@
 #include <gfx.h>
 #include <audio.h>
 #include <task_sched.h>
+#include <debug.h>
 
 u8 idleThreadStack[IDLE_THREAD_STACKSIZE] __attribute__((aligned (16)));
 u8 mainThreadStack[MAIN_THREAD_STACKSIZE] __attribute__((aligned (16)));
@@ -50,6 +51,8 @@ void idle(__attribute__ ((unused)) void *arg)
     
     // Set up PI
     osCreatePiManager(OS_PRIORITY_PIMGR, &piMesgQueue, &piMessages[0], NUM_PI_MESSAGES);
+
+    debug_initialize();
 
     // Create the audio thread
     osCreateThread(&g_threads[AUDIO_THREAD_INDEX], AUDIO_THREAD, audioThreadFunc, NULL, audioThreadStack + AUDIO_THREAD_STACKSIZE, AUDIO_THREAD_PRI);

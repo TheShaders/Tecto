@@ -52,7 +52,9 @@ void idle(__attribute__ ((unused)) void *arg)
     // Set up PI
     osCreatePiManager(OS_PRIORITY_PIMGR, &piMesgQueue, &piMessages[0], NUM_PI_MESSAGES);
 
+#ifdef DEBUG_MODE
     debug_initialize();
+#endif
 
     // Create the audio thread
     osCreateThread(&g_threads[AUDIO_THREAD_INDEX], AUDIO_THREAD, audioThreadFunc, NULL, audioThreadStack + AUDIO_THREAD_STACKSIZE, AUDIO_THREAD_PRI);

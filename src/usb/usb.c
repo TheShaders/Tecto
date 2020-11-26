@@ -266,16 +266,16 @@ static void usb_findcart()
     }
 
     // Read the cartridge and check if we have a SummerCart64.
-    // #if USE_OSRAW
-    //     osPiRawReadIo(SC64_REG_VERSION, &buff);
-    // #else
-    //     osPiReadIo(SC64_REG_VERSION, &buff);
-    // #endif
-    // if (buff == SC64_VERSION_A)
-    // {
-    //     usb_cart = CART_SC64;
-    //     return;
-    // }
+    #if USE_OSRAW
+        osPiRawReadIo(SC64_REG_VERSION, &buff);
+    #else
+        osPiReadIo(SC64_REG_VERSION, &buff);
+    #endif
+    if (buff == SC64_VERSION_A)
+    {
+        usb_cart = CART_SC64;
+        return;
+    }
     
     // Since we didn't find a 64Drive or SummerCart64, let's assume we have an EverDrive
     // Write the key to unlock the registers, then read the version register

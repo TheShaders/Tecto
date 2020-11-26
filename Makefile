@@ -6,6 +6,8 @@ include Makefile.config
 # Name of ROM to build
 TARGET := boilerplate
 
+DEBUG ?= 0
+
 # Do not change below this line!
 
 # System config
@@ -36,6 +38,8 @@ MKDIR_OPTS := -Force -Type Directory | Out-Null
 
 RMDIR := (Remove-Item
 RMDIR_OPTS := -ErrorAction SilentlyContinue -Recurse -Force) -or $$true | Out-Null # The -or $true is needed to prevent make from saying error
+
+RUN := cmd /c
 
 PRINT := Write-Host -NoNewline
  ENDCOLOR := $(PRINT) "$$([char]27)[0m";
@@ -73,7 +77,11 @@ LD_SCRIPT := n64.ld
 BOOT      := boot/boot.6102
 
 # Build folders
+ifeq ($(DEBUG),0)
 BUILD_ROOT     := bin
+else
+BUILD_ROOT     := debug
+endif
 BOOT_BUILD_DIR := $(BUILD_ROOT)/boot
 BUILD_DIRS     := $(addprefix $(BUILD_ROOT)/,$(SRC_DIRS)) $(BOOT_BUILD_DIR)
 
@@ -103,10 +111,16 @@ CFLAGS     := -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -m
 CXXFLAGS   := 
 ASFLAGS    := -mtune=vr4300 -march=vr4300 -mabi=32 -mips3
 LDFLAGS    := -T $(LD_CPP) -mips3 --accept-unknown-input-arch --no-check-sections -Map $(BUILD_ROOT)/$(TARGET).map \
-			  -L $(SDK)/ultra/usr/lib -lgultra_rom -L $(SDK)/nintendo/n64kit/nustd/lib -lnustd -L lib -L $(N64CHAIN)/lib/gcc/mips64-elf/10.1.0 -lgcc
-LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DSDK=$(SDK) -DCHAIN=$(N64CHAIN) -Umips
+			  -L $(SDK)/ultra/usr/lib -L $(SDK)/nintendo/n64kit/nustd/lib -L lib -L $(N64CHAIN)/lib/gcc/mips64-elf/10.1.0 \
+			  -lgultra_rom -lnustd -lgcc
+LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DSDK=$(SDK) -DCHAIN=$(N64CHAIN) -Umips -DLIBULTRA=libgultra_rom
 OCOPYFLAGS := --pad-to=0x400000 --gap-fill=0xFF
 OPT_FLAGS  := -O2
+
+ifneq ($(DEBUG),0)
+CFLAGS     += -DDEBUG_MODE
+endif
+
 
 $(BUILD_ROOT)/src/usb/usb.o: OPT_FLAGS := -O0
 
@@ -168,10 +182,8 @@ clean:
 	@$(RMDIR) $(BUILD_ROOT) $(RMDIR_OPTS)
 
 load: $(Z64)
-	@$(PRINT) $(GREEN) Loading $(Z64) onto Everdrive $(ENDGREEN) $(ENDLINE)
-	@$(CP) $(Z64) $(TARGET)
-	@$(USB64) -rom=$(TARGET) -start
-	@$(RM) $(TARGET)
+	@$(PRINT) $(GREEN) Loading $(Z64) onto flashcart $(ENDGREEN) $(ENDLINE)
+	@$(RUN) $(UNFLOADER) -r $(Z64) -d
 
 .PHONY: all clean load
 

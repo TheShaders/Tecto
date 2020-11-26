@@ -6,7 +6,7 @@
     *********************************/
 
     // Settings
-    #define DEBUG_MODE        1   // Enable/Disable debug mode
+    // #define DEBUG_MODE        1   // Enable/Disable debug mode (Moved to Makefile)
     #define USE_FAULTTHREAD   1   // Create a fault detection thread 
     #define OVERWRITE_OSPRINT 0   // Replaces osSyncPrintf calls with debug_printf
     
@@ -75,7 +75,7 @@
         #include "usb.h"
     #else
         #define debug_initialize() 
-        #define debug_printf(__VA_ARGS__) 
+        #define debug_printf(a, ...) 
         #define debug_screenshot(a, b, c)
         #define debug_assert(a)
         #define usb_write(a, b, c)

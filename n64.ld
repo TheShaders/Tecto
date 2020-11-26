@@ -130,12 +130,12 @@ SECTIONS
 
     START_SEGMENT_AFTER(libultra, libgcc)
     {
-        SDK/ultra/usr/lib/libgultra_rom.a(.text*);
+        SDK/ultra/usr/lib/LIBULTRA.a(.text*);
         SDK/nintendo/n64kit/nustd/lib/libnustd.a(.text*);
-        SDK/ultra/usr/lib/libgultra_rom.a(.data*);
-        SDK/ultra/usr/lib/libgultra_rom.a(.rodata*);
-        SDK/ultra/usr/lib/libgultra_rom.a(.scommon*);
-        SDK/ultra/usr/lib/libgultra_rom.a(COMMON*);
+        SDK/ultra/usr/lib/LIBULTRA.a(.data*);
+        SDK/ultra/usr/lib/LIBULTRA.a(.rodata*);
+        SDK/ultra/usr/lib/LIBULTRA.a(.scommon*);
+        SDK/ultra/usr/lib/LIBULTRA.a(COMMON*);
         SDK/nintendo/n64kit/nustd/lib/libnustd.a(.data*);
         SDK/nintendo/n64kit/nustd/lib/libnustd.a(.rodata*);
         . = ALIGN(16);
@@ -205,7 +205,7 @@ SECTIONS
 
     START_NOLOAD_AFTER(libultra, libgcc.noload)
     {
-        SDK/ultra/usr/lib/libgultra_rom.a(.bss*);
+        SDK/ultra/usr/lib/LIBULTRA.a(.bss*);
         SDK/nintendo/n64kit/nustd/lib/libnustd.a(.bss*);
         . = ALIGN(16);
     }

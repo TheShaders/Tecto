@@ -96,12 +96,21 @@ static struct {
 #define xstr(a) str(a)
 #define str(a) #a
 
+u32 __osSetFpcCsr(u32);
+
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
     u32 frame = 0;
     u32 i;
     float angle = 0.0f;
     float tmpAngle;
+    u32 fpccsr;
+
+    // Read fpcsr
+    fpccsr = __osSetFpcCsr(0);
+    // Write back fpcsr with division by zero and invalid operations exceptions disabled
+    __osSetFpcCsr(fpccsr & ~(FPCSR_EZ | FPCSR_EV));
+
     initGfx();
 
     #define POSVEL_TO_ALLOC 10000
@@ -142,7 +151,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         gSPLookAt(g_dlistHead++, &lookAt);
         gfxLookat(
-            1000.0f * sinf((M_PI / 180.0f) * angle * 0), 300.0f, 1000.0f * cosf((M_PI / 180.0f) * angle * 0), // Eye pos
+            1000.0f * sinf((M_PI / 180.0f) * angle * 0), 1000.0f, 1000.0f * cosf((M_PI / 180.0f) * angle * 0), // Eye pos
             0.0f, 300.0f, 0.0f, // Look pos
             0.0f, 1.0f, 0.0f);
 
@@ -185,20 +194,57 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         gfxPushMat();
          gfxTranslate(0.0f, 0.0f, 0.0f);
-         gfxScale(10.0f, 10.0f, 10.0f);
-        {
-            int index;
+         gfxScale(1.0f, 1.0f, 1.0f);
+        if (1) {
             BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&test_collision_tree);
             ColTri *tris = segmentedToVirtual(test_collision_virtual->tris);
-            BVHNode *nodes = segmentedToVirtual(test_collision_virtual->nodes);
+            Vec3 rayOrigin = { 150.0f * sinf((M_PI / 180.0f) * angle), 80.0f, 150.0f * cosf((M_PI / 180.0f) * angle) };
+            Vec3 rayDir = { 0.0f, -1000.0f, 0.0f };
+            Vec3 rayDirInv = { 1.0f / rayDir[0], 1.0f / rayDir[1], 1.0f / rayDir[2] };
+            Vec3 rayEnd;
+            ColTri *hit = NULL;
+            f32 hitDist;
+            BVHNode *nodes = (BVHNode*)segmentedToVirtual(test_collision_virtual->nodes);
+            int i;
+
             drawColTris(LAYER_OPA_SURF, tris, test_collision_virtual->triCount, 0xFF0000FF);
-            for (index = 0; index < test_collision_virtual->nodeCount; index++)
+
+            for (i = 0; i < test_collision_virtual->nodeCount; i++)
             {
-                if (nodes[index].triCount == 0 && nodes[nodes[index].childIndex].triCount == 0 && nodes[nodes[nodes[index].childIndex].childIndex].triCount)
+                if (testRayVsAABB(rayOrigin, rayDirInv, &nodes[i].aabb, 0.0f, 1.0f))
                 {
-                    drawAABB(LAYER_OPA_LINE, &nodes[index].aabb, 0x00FF00FF);
+                    drawAABB(LAYER_OPA_LINE, &nodes[i].aabb, 0x00FF00FF);
                 }
             }
+
+            // Off(O2) :              105000 -  107000
+            // On (O2) :             1500000 - 1700000
+            // On (Ofast) :          1500000 - 2480000
+            // On (vertical/O2) :    1080000 - 1300000
+            // On (vertical/Ofast) : 1160000 - 1440000
+            // for (i = 0; i < 1000; i++)
+            // {
+            //     verticalRayVsBvh(rayOrigin, rayDir[1], test_collision_virtual, 0.0f, 1.0f, &hit);
+            // }
+
+            hitDist = verticalRayVsBvh(rayOrigin, rayDir[1], test_collision_virtual, 0.0f, 1.0f, &hit);
+
+            if (hit)
+            {
+                drawColTris(LAYER_OPA_DECAL, hit, 1, 0x00FF00FF);
+                VEC3_SCALE(rayDir, rayDir, hitDist);
+            }
+            VEC3_ADD(rayEnd, rayOrigin, rayDir);
+
+            drawLine(LAYER_OPA_LINE, rayOrigin, rayEnd, 0x0000FFFF);
+            // No longer works, since child node indices are no longer stored
+            // for (index = 0; index < test_collision_virtual->nodeCount; index++)
+            // {
+            //     if (nodes[index].triCount == 0 && nodes[nodes[index].childIndex].triCount == 0 && nodes[nodes[nodes[index].childIndex].childIndex].triCount)
+            //     {
+            //         drawAABB(LAYER_OPA_LINE, &nodes[index].aabb, 0x00FF00FF);
+            //     }
+            // }
         }
         if (0) {
             AABB aabb = {
@@ -247,6 +293,10 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             drawLine(LAYER_OPA_LINE, rayOrigin, rayEnd, 0x0000FFFF);
         }
         gfxPopMat();
+        
+#ifdef DEBUG_MODE
+        ProfilerData.cpuTime = osGetTime() - ProfilerData.cpuTime;
+#endif
     
         endFrame();
 
@@ -256,7 +306,6 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             frame = 0;
             
 #ifdef DEBUG_MODE
-        ProfilerData.cpuTime = osGetTime() - ProfilerData.cpuTime;
         ProfilerData.rdpClockTime = IO_READ(DPC_CLOCK_REG);
         ProfilerData.rdpCmdTime = IO_READ(DPC_BUFBUSY_REG);
         ProfilerData.rdpPipeTime = IO_READ(DPC_PIPEBUSY_REG);

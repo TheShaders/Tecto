@@ -542,12 +542,12 @@ Gfx character_Torso_mesh_tri_1[] = {
 };
 
 Gfx character_Torso_mesh[] = {
-	gsSPDisplayList(mat_character_model_base_toon_f3d),
-	gsSPDisplayList(character_Torso_mesh_tri_0),
-	gsSPDisplayList(mat_revert_character_model_base_toon_f3d),
 	gsSPDisplayList(mat_character_model_t_env_f3d),
 	gsSPDisplayList(character_Torso_mesh_tri_1),
 	gsSPDisplayList(mat_revert_character_model_t_env_f3d),
+	gsSPDisplayList(mat_character_model_base_toon_f3d),
+	gsSPDisplayList(character_Torso_mesh_tri_0),
+	gsSPDisplayList(mat_revert_character_model_base_toon_f3d),
 	gsSPEndDisplayList(),
 };
 

@@ -1,3 +1,5 @@
+#include <float.h>
+
 // libultra
 #include <ultra64.h>
 
@@ -16,12 +18,12 @@
         return FALSE;\
 }
 
-f32 verticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax)
+u32 testVerticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax)
 {
     float t0, t1;
 
     if (rayStart[0] > box->max[0] || rayStart[0] < box->min[0] || rayStart[2] > box->max[2] || rayStart[2] < box->min[2])
-        return -1;
+        return 0;
 
     // y
     t0 = (box->min[1] - rayStart[1]) * lengthInv;
@@ -31,9 +33,66 @@ f32 verticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, flo
     tmax = MIN(tmax, MAX(t0, t1));
     
     if (tmin > tmax)
-        return -1;
+        return 0;
+    
+    return 1;
+}
+
+f32 verticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax)
+{
+    float t0, t1;
+
+    if (rayStart[0] > box->max[0] || rayStart[0] < box->min[0] || rayStart[2] > box->max[2] || rayStart[2] < box->min[2])
+        return FLT_MAX;
+
+    // y
+    t0 = (box->min[1] - rayStart[1]) * lengthInv;
+    t1 = (box->max[1] - rayStart[1]) * lengthInv;
+
+    tmin = MAX(tmin, MIN(t0, t1));
+    tmax = MIN(tmax, MAX(t0, t1));
+    
+    if (tmin > tmax)
+        return FLT_MAX;
     
     return tmin;
+}
+
+u32 testRayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax)
+{
+    float t0, t1;
+
+    // x
+    t0 = (box->min[0] - rayStart[0]) * rayDirInv[0];
+    t1 = (box->max[0] - rayStart[0]) * rayDirInv[0];
+
+    tmin = MAX(tmin, MIN(t0, t1));
+    tmax = MIN(tmax, MAX(t0, t1));
+    
+    if (tmin > tmax)
+        return 0;
+
+    // y
+    t0 = (box->min[1] - rayStart[1]) * rayDirInv[1];
+    t1 = (box->max[1] - rayStart[1]) * rayDirInv[1];
+
+    tmin = MAX(tmin, MIN(t0, t1));
+    tmax = MIN(tmax, MAX(t0, t1));
+    
+    if (tmin > tmax)
+        return 0;
+
+    // z
+    t0 = (box->min[2] - rayStart[2]) * rayDirInv[2];
+    t1 = (box->max[2] - rayStart[2]) * rayDirInv[2];
+
+    tmin = MAX(tmin, MIN(t0, t1));
+    tmax = MIN(tmax, MAX(t0, t1));
+    
+    if (tmin > tmax)
+        return 0;
+    
+    return 1;
 }
 
 f32 rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax)
@@ -48,7 +107,7 @@ f32 rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax)
     tmax = MIN(tmax, MAX(t0, t1));
     
     if (tmin > tmax)
-        return -1;
+        return FLT_MAX;
 
     // y
     t0 = (box->min[1] - rayStart[1]) * rayDirInv[1];
@@ -58,7 +117,7 @@ f32 rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax)
     tmax = MIN(tmax, MAX(t0, t1));
     
     if (tmin > tmax)
-        return -1;
+        return FLT_MAX;
 
     // z
     t0 = (box->min[2] - rayStart[2]) * rayDirInv[2];
@@ -68,7 +127,7 @@ f32 rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax)
     tmax = MIN(tmax, MAX(t0, t1));
     
     if (tmin > tmax)
-        return -1;
+        return FLT_MAX;
     
     return tmin;
 }
@@ -88,18 +147,18 @@ f32 verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float
     // Prevent division by zero and throw out collision with backfaces (negative denominator)
     if (denom > -EPSILON)
     {
-        return -1;
+        return FLT_MAX;
     }
 
     // Calculate distance of intersection point along ray (scaled to ray's length)
     distOnRay = -((tri->originDist) + VEC3_DOT(tri->normal, rayStart)) / denom;
     if (distOnRay > tmax)
     {
-        return -1;
+        return FLT_MAX;
     }
     if (distOnRay < tmin)
     {
-        return -1;
+        return FLT_MAX;
     }
 
     // Calculate the intersection point from the calculated distance
@@ -121,12 +180,12 @@ f32 verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float
     s = (uv * wv - vv * wu) / denom;
     if (s < 0 || s > 1)
     {
-        return -1;
+        return FLT_MAX;
     }
     t = (uv * wu - uu * wv) / denom;
     if (t < 0 || (s + t) > 1)
     {
-        return -1;
+        return FLT_MAX;
     }
     return distOnRay;
 }
@@ -146,18 +205,18 @@ f32 rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax)
     // Prevent division by zero and throw out collision with backfaces (negative denominator)
     if (denom > -EPSILON)
     {
-        return -1;
+        return FLT_MAX;
     }
 
     // Calculate distance of intersection point along ray (scaled to ray's length)
     distOnRay = -((tri->originDist) + VEC3_DOT(tri->normal, rayStart)) / denom;
     if (distOnRay > tmax)
     {
-        return -1;
+        return FLT_MAX;
     }
     if (distOnRay < tmin)
     {
-        return -1;
+        return FLT_MAX;
     }
 
     // Calculate the intersection point from the calculated distance
@@ -179,12 +238,12 @@ f32 rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax)
     s = (uv * wv - vv * wu) / denom;
     if (s < 0 || s > 1)
     {
-        return -1;
+        return FLT_MAX;
     }
     t = (uv * wu - uu * wv) / denom;
     if (t < 0 || (s + t) > 1)
     {
-        return -1;
+        return FLT_MAX;
     }
     return distOnRay;
 }

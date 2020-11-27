@@ -47,7 +47,7 @@ SECTIONS
 
     START_SEGMENT(header, 0xA4000000)
     {
-        KEEP(BUILD_ROOT/src/header/header.o(.data));
+        KEEP(BUILD_ROOT/src/header/header.o(.*data));
         KEEP(BUILD_ROOT/boot/boot.6102.o);
     }
     END_SEGMENT(header);
@@ -65,20 +65,13 @@ SECTIONS
         BUILD_ROOT/src/math/asmmath.o(.text*);
         BUILD_ROOT/src/usb/usb.o(.text*);
         BUILD_ROOT/src/usb/debug.o(.text*);
-        BUILD_ROOT/src/main/main.o(.data*);
-        BUILD_ROOT/src/main/main.o(.rodata*);
-        BUILD_ROOT/src/main/mem.o(.data*);
-        BUILD_ROOT/src/main/mem.o(.rodata*);
-        BUILD_ROOT/src/main/init.o(.data*);
-        BUILD_ROOT/src/main/init.o(.rodata*);
-        BUILD_ROOT/src/main/task_sched.o(.data*);
-        BUILD_ROOT/src/main/task_sched.o(.rodata*);
-        BUILD_ROOT/src/main/multiarraylist.o(.data*);
-        BUILD_ROOT/src/main/multiarraylist.o(.rodata*);
-        BUILD_ROOT/src/usb/usb.o(.data*);
-        BUILD_ROOT/src/usb/usb.o(.rodata*);
-        BUILD_ROOT/src/usb/debug.o(.data*);
-        BUILD_ROOT/src/usb/debug.o(.rodata*);
+        BUILD_ROOT/src/main/main.o(.*data*);
+        BUILD_ROOT/src/main/mem.o(.*data*);
+        BUILD_ROOT/src/main/init.o(.*data*);
+        BUILD_ROOT/src/main/task_sched.o(.*data*);
+        BUILD_ROOT/src/main/multiarraylist.o(.*data*);
+        BUILD_ROOT/src/usb/usb.o(.*data*);
+        BUILD_ROOT/src/usb/debug.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(main);
@@ -86,8 +79,7 @@ SECTIONS
     START_SEGMENT_AFTER(gfx, main)
     {
         BUILD_ROOT/src/gfx/gfx.o(.text*);
-        BUILD_ROOT/src/gfx/gfx.o(.data*);
-        BUILD_ROOT/src/gfx/gfx.o(.rodata*);
+        BUILD_ROOT/src/gfx/gfx.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(gfx);
@@ -95,8 +87,7 @@ SECTIONS
     START_SEGMENT_AFTER(ecs, gfx)
     {
         BUILD_ROOT/src/ecs/ecs.o(.text*);
-        BUILD_ROOT/src/ecs/ecs.o(.data*);
-        BUILD_ROOT/src/ecs/ecs.o(.rodata*);
+        BUILD_ROOT/src/ecs/ecs.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(ecs);
@@ -104,8 +95,9 @@ SECTIONS
     START_SEGMENT_AFTER(physics, ecs)
     {
         BUILD_ROOT/src/physics/collision.o(.text*);
-        BUILD_ROOT/src/physics/collision.o(.data*);
-        BUILD_ROOT/src/physics/collision.o(.rodata*);
+        BUILD_ROOT/src/physics/traversal.o(.text*);
+        BUILD_ROOT/src/physics/collision.o(.*data*);
+        BUILD_ROOT/src/physics/traversal.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(physics);
@@ -113,8 +105,7 @@ SECTIONS
     START_SEGMENT_AFTER(audio, physics)
     {
         BUILD_ROOT/src/audio/audio.o(.text*);
-        BUILD_ROOT/src/audio/audio.o(.data*);
-        BUILD_ROOT/src/audio/audio.o(.rodata*);
+        BUILD_ROOT/src/audio/audio.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(audio);
@@ -122,8 +113,7 @@ SECTIONS
     START_SEGMENT_AFTER(libgcc, audio)
     {
         CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.text*);
-        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.data*);
-        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.rodata*);
+        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(libgcc);
@@ -132,12 +122,10 @@ SECTIONS
     {
         SDK/ultra/usr/lib/LIBULTRA.a(.text*);
         SDK/nintendo/n64kit/nustd/lib/libnustd.a(.text*);
-        SDK/ultra/usr/lib/LIBULTRA.a(.data*);
-        SDK/ultra/usr/lib/LIBULTRA.a(.rodata*);
+        SDK/ultra/usr/lib/LIBULTRA.a(.*data*);
         SDK/ultra/usr/lib/LIBULTRA.a(.scommon*);
         SDK/ultra/usr/lib/LIBULTRA.a(COMMON*);
-        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.data*);
-        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.rodata*);
+        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(libultra);
@@ -148,10 +136,10 @@ SECTIONS
         SDK/ultra/usr/lib/PR/gspF3DEX2.fifo.o(.text*);
         SDK/ultra/usr/lib/PR/gspL3DEX2.fifo.o(.text*);
         SDK/ultra/usr/lib/PR/gspS2DEX2.fifo.o(.text*);
-        SDK/ultra/usr/lib/PR/rspboot.o(.data*);
-        SDK/ultra/usr/lib/PR/gspF3DEX2.fifo.o(.data*);
-        SDK/ultra/usr/lib/PR/gspL3DEX2.fifo.o(.data*);
-        SDK/ultra/usr/lib/PR/gspS2DEX2.fifo.o(.data*);
+        SDK/ultra/usr/lib/PR/rspboot.o(.*data*);
+        SDK/ultra/usr/lib/PR/gspF3DEX2.fifo.o(.*data*);
+        SDK/ultra/usr/lib/PR/gspL3DEX2.fifo.o(.*data*);
+        SDK/ultra/usr/lib/PR/gspS2DEX2.fifo.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(ucode);
@@ -215,8 +203,7 @@ SECTIONS
 
     START_SEGMENT(intro, 0x04000000)
     {
-        BUILD_ROOT/src/segments/intro.o(.data*);
-        BUILD_ROOT/src/segments/intro.o(.rodata*);
+        BUILD_ROOT/src/segments/intro.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(intro);

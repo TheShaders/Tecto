@@ -20,17 +20,9 @@ static OSMesg piMessages[NUM_PI_MESSAGES];
 OSThread g_threads[NUM_THREADS];
 OSPiHandle *g_romHandle;
 
-u32 __osSetFpcCsr(u32);
-
 void init(void)
 {
-    u32 fpccsr;
     osInitialize();
-
-    // Read fpcsr
-    fpccsr = __osSetFpcCsr(0);
-    // Write back fpcsr with division by zero exceptions disabled
-    __osSetFpcCsr(fpccsr & ~FPCSR_EZ);
     
     bzero(_mainSegmentBssStart, (u32)_mainSegmentBssEnd - (u32)_mainSegmentBssStart);
     bzero(_gfxSegmentBssStart, (u32)_gfxSegmentBssEnd - (u32)_gfxSegmentBssStart);

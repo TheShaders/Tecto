@@ -751,6 +751,9 @@ void endFrame()
     // Finalize the draw layer displaylists and link them to the main one
     for (i = 0; i < NUM_LAYERS; i++)
     {
+        // Pipe sync before switching draw layers
+        gDPPipeSync(g_dlistHead++);
+
         switch (i)
         {
             // Switch to l3dex2 for line layers

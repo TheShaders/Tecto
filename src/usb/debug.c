@@ -298,6 +298,7 @@ https://github.com/buu342/N64-UNFLoader
                     case 'e':
                         sprintf(numbuf, delim, (double)va_arg(args, double));
                         break;
+                    case 'X':
                     case 'x':
                     case 'i':
                     case 'd':

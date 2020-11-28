@@ -115,7 +115,7 @@ LDFLAGS    := -T $(LD_CPP) -mips3 --accept-unknown-input-arch --no-check-section
 			  -lgultra_rom -lnustd -lgcc
 LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DSDK=$(SDK) -DCHAIN=$(N64CHAIN) -Umips -DLIBULTRA=libgultra_rom
 OCOPYFLAGS := --pad-to=0x400000 --gap-fill=0xFF
-OPT_FLAGS  := -O2
+OPT_FLAGS  := -Os # Somehow Os is the fastest option according to testing
 
 ifneq ($(DEBUG),0)
 CFLAGS     += -DDEBUG_MODE

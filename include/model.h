@@ -1,7 +1,6 @@
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
-#include <PR/ultratypes.h>
 #include <PR/gbi.h>
 
 #include <types.h>

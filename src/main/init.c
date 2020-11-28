@@ -17,6 +17,9 @@ u8 audioThreadStack[AUDIO_THREAD_STACKSIZE] __attribute__((aligned (16)));
 static OSMesgQueue piMesgQueue;
 static OSMesg piMessages[NUM_PI_MESSAGES];
 
+OSMesgQueue siMesgQueue;
+static OSMesg siMessages[NUM_SI_MESSAGES];
+
 OSThread g_threads[NUM_THREADS];
 OSPiHandle *g_romHandle;
 
@@ -43,6 +46,10 @@ void idle(__attribute__ ((unused)) void *arg)
     
     // Set up PI
     osCreatePiManager(OS_PRIORITY_PIMGR, &piMesgQueue, &piMessages[0], NUM_PI_MESSAGES);
+
+    // Set up SI
+    osCreateMesgQueue(&siMesgQueue, siMessages, NUM_SI_MESSAGES);
+    osSetEventMesg(OS_EVENT_SI, &siMesgQueue, NULL);
 
 #ifdef DEBUG_MODE
     debug_initialize();

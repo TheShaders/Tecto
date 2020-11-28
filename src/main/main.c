@@ -1,5 +1,6 @@
 #include <main.h>
 #include <init.h>
+#include <input.h>
 #include <gfx.h>
 #include <model.h>
 #include <mem.h>
@@ -98,6 +99,8 @@ static struct {
 
 u32 __osSetFpcCsr(u32);
 
+static InputData playerInput;
+
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
     u32 frame = 0;
@@ -111,6 +114,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     // Write back fpcsr with division by zero and invalid operations exceptions disabled
     __osSetFpcCsr(fpccsr & ~(FPCSR_EZ | FPCSR_EV));
 
+    initInput();
     initGfx();
 
     #define POSVEL_TO_ALLOC 10000
@@ -147,7 +151,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         ProfilerData.cpuTime = osGetTime();
         IO_WRITE(DPC_STATUS_REG, DPC_CLR_CLOCK_CTR | DPC_CLR_CMD_CTR | DPC_CLR_PIPE_CTR | DPC_CLR_TMEM_CTR);
 #endif
+        beginInputPolling();
         startFrame();
+        readInput(&playerInput, 1);
 
         gSPLookAt(g_dlistHead++, &lookAt);
         gfxLookat(
@@ -220,8 +226,10 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             // Off(O2) :              105000 -  107000
             // On (O2) :             1500000 - 1700000
             // On (Ofast) :          1500000 - 2480000
-            // On (vertical/O2) :    1080000 - 1300000
-            // On (vertical/Ofast) : 1160000 - 1440000
+            // On (vertical/O2) :    1070000 - 1440000
+            // On (vertical/Ofast) : 1160000 - 1700000
+            // On (O1) :             1080000 - 1380000
+            // On (Os) :              990000 - 1380000
             // for (i = 0; i < 1000; i++)
             // {
             //     verticalRayVsBvh(rayOrigin, rayDir[1], test_collision_virtual, 0.0f, 1.0f, &hit);

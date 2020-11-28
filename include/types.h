@@ -28,6 +28,9 @@ typedef u32 archetype_t;
 typedef struct MultiArrayListBlock_t MultiArrayListBlock;
 typedef struct MultiArrayList_t MultiArrayList;
 
+// Prototypes for input structs
+typedef struct InputData_t InputData;
+
 // Components
 #define COMPONENT(Name, Type) typedef Type Name;
 #include "components.inc.h"

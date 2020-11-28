@@ -1,7 +1,6 @@
 #ifndef __GFX_H__
 #define __GFX_H__
 
-#include <PR/ultratypes.h>
 #include <config.h>
 #include <types.h>
 

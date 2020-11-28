@@ -1,7 +1,7 @@
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
-#include <PR/ultratypes.h>
+#include <types.h>
 #include <PR/os_pi.h>
 
 #ifdef USE_EXT_RAM
@@ -26,6 +26,7 @@ typedef u8 owner_t;
 #define ROUND_DOWN(val, multiple) (((val) / (multiple)) * (multiple))
 
 extern OSPiHandle *g_romHandle;
+extern OSMesgQueue siMesgQueue;
 extern u8 memPoolStart[];
 
 extern u8 _introSegmentRomStart[];

@@ -1,11 +1,11 @@
 #ifndef __COLLISION_H__
 #define __COLLISION_H__
 
-#include <PR/ultratypes.h>
 #include <types.h>
 
 #define EPSILON 0.0001f
 
+// TODO these can be vectorized with gcc for modern platforms
 #define VEC3_DOT(a,b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
 #define VEC3_COPY(out,a) \
     {(out)[0] = (a)[0];           (out)[1] = (a)[1];           (out)[2] = (a)[2];}

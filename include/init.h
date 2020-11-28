@@ -23,6 +23,7 @@
 #define SCHEDULER_PRI 13
 
 #define NUM_PI_MESSAGES 8
+#define NUM_SI_MESSAGES 8
 
 extern OSThread g_threads[];
 

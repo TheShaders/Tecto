@@ -8,6 +8,7 @@
 #include <ecs.h>
 #include <multiarraylist.h>
 #include <debug.h>
+#include <algorithms.h>
 
 #include <segments/intro.h>
 
@@ -80,6 +81,43 @@ void setPos3(size_t count, __attribute__((unused)) void *arg, void **componentAr
     }
 }
 
+void processBehaviorEntities(size_t count, __attribute__((unused)) void *arg, int numComponents, size_t *components, void **componentArrays, size_t *componentSizes)
+{
+    int i = 0;
+    // Get the index of the BehaviorParams component in the component array and iterate over it
+    BehaviorParams *curBhvParams = componentArrays[indexOfSorted_size_t(Component_Behavior, components, numComponents)];
+    // Iterate over every entity in the given array
+    while (count)
+    {
+        // Call the entity's callback with the component pointers and it's data pointer
+        curBhvParams->callback(componentArrays, curBhvParams->data);
+
+        // Increment the component pointers so they are valid for the next entity
+        for (i = 0; i < numComponents; i++)
+        {
+            componentArrays[i] += componentSizes[i];
+        }
+        // Increment to the next entity's behavior params
+        curBhvParams++;
+        // Decrement the remaining entity count
+        count--;
+    }
+}
+
+void playerCallback(__attribute__((unused)) void **components, __attribute__((unused)) void *data)
+{
+    // Components: Position, Velocity, Rotation, BehaviorParams
+    debug_printf("Player callback!\n");
+}
+
+void createPlayer(__attribute__((unused)) size_t count, __attribute__((unused)) void *arg, void **componentArrays)
+{
+    // Components: Position, Velocity, Rotation, BehaviorParams
+    BehaviorParams *bhvParams = componentArrays[3];
+    bhvParams->callback = playerCallback;
+    bhvParams->data = arg;
+}
+
 static const archetype_t PosVelArchetype = Bit_Position | Bit_Velocity;
 static const archetype_t CollisionArchetype = Bit_Position | Bit_Velocity | Bit_Collision;
 
@@ -120,28 +158,27 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     #define POSVEL_TO_ALLOC 10000
     #define POSVELCOL_TO_ALLOC 5000
 
-    registerArchetype(PosVelArchetype);
-    registerArchetype(CollisionArchetype);
-    registerArchetype(Bit_Position);
-
     debug_printf("Main\n");
     debug_printf("Creating " xstr(POSVEL_TO_ALLOC) " entities with pos and vel, setting their pos via callback\n");
     createEntitiesCallback(PosVelArchetype, NULL, POSVEL_TO_ALLOC, setPos);
+
+    // Create the player entity
+    createEntitiesCallback(Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Behavior, NULL, 1, createPlayer);
 
     debug_printf("Creating " xstr(POSVELCOL_TO_ALLOC) " entities with pos, vel, and col\n");
     createEntities(CollisionArchetype, POSVELCOL_TO_ALLOC);
 
     debug_printf("Setting position of pos+vel+col entities\n");
-    iterateOverComponents(setPos2, NULL, Bit_Position | Bit_Velocity | Bit_Collision, 0);
+    iterateOverEntities(setPos2, NULL, Bit_Position | Bit_Velocity | Bit_Collision, 0);
 
     debug_printf("Creating 1 entity with only position\n");
     createEntity(Bit_Position);
     debug_printf("Setting position of only pos entities\n");
-    iterateOverComponents(setPos3, NULL, Bit_Position, Bit_Collision | Bit_Velocity);
+    iterateOverEntities(setPos3, NULL, Bit_Position, Bit_Collision | Bit_Velocity);
 
     // Iterate over all entities that have position
     debug_printf("Iterating over components with position\n");
-    iterateOverComponents(posVelCallback, NULL, Bit_Position, 0);
+    iterateOverEntities(posVelCallback, NULL, Bit_Position, 0);
     debug_printf("Total position: %f\n", totalPos);
 
     while (1)
@@ -154,6 +191,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         beginInputPolling();
         startFrame();
         readInput(&playerInput, 1);
+
+        // Process all entities that have a behavior
+        iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
 
         gSPLookAt(g_dlistHead++, &lookAt);
         gfxLookat(

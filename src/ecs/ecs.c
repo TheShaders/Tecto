@@ -27,7 +27,7 @@ int numberOfSetBits(uint32_t i)
      return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
 }
 
-void iterateOverComponents(EntityArrayCallback callback, void *arg, archetype_t componentMask, archetype_t rejectMask)
+void iterateOverEntities(EntityArrayCallback callback, void *arg, archetype_t componentMask, archetype_t rejectMask)
 {
     int componentIndex, curArchetypeIndex;
     int numComponents = numberOfSetBits(componentMask);
@@ -81,6 +81,60 @@ void iterateOverComponents(EntityArrayCallback callback, void *arg, archetype_t 
     }
 }
 
+void iterateOverEntitiesAllComponents(EntityArrayCallbackAll callback, void *arg, archetype_t componentMask, archetype_t rejectMask)
+{
+    int curArchetypeIndex;
+    for (curArchetypeIndex = 0; curArchetypeIndex < numArchetypes; curArchetypeIndex++)
+    {
+        archetype_t curArchetype = currentArchetypes[curArchetypeIndex];
+        if (((curArchetype & componentMask) == componentMask) && !(curArchetype & rejectMask))
+        {
+            int curComponentIndex;
+            int curNumComponents = numberOfSetBits(curArchetype);
+            int curNumComponentsFound = 0;
+            size_t curComponents[curNumComponents];
+            archetype_t componentBits = curArchetype;
+            MultiArrayList *arr = &archetypeArrays[curArchetypeIndex];
+            MultiArrayListBlock *curBlock = arr->start;
+            size_t curComponentSizes[curNumComponents];
+            size_t curOffsets[curNumComponents];
+            void* curAddresses[curNumComponents];
+            size_t curOffset = sizeof(MultiArrayListBlock);
+            
+            // Find all components in the current archetype and determine their size and offset in the multi array block
+            curComponentIndex = 0;
+            while (componentBits)
+            {
+                if (componentBits & 1)
+                {
+                    curComponents[curNumComponentsFound] = curComponentIndex;
+                    curOffsets[curNumComponentsFound] = curOffset;
+                    curComponentSizes[curNumComponentsFound] = g_componentSizes[curComponentIndex];
+                    curOffset += curComponentSizes[curNumComponentsFound] * arr->elementCount;
+                    curNumComponentsFound++;
+                }
+                componentBits >>= 1;
+                curComponentIndex++;
+            }
+
+            // Iterate over every block in this multiarray
+            while (curBlock)
+            {
+                int i;
+                // Get the addresses for each sub-array in the block
+                for (i = 0; i < curNumComponents; i++)
+                {
+                    curAddresses[i] = (void*)(curOffsets[i] + (uintptr_t)curBlock);
+                }
+                // Call the provided callback
+                callback(curBlock->numElements, arg, curNumComponents, curComponents, curAddresses, curComponentSizes);
+                // Advance to the next block
+                curBlock = curBlock->next;
+            }
+        }
+    }
+}
+
 // TODO sort upon add, use binary search to check if already exists
 void registerArchetype(archetype_t archetype)
 {
@@ -106,7 +160,10 @@ int getArchetypeIndex(archetype_t archetype)
         if (currentArchetypes[i] == archetype)
             return i;
     }
-    return -1;
+    // If the loop completed then the archetype isn't registered, so register it
+    registerArchetype(archetype);
+    // Return the last archetype, which will be the newly registered one
+    return numArchetypes - 1;
 }
 
 void allocEntities(archetype_t archetype, int count)

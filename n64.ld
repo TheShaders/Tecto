@@ -64,6 +64,7 @@ SECTIONS
         BUILD_ROOT/src/main/task_sched.o(.text*);
         BUILD_ROOT/src/main/multiarraylist.o(.text*);
         BUILD_ROOT/src/math/asmmath.o(.text*);
+        BUILD_ROOT/src/math/algorithms.o(.text*);
         BUILD_ROOT/src/math/mathutils.o(.text*);
         BUILD_ROOT/src/usb/usb.o(.text*);
         BUILD_ROOT/src/usb/debug.o(.text*);
@@ -73,6 +74,7 @@ SECTIONS
         BUILD_ROOT/src/main/input.o(.*data*);
         BUILD_ROOT/src/main/task_sched.o(.*data*);
         BUILD_ROOT/src/main/multiarraylist.o(.*data*);
+        BUILD_ROOT/src/math/algorithms.o(.*data*);
         BUILD_ROOT/src/math/mathutils.o(.*data*);
         BUILD_ROOT/src/usb/usb.o(.*data*);
         BUILD_ROOT/src/usb/debug.o(.*data*);
@@ -156,6 +158,7 @@ SECTIONS
         BUILD_ROOT/src/main/input.o(.bss*);
         BUILD_ROOT/src/main/task_sched.o(.bss*);
         BUILD_ROOT/src/main/multiarraylist.o(.bss*);
+        BUILD_ROOT/src/math/algorithms.o(.bss*);
         BUILD_ROOT/src/math/mathutils.o(.bss*);
         BUILD_ROOT/src/usb/usb.o(.bss*);
         BUILD_ROOT/src/usb/debug.o(.bss*);

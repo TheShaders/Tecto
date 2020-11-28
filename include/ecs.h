@@ -28,7 +28,22 @@ enum ComponentBits
 #undef COMPONENT
 
 // Callback provided to the ecs to be called for every array of a given component selection when iterating
-typedef void (*EntityArrayCallback)(size_t count, void* arg, void **componentArrays);
+typedef void (*EntityArrayCallback)(size_t count, void *arg, void **componentArrays);
+
+// Callback provided to the ecs to be called for every array of a given component selection when iterating
+// This callback is passed ALL components in each entity, not just the ones passed in the mask
+typedef void (*EntityArrayCallbackAll)(size_t count, void *arg, int numComponents, size_t *components, void **componentArrays, size_t *componentSizes);
+
+// Callback for entities that have a behavior component
+// First argument passed is an array of the component pointers
+// Second argument is the value of data in the behavior parameters
+typedef void (*EntityBehaviorCallback)(void **components, void *data);
+
+typedef struct BehaviorParams_t
+{
+    EntityBehaviorCallback callback;
+    void *data;
+} BehaviorParams;
 
 // Creates a single entity, try to avoid using as creating entities in batches is more efficient
 Entity *createEntity(archetype_t archetype);
@@ -38,7 +53,9 @@ void createEntities(archetype_t archetype, int count);
 void createEntitiesCallback(archetype_t archetype, void *arg, int count, EntityArrayCallback callback);
 
 // Calls the given callback for each array that fits the given archetype and does not fit the reject archetype
-void iterateOverComponents(EntityArrayCallback callback, void *arg, archetype_t componentMask, archetype_t rejectMask);
+void iterateOverEntities(EntityArrayCallback callback, void *arg, archetype_t componentMask, archetype_t rejectMask);
+// Same as above, but this time an array of ALL components is passed (not just the masked ones), as well as an array of component sizes
+void iterateOverEntitiesAllComponents(EntityArrayCallbackAll callback, void *arg, archetype_t componentMask, archetype_t rejectMask);
 // Registers a new archetype
 void registerArchetype(archetype_t archetype);
 // Gets the arraylist for a given archetype

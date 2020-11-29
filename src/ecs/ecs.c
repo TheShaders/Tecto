@@ -93,7 +93,6 @@ void iterateOverEntitiesAllComponents(EntityArrayCallbackAll callback, void *arg
             int curComponentIndex;
             int curNumComponents = numberOfSetBits(curArchetype);
             int curNumComponentsFound = 0;
-            size_t curComponents[curNumComponents];
             archetype_t componentBits = curArchetype;
             MultiArrayList *arr = &archetypeArrays[curArchetypeIndex];
             MultiArrayListBlock *curBlock = arr->start;
@@ -108,7 +107,6 @@ void iterateOverEntitiesAllComponents(EntityArrayCallbackAll callback, void *arg
             {
                 if (componentBits & 1)
                 {
-                    curComponents[curNumComponentsFound] = curComponentIndex;
                     curOffsets[curNumComponentsFound] = curOffset;
                     curComponentSizes[curNumComponentsFound] = g_componentSizes[curComponentIndex];
                     curOffset += curComponentSizes[curNumComponentsFound] * arr->elementCount;
@@ -128,7 +126,7 @@ void iterateOverEntitiesAllComponents(EntityArrayCallbackAll callback, void *arg
                     curAddresses[i] = (void*)(curOffsets[i] + (uintptr_t)curBlock);
                 }
                 // Call the provided callback
-                callback(curBlock->numElements, arg, curNumComponents, curComponents, curAddresses, curComponentSizes);
+                callback(curBlock->numElements, arg, curNumComponents, curArchetype, curAddresses, curComponentSizes);
                 // Advance to the next block
                 curBlock = curBlock->next;
             }

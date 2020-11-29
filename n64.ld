@@ -227,6 +227,8 @@ SECTIONS
     }
     END_SEGMENT(song);
 
+    __popcountsi2 = numberOfSetBits;
+
     /DISCARD/ :
     {
         *(*);

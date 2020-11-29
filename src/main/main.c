@@ -11,6 +11,7 @@
 #include <algorithms.h>
 #include <mathutils.h>
 #include <player.h>
+#include <physics.h>
 
 #include <segments/intro.h>
 
@@ -25,11 +26,11 @@ extern Animation character_anim_Jump_Start;
 extern Animation character_anim_Walk;
 extern BVHTree test_collision_tree;
 
-void processBehaviorEntities(size_t count, __attribute__((unused)) void *arg, int numComponents, size_t *components, void **componentArrays, size_t *componentSizes)
+void processBehaviorEntities(size_t count, __attribute__((unused)) void *arg, int numComponents, archetype_t archetype, void **componentArrays, size_t *componentSizes)
 {
     int i = 0;
     // Get the index of the BehaviorParams component in the component array and iterate over it
-    BehaviorParams *curBhvParams = componentArrays[indexOfSorted_size_t(Component_Behavior, components, numComponents)];
+    BehaviorParams *curBhvParams = componentArrays[COMPONENT_INDEX(Behavior, archetype)];
     // Iterate over every entity in the given array
     while (count)
     {
@@ -53,9 +54,9 @@ int animFrame = 0;
 void drawModels(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
     // Components: Position, Rotation, Model
-    Vec3 *curPos = componentArrays[0];
-    Vec3s *curRot = componentArrays[1];
-    Model **curModel = componentArrays[2];
+    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_MODEL)];
+    Vec3s *curRot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_MODEL)];
+    Model **curModel = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_MODEL)];
     Animation *anim = &character_anim_Walk;
 
     while (count)
@@ -78,7 +79,7 @@ void drawModels(size_t count, __attribute__((unused)) void *arg, void **componen
 void setCollision(size_t count, void *tree, void **componentArrays)
 {
     // Components: Collision
-    BVHTree **curCollision = componentArrays[0];
+    BVHTree **curCollision = componentArrays[COMPONENT_INDEX(Collision, Bit_Collision)];
     while (count)
     {
         *curCollision = tree;

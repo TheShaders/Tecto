@@ -27,6 +27,8 @@ enum ComponentBits
 
 #undef COMPONENT
 
+#define COMPONENT_INDEX(Component, Archetype) (__builtin_popcount((Archetype) & (Bit_##Component - 1)))
+
 #define ARCHETYPE_MODEL (Bit_Position | Bit_Rotation | Bit_Model)
 #define ARCHETYPE_PLAYER (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Behavior | Bit_Model)
 
@@ -35,7 +37,7 @@ typedef void (*EntityArrayCallback)(size_t count, void *arg, void **componentArr
 
 // Callback provided to the ecs to be called for every array of a given component selection when iterating
 // This callback is passed ALL components in each entity, not just the ones passed in the mask
-typedef void (*EntityArrayCallbackAll)(size_t count, void *arg, int numComponents, size_t *components, void **componentArrays, size_t *componentSizes);
+typedef void (*EntityArrayCallbackAll)(size_t count, void *arg, int numComponents, archetype_t archetype, void **componentArrays, size_t *componentSizes);
 
 // Callback for entities that have a behavior component
 // First argument passed is an array of the component pointers

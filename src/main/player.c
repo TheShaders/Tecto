@@ -20,9 +20,9 @@ void createPlayer(void)
 void createPlayerCallback(__attribute__((unused)) size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
     // Components: Position, Velocity, Rotation, BehaviorParams, Model
-    Vec3 *pos = componentArrays[0];
-    BehaviorParams *bhvParams = componentArrays[3];
-    Model **model = componentArrays[4];
+    Vec3 *pos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_PLAYER)];
+    BehaviorParams *bhvParams = componentArrays[COMPONENT_INDEX(Behavior, ARCHETYPE_PLAYER)];
+    Model **model = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_PLAYER)];
     *model = &character_model;
     bhvParams->callback = playerCallback;
     bhvParams->data = arg;
@@ -33,9 +33,9 @@ void createPlayerCallback(__attribute__((unused)) size_t count, __attribute__((u
 
 void playerCallback(__attribute__((unused)) void **components, __attribute__((unused)) void *data)
 {
-    // Components: Position, Velocity, Rotation, BehaviorParams
-    Vec3 *pos = components[0];
-    Vec3 *vel = components[1];
+    // Components: Position, Velocity, Rotation, BehaviorParams, Model
+    Vec3 *pos = components[COMPONENT_INDEX(Position, ARCHETYPE_PLAYER)];
+    Vec3 *vel = components[COMPONENT_INDEX(Velocity, ARCHETYPE_PLAYER)];
     Vec3 rayDir = {0.0f, -1000.0f, 0.0f};
     float targetSpeed;
     ColTri *hitTri;

@@ -3,6 +3,9 @@
 
 #include <config.h>
 #include <types.h>
+#include <PR/gbi.h>
+#include <PR/os_thread.h>
+#include <PR/os_message.h>
 
 // Draw layers
 #define LAYER_OPA_SURF   0

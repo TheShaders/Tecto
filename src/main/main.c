@@ -9,6 +9,7 @@
 #include <multiarraylist.h>
 #include <debug.h>
 #include <algorithms.h>
+#include <mathutils.h>
 
 #include <segments/intro.h>
 
@@ -104,22 +105,74 @@ void processBehaviorEntities(size_t count, __attribute__((unused)) void *arg, in
     }
 }
 
+static InputData playerInput;
+
+#define MAX_STEP_HEIGHT 30.0f
+#define MAX_PLAYER_SPEED 15.0f
+#define MAX_PLAYER_SPEED_SQ POW2(MAX_PLAYER_SPEED)
+#define INV_MAX_PLAYER_SPEED_SQ (1.0f / MAX_PLAYER_SPEED_SQ)
+#define PLAYER_ACCEL_TIME_CONST (0.2f)
+
+Vec3 *playerPos;
+
 void playerCallback(__attribute__((unused)) void **components, __attribute__((unused)) void *data)
 {
     // Components: Position, Velocity, Rotation, BehaviorParams
-    debug_printf("Player callback!\n");
+    Vec3 *pos = components[0];
+    Vec3 *vel = components[1];
+    BehaviorParams *bhvParams = components[3];
+    Model **model = components[4];
+    float targetSpeed;
+
+    playerPos = pos;
+
+    targetSpeed = MAX_PLAYER_SPEED * playerInput.magnitude;
+
+    (*vel)[0] = (*vel)[0] * (1.0f - PLAYER_ACCEL_TIME_CONST) + targetSpeed * (PLAYER_ACCEL_TIME_CONST / 65536.0f) * coss(playerInput.angle);
+    (*vel)[2] = (*vel)[2] * (1.0f - PLAYER_ACCEL_TIME_CONST) - targetSpeed * (PLAYER_ACCEL_TIME_CONST / 65536.0f) * sins(playerInput.angle);
+
+    (*pos)[0] += (*vel)[0];
+    (*pos)[2] += (*vel)[2];
 }
 
 void createPlayer(__attribute__((unused)) size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
-    // Components: Position, Velocity, Rotation, BehaviorParams
+    // Components: Position, Velocity, Rotation, BehaviorParams, Model
+    Vec3 *pos = componentArrays[0];
     BehaviorParams *bhvParams = componentArrays[3];
+    Model **model = componentArrays[4];
+    *model = &character_model;
     bhvParams->callback = playerCallback;
     bhvParams->data = arg;
+    (*pos)[0] = 0.0f;
+    (*pos)[1] = 100.0f;
+    (*pos)[2] = 0.0f;
+}
+
+void drawModels(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
+{
+    // Components: Position, Rotation, Model
+    Vec3 *curPos = componentArrays[0];
+    Vec3s *curRot = componentArrays[1];
+    Model **curModel = componentArrays[2];
+
+    while (count)
+    {
+        gfxPushMat();
+         gfxTranslate((*curPos)[0], (*curPos)[1], (*curPos)[2]);
+         drawModel(*curModel, NULL, 0);
+        gfxPopMat();
+        count--;
+        curPos++;
+        curRot++;
+        curModel++;
+    }
 }
 
 static const archetype_t PosVelArchetype = Bit_Position | Bit_Velocity;
 static const archetype_t CollisionArchetype = Bit_Position | Bit_Velocity | Bit_Collision;
+static const archetype_t PlayerArchetype = Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Behavior | Bit_Model;
+static const archetype_t ModelArchetype = Bit_Position | Bit_Rotation | Bit_Model;
 
 #ifdef DEBUG_MODE
 static struct {
@@ -137,14 +190,10 @@ static struct {
 
 u32 __osSetFpcCsr(u32);
 
-static InputData playerInput;
-
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
     u32 frame = 0;
-    u32 i;
     float angle = 0.0f;
-    float tmpAngle;
     u32 fpccsr;
 
     // Read fpcsr
@@ -163,7 +212,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     createEntitiesCallback(PosVelArchetype, NULL, POSVEL_TO_ALLOC, setPos);
 
     // Create the player entity
-    createEntitiesCallback(Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Behavior, NULL, 1, createPlayer);
+    createEntitiesCallback(PlayerArchetype, NULL, 1, createPlayer);
 
     debug_printf("Creating " xstr(POSVELCOL_TO_ALLOC) " entities with pos, vel, and col\n");
     createEntities(CollisionArchetype, POSVELCOL_TO_ALLOC);
@@ -212,39 +261,15 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         lookAt.l[1].l.dir[1] = -(s8)(*g_curMatFPtr)[1][1];
         lookAt.l[1].l.dir[2] = (s8)(*g_curMatFPtr)[1][2];
 
-
-        // gfxPushMat();
-        //  gfxRotateAxisAngle(angle, 0.0f, 1.0f, 0.0f);
-        //  drawGfx(logo_logo_mesh);
-        // gfxPopMat();
-
-        gfxPushMat();
-         gfxScale(0.5f, 0.5f, 0.5f);
-        //  gfxRotateAxisAngle(angle, 0.0f, 1.0f, 0.0f);
-        //  drawModel(&character_model, &character_anim_Walking, frame);
-        gfxPopMat();
-
-        tmpAngle = -angle * (M_PI / 180) / 4.0f;
-
-        for (i = 0; i < NUM_LOGOS; i++)
-        {
-            // f32 tmpAngle2 = angle - i * (360.0f / NUM_LOGOS);
-            gfxPushMat();
-             gfxPosition(0.0f, angle - i * (360.0f / NUM_LOGOS), 0.0f, 1.0f, sinf(tmpAngle) * 200.0f, cosf(tmpAngle) * 200.0f, 0.0f);
-            //  drawGfx(LAYER_OPA_SURF, logo_logo_mesh);
-                // drawModel(&testmodel, &testmodelAnim, 0);
-            gfxPopMat();
-            tmpAngle += (2 * M_PI) / NUM_LOGOS;
-        }
-
+        iterateOverEntities(drawModels, NULL, ModelArchetype, 0);
 
         gfxPushMat();
          gfxTranslate(0.0f, 0.0f, 0.0f);
-         gfxScale(1.0f, 1.0f, 1.0f);
+        //  gfxScale(1.0f, 1.0f, 1.0f);
         if (1) {
             BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&test_collision_tree);
             ColTri *tris = segmentedToVirtual(test_collision_virtual->tris);
-            Vec3 rayOrigin = { 150.0f * sinf((M_PI / 180.0f) * angle), 80.0f, 150.0f * cosf((M_PI / 180.0f) * angle) };
+            Vec3 rayOrigin = { (*playerPos)[0], (*playerPos)[1], (*playerPos)[2] };
             Vec3 rayDir = { 0.0f, -1000.0f, 0.0f };
             Vec3 rayDirInv = { 1.0f / rayDir[0], 1.0f / rayDir[1], 1.0f / rayDir[2] };
             Vec3 rayEnd;
@@ -253,15 +278,15 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             BVHNode *nodes = (BVHNode*)segmentedToVirtual(test_collision_virtual->nodes);
             int i;
 
-            drawColTris(LAYER_OPA_SURF, tris, test_collision_virtual->triCount, 0xFF0000FF);
+            drawColTris(LAYER_OPA_SURF, tris, test_collision_virtual->triCount, 0x7F3300FF);
 
-            for (i = 0; i < test_collision_virtual->nodeCount; i++)
-            {
-                if (testRayVsAABB(rayOrigin, rayDirInv, &nodes[i].aabb, 0.0f, 1.0f))
-                {
-                    drawAABB(LAYER_OPA_LINE, &nodes[i].aabb, 0x00FF00FF);
-                }
-            }
+            // for (i = 0; i < test_collision_virtual->nodeCount; i++)
+            // {
+            //     if (testRayVsAABB(rayOrigin, rayDirInv, &nodes[i].aabb, 0.0f, 1.0f))
+            //     {
+            //         drawAABB(LAYER_OPA_LINE, &nodes[i].aabb, 0x00FF00FF);
+            //     }
+            // }
 
             // Off(O2) :              105000 -  107000
             // On (O2) :             1500000 - 1700000

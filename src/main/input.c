@@ -36,23 +36,32 @@ void readInput(InputData *inputBuffer, int numControllers)
         float x2raw = POW2(curPad->stick_x);
         float y2raw = POW2(curPad->stick_y);
         float curMagnitude = sqrtf(x2raw + y2raw);
+        float magnitude;
         s32 angle;
+        s32 octantAngle;
         
         angle = (s32)(u16)atan2s(curPad->stick_x, curPad->stick_y);
-        inputBuffer->angle = angle;
 
         if (angle & 0x2000) // Check if this is in an odd octant
         {
-            angle = 0x2000 - (angle & 0x1FFF);
+            octantAngle = 0x2000 - (angle & 0x1FFF);
         }
         else
         {
-            angle &= 0x1FFF;
+            octantAngle &= 0x1FFF;
         }
 
-        inputBuffer->magnitude = MIN(curMagnitude * sins(angle + ALPHA) / (R0 * SIN_ALPHA * 32768.0f), 1.0f);
-        inputBuffer->x = (inputBuffer->magnitude / 32768.0f) * coss(inputBuffer->angle);
-        inputBuffer->y = (inputBuffer->magnitude / 32768.0f) * sins(inputBuffer->angle);
+        magnitude = MIN(curMagnitude * sins(octantAngle + ALPHA) / (R0 * SIN_ALPHA * 32768.0f), 1.0f);
+
+        if (magnitude < INPUT_DEADZONE)
+        {
+            magnitude = 0.0f;
+        }
+
+        inputBuffer->magnitude = magnitude;
+        inputBuffer->angle = angle;
+        inputBuffer->x = (magnitude / 32768.0f) * coss(angle);
+        inputBuffer->y = (magnitude / 32768.0f) * sins(angle);
         inputBuffer++;
     }
 }

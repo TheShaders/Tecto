@@ -1,6 +1,7 @@
 #include <ecs.h>
 #include <multiarraylist.h>
 #include <stdint.h>
+#include <model.h>
 
 #define COMPONENT(Name, Type) sizeof(Name),
 

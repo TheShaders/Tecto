@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static uintptr_t segmentTable[SEGMENT_COUNT];
+uintptr_t segmentTable[SEGMENT_COUNT];
 
 void setSegment(u32 segmentIndex, void* virtualAddress)
 {

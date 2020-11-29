@@ -127,6 +127,29 @@ void initGfx(void)
 
     // Wait for the DMA to complete
     osRecvMesg(&dmaMesgQueue, NULL, OS_MESG_BLOCK);
+    
+    // Update the segment table
+    setSegment(0x04, introSegAddr);
+}
+
+static LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
+Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
+
+void setupViewMatrix(float angle)
+{
+    gSPLookAt(g_dlistHead++, &lookAt);
+    gfxLookat(
+        300.0f * sinf((M_PI / 180.0f) * angle * 0), 250.0f, 300.0f * cosf((M_PI / 180.0f) * angle * 0), // Eye pos
+        0.0f, 150.0f, 0.0f, // Look pos
+        0.0f, 1.0f, 0.0f);
+
+    lookAt.l[0].l.dir[0] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][0] + g_lightDir[1] * (*g_curMatFPtr)[1][0] + g_lightDir[2] * (*g_curMatFPtr)[2][0]);
+    lookAt.l[0].l.dir[1] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][1] + g_lightDir[1] * (*g_curMatFPtr)[1][1] + g_lightDir[2] * (*g_curMatFPtr)[2][1]);
+    lookAt.l[0].l.dir[2] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][2] + g_lightDir[1] * (*g_curMatFPtr)[1][2] + g_lightDir[2] * (*g_curMatFPtr)[2][2]);
+
+    lookAt.l[1].l.dir[0] = (s8)(*g_curMatFPtr)[1][0];
+    lookAt.l[1].l.dir[1] = -(s8)(*g_curMatFPtr)[1][1];
+    lookAt.l[1].l.dir[2] = (s8)(*g_curMatFPtr)[1][2];
 }
 
 void setupDrawLayers(void)
@@ -349,7 +372,6 @@ void startFrame(void)
     resetGfxFrame();
 
     gSPSegment(g_dlistHead++, 0x00, 0x00000000);
-    setSegment(0x04, introSegAddr);
     gSPSegment(g_dlistHead++, 0x04, introSegAddr);
     gSPSegment(g_dlistHead++, BUFFER_SEGMENT, &g_frameBuffers[g_curGfxContext]);
 

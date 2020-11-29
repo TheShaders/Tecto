@@ -12,9 +12,11 @@ typedef struct InputData_t {
     s16 angle;
 } InputData;
 
+extern InputData g_PlayerInput;
+
 void initInput();
 void beginInputPolling();
-void readInput(InputData *inputBuffer, int numControllers);
+void readInput();
 
 
 #endif

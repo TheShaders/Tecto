@@ -123,6 +123,8 @@ endif
 
 
 $(BUILD_ROOT)/src/usb/usb.o: OPT_FLAGS := -O0
+$(BUILD_ROOT)/src/usb/usb.o: CFLAGS += -Wno-unused-variable -Wno-sign-compare -Wno-unused-function
+$(BUILD_ROOT)/src/usb/debug.o: CFLAGS += -Wno-unused-parameter -Wno-maybe-uninitialized
 
 ### Rules ###
 

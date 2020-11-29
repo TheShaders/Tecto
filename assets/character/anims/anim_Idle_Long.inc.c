@@ -352,12 +352,12 @@ BoneTable character_anim_Idle_LongTables[] = {
         character_anim_Idle_LongBone7Tables
     },
     {
-        CHANNEL_POS_X | CHANNEL_POS_Y | CHANNEL_POS_Z,
-        character_anim_Idle_LongBone8Tables
+        0,
+        NULL
     },
     {
-        CHANNEL_POS_X | CHANNEL_POS_Y | CHANNEL_POS_Z,
-        character_anim_Idle_LongBone9Tables
+        0,
+        NULL
     },
     {
         CHANNEL_POS_X | CHANNEL_POS_Y | CHANNEL_POS_Z,

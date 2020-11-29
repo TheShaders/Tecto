@@ -5,18 +5,6 @@
 
 #define EPSILON 0.0001f
 
-// TODO these can be vectorized with gcc for modern platforms
-#define VEC3_DOT(a,b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
-#define VEC3_COPY(out,a) \
-    {(out)[0] = (a)[0];           (out)[1] = (a)[1];           (out)[2] = (a)[2];}
-#define VEC3_SCALE(out,a,scale) \
-    {(out)[0] = (a)[0] * (scale); (out)[1] = (a)[1] * (scale); (out)[2] = (a)[2] * (scale);}
-#define VEC3_ADD(out,a,b)  \
-    {(out)[0] = (a)[0] + (b)[0];  (out)[1] = (a)[1] + (b)[1];  (out)[2] = (a)[2] + (b)[2];}
-#define VEC3_DIFF(out,a,b) \
-    {(out)[0] = (a)[0] - (b)[0];  (out)[1] = (a)[1] - (b)[1];  (out)[2] = (a)[2] - (b)[2];}
-#define ABSI(x) ((x) > 0 ? (x) : -(x))
-
 #define IS_NOT_LEAF_NODE(bvhNode) ((bvhNode).triCount != 0)
 #define IS_LEAF_NODE(bvhNode) ((bvhNode).triCount == 0)
 
@@ -29,14 +17,14 @@ typedef struct AABB_t {
 typedef struct ColTri_t {
     // Plane parameters
     Vec3 normal;
-    f32 originDist;
+    float originDist;
     // Tri parameters
     Vec3 vertex; // One of the tri's vertices (only one vertex is required for barycentric coordinates)
     Vec3 u; // Edge vectors
     Vec3 v;
-    f32 uu; // Edge dot products
-    f32 uv;
-    f32 vv;
+    float uu; // Edge dot products
+    float uv;
+    float vv;
 } ColTri;
 
 // A node in a bounding volume hierarchy tree
@@ -57,13 +45,15 @@ typedef struct BVHTree_t {
 } BVHTree;
 
 u32 testVerticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax);
-f32 verticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax);
+float verticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax);
 u32 testRayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax);
-f32 rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax);
-f32 verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float tmax);
-f32 rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax);
+float rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax);
+float verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float tmax);
+float rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax);
 
-f32 rayVsBvh(Vec3 rayStart, Vec3 rayDirInv, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut);
-f32 verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut);
+float rayVsBvh(Vec3 rayStart, Vec3 rayDirInv, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut);
+float verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut);
+
+float raycast(Vec3 rayOrigin, Vec3 rayDir, float tmin, float tmax, ColTri **hitOut);
 
 #endif

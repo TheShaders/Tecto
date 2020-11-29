@@ -1,18 +1,19 @@
 #include <float.h>
 #include <collision.h>
 #include <mem.h>
+#include <ecs.h>
 
 #include <PR/gbi.h>
 #include <gfx.h>
 
-f32 verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut)
+float verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut)
 {
-    f32 hitDist = FLT_MAX;
+    float hitDist = FLT_MAX;
     ColTri *hitTri = NULL;
     BVHNode *nodes = (BVHNode*) segmentedToVirtual(bvh->nodes);
     BVHNode *curNode = nodes;
     ColTri *tris = (ColTri*) segmentedToVirtual(bvh->tris);
-    f32 lengthInv = 1.0f / length;
+    float lengthInv = 1.0f / length;
 
     // The exit case is a -1 next node index, so we can compare the "-1st" node address to terminate the loop
     // The other exit case is every node being checked, which would end up at the end of the array
@@ -25,7 +26,7 @@ f32 verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, floa
                 ColTri* curTri;
                 for (curTri = &tris[curNode->firstTriIndex]; curTri != &tris[curNode->firstTriIndex + curNode->triCount]; curTri++)
                 {
-                    f32 curHitDist = verticalRayVsTri(rayStart, length, curTri, tmin, tmax);
+                    float curHitDist = verticalRayVsTri(rayStart, length, curTri, tmin, tmax);
                     if (curHitDist < hitDist)
                     {
                         hitDist = curHitDist;
@@ -48,9 +49,9 @@ f32 verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, floa
     return hitDist;
 }
 
-f32 rayVsBvh(Vec3 rayStart, Vec3 rayDir, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut)
+float rayVsBvh(Vec3 rayStart, Vec3 rayDir, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut)
 {
-    f32 hitDist = FLT_MAX;
+    float hitDist = FLT_MAX;
     ColTri *hitTri = NULL;
     BVHNode *nodes = (BVHNode*) segmentedToVirtual(bvh->nodes);
     BVHNode *curNode = nodes;
@@ -68,7 +69,7 @@ f32 rayVsBvh(Vec3 rayStart, Vec3 rayDir, BVHTree *bvh, float tmin, float tmax, C
                 ColTri* curTri;
                 for (curTri = &tris[curNode->firstTriIndex]; curTri != &tris[curNode->firstTriIndex + curNode->triCount]; curTri++)
                 {
-                    f32 curHitDist = rayVsTri(rayStart, rayDir, curTri, tmin, tmax);
+                    float curHitDist = rayVsTri(rayStart, rayDir, curTri, tmin, tmax);
                     if (curHitDist < hitDist)
                     {
                         hitDist = curHitDist;
@@ -89,4 +90,46 @@ f32 rayVsBvh(Vec3 rayStart, Vec3 rayDir, BVHTree *bvh, float tmin, float tmax, C
         *hitOut = hitTri;
     }
     return hitDist;
+}
+
+typedef struct RaycastData_t {
+    float *origin;
+    float *rayDir;
+    float tmin;
+    float tmax;
+    ColTri *hitTri; // Triangle hit by the ray, if any
+    float hitDist; // Distance of hit point along ray (scaled by the ray's length)
+} RaycastData;
+
+void raycastIterator(size_t count, void *data, void **componentArrays)
+{
+    BVHTree **curTree = componentArrays[0];
+    RaycastData *rayData = (RaycastData *)data;
+    ColTri *curTri;
+    Vec3 origin = { rayData->origin[0], rayData->origin[1], rayData->origin[2] };
+    Vec3 rayDir = { rayData->rayDir[0], rayData->rayDir[1], rayData->rayDir[2] };
+    float tmin = rayData->tmin;
+    float tmax = rayData->tmax;
+
+    while (count)
+    {
+        float curDist = rayVsBvh(origin, rayDir, *curTree, tmin, tmax, &curTri);
+        if (curDist < rayData->hitDist)
+        {
+            rayData->hitDist = curDist;
+            rayData->hitTri = curTri;
+        }
+        curTree++;
+        count--;
+    }
+}
+
+float raycast(Vec3 rayOrigin, Vec3 rayDir, float tmin, float tmax, ColTri **hitOut)
+{
+    RaycastData data = {rayOrigin, rayDir, tmin, tmax, NULL, FLT_MAX};
+
+    iterateOverEntities(raycastIterator, &data, Bit_Collision, 0);
+
+    *hitOut = segmentedToVirtual(data.hitTri);
+    return data.hitDist;
 }

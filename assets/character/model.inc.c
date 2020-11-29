@@ -1,7 +1,30 @@
+Lights1 character_model_t_env_f3d_lights = gdSPDefLights1(
+	0x7F, 0x7F, 0x7F,
+	0xFE, 0xFE, 0xFE, 0x28, 0x28, 0x28);
+
 
 Gfx character_model_shading_i4_aligner[] = {gsSPEndDisplayList()};
 u8 character_model_shading_i4[] = {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFB, 0xBB, 0x77, 0x77, 
+};
+
+Gfx character_model_eyecut_I4_i8_aligner[] = {gsSPEndDisplayList()};
+u8 character_model_eyecut_I4_i8[] = {
+	0x0, 0x0, 0x0, 0x0, 0x0, 0xFF, 0xFF, 0xFF, 0x0, 
+	0x0, 0x0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0, 0x0, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+	0xFF, 0xFF, 
 };
 
 Gfx character_model_gem_env_rgba16_ci4_aligner[] = {gsSPEndDisplayList()};
@@ -96,10 +119,18 @@ Gfx mat_character_model_shroom_placeholder_2_f3d[] = {
 };
 
 
-Gfx mat_character_model_black_f3d[] = {
+Gfx mat_character_model_eye_decal_f3d[] = {
 	gsDPPipeSync(),
-	gsDPSetCombineLERP(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1),
+	gsDPSetCombineLERP(0, 0, 0, 0, 0, 0, 0, TEXEL0, 0, 0, 0, 0, 0, 0, 0, TEXEL0),
 	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPTileSync(),
+	gsDPSetTextureImage(G_IM_FMT_I, G_IM_SIZ_8b, 8, character_model_eyecut_I4_i8),
+	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_8b, 1, 0, 7, 0, G_TX_WRAP | G_TX_MIRROR, 4, 0, G_TX_WRAP | G_TX_MIRROR, 3, 0),
+	gsDPLoadSync(),
+	gsDPLoadTile(7, 0, 0, 28, 60),
+	gsDPPipeSync(),
+	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_8b, 1, 0, 0, 0, G_TX_WRAP | G_TX_MIRROR, 4, 0, G_TX_WRAP | G_TX_MIRROR, 3, 0),
+	gsDPSetTileSize(0, 0, 0, 28, 60),
 	gsSPEndDisplayList(),
 };
 
@@ -125,6 +156,7 @@ Gfx mat_character_model_t_env_f3d[] = {
 	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 1, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 3, 0),
 	gsDPSetTileSize(0, 0, 0, 28, 0),
 	gsDPSetPrimColor(0, 0, 254, 89, 91, 255),
+	gsSPSetLights1(character_model_t_env_f3d_lights),
 	gsSPEndDisplayList(),
 };
 
@@ -376,24 +408,24 @@ Gfx character_Foot_R_mesh[] = {
 
 Vtx character_Head_mesh_vtx_0[19] = {
 	{{{-20, -15, -23},0, {64, 16},{0xD9, 0xAF, 0xA7, 0xFF}}},
-	{{{-26, -15, 17},0, {64, 8},{0xCD, 0xAA, 0x4E, 0xFF}}},
-	{{{-43, 6, 5},0, {64, 16},{0x82, 0x1, 0xF, 0xFF}}},
-	{{{32, -15, 14},0, {192, 8},{0x39, 0xAC, 0x4C, 0xFF}}},
-	{{{34, -15, -5},0, {192, 16},{0x4C, 0xA8, 0xCE, 0xFF}}},
-	{{{38, 12, 17},0, {320, 8},{0x54, 0x29, 0x56, 0xFF}}},
-	{{{42, 5, -10},0, {320, 16},{0x68, 0x15, 0xBB, 0xFF}}},
+	{{{-26, -15, 16},0, {64, 8},{0xCD, 0xAA, 0x4F, 0xFF}}},
+	{{{-43, 6, 5},0, {64, 16},{0x82, 0x1, 0x10, 0xFF}}},
+	{{{32, -15, 16},0, {192, 8},{0x37, 0xAF, 0x50, 0xFF}}},
+	{{{34, -15, -5},0, {192, 16},{0x4D, 0xA8, 0xCD, 0xFF}}},
+	{{{38, 12, 16},0, {320, 8},{0x56, 0x29, 0x54, 0xFF}}},
+	{{{42, 5, -10},0, {320, 16},{0x68, 0x16, 0xBB, 0xFF}}},
 	{{{-20, -15, -23},0, {192, 24},{0xD9, 0xAF, 0xA7, 0xFF}}},
 	{{{-20, 25, -23},0, {320, 24},{0xD9, 0x47, 0x9E, 0xFF}}},
-	{{{-43, 6, 5},0, {320, 24},{0x82, 0x1, 0xF, 0xFF}}},
-	{{{-3, 32, -2},0, {320, 24},{0x12, 0x7E, 0xFB, 0xFF}}},
-	{{{-26, 25, 17},0, {320, 32},{0xCC, 0x52, 0x53, 0xFF}}},
-	{{{-43, 6, 5},0, {320, 32},{0x82, 0x1, 0xF, 0xFF}}},
-	{{{30, 21, 2},0, {320, 16},{0x3A, 0x71, 0xFB, 0xFF}}},
-	{{{-26, -15, 17},0, {192, 0},{0xCD, 0xAA, 0x4E, 0xFF}}},
-	{{{-26, 25, 17},0, {320, 0},{0xCC, 0x52, 0x53, 0xFF}}},
-	{{{-43, 6, 5},0, {192, 0},{0x82, 0x1, 0xF, 0xFF}}},
-	{{{30, 21, 2},0, {320, 8},{0x3A, 0x71, 0xFB, 0xFF}}},
-	{{{-3, 32, -2},0, {320, 0},{0x12, 0x7E, 0xFB, 0xFF}}},
+	{{{-43, 6, 5},0, {320, 24},{0x82, 0x1, 0x10, 0xFF}}},
+	{{{-3, 32, -2},0, {320, 24},{0x13, 0x7E, 0xFC, 0xFF}}},
+	{{{-26, 25, 16},0, {320, 32},{0xCC, 0x53, 0x52, 0xFF}}},
+	{{{-43, 6, 5},0, {320, 32},{0x82, 0x1, 0x10, 0xFF}}},
+	{{{30, 21, 2},0, {320, 16},{0x3A, 0x71, 0xFC, 0xFF}}},
+	{{{-26, -15, 16},0, {192, 0},{0xCD, 0xAA, 0x4F, 0xFF}}},
+	{{{-26, 25, 16},0, {320, 0},{0xCC, 0x53, 0x52, 0xFF}}},
+	{{{-43, 6, 5},0, {192, 0},{0x82, 0x1, 0x10, 0xFF}}},
+	{{{30, 21, 2},0, {320, 8},{0x3A, 0x71, 0xFC, 0xFF}}},
+	{{{-3, 32, -2},0, {320, 0},{0x13, 0x7E, 0xFC, 0xFF}}},
 };
 
 Gfx character_Head_mesh_tri_0[] = {
@@ -443,22 +475,6 @@ Gfx character_Head_mesh_tri_2[] = {
 	gsSP2Triangles(2, 3, 4, 0, 4, 5, 6, 0),
 	gsSP1Triangle(6, 5, 0, 0),
 	gsSPEndDisplayList(),
-};Vtx character_Head_mesh_vtx_3[8] = {
-	{{{-16, -2, 17},0, {-16, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
-	{{{-9, -2, 17},0, {1008, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
-	{{{-9, 16, 17},0, {1008, -16},{0x0, 0x0, 0x7F, 0xFF}}},
-	{{{-16, 16, 17},0, {-16, -16},{0x0, 0x0, 0x7F, 0xFF}}},
-	{{{8, -3, 17},0, {-16, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
-	{{{14, -3, 17},0, {1008, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
-	{{{14, 12, 17},0, {1008, -16},{0x0, 0x0, 0x7F, 0xFF}}},
-	{{{8, 12, 17},0, {-16, -16},{0x0, 0x0, 0x7F, 0xFF}}},
-};
-
-Gfx character_Head_mesh_tri_3[] = {
-	gsSPVertex(character_Head_mesh_vtx_3 + 0, 8, 0),
-	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
-	gsSP2Triangles(4, 5, 6, 0, 4, 6, 7, 0),
-	gsSPEndDisplayList(),
 };
 
 Gfx character_Head_mesh[] = {
@@ -469,8 +485,48 @@ Gfx character_Head_mesh[] = {
 	gsSPDisplayList(character_Head_mesh_tri_1),
 	gsSPDisplayList(mat_character_model_shroom_placeholder_2_f3d),
 	gsSPDisplayList(character_Head_mesh_tri_2),
-	gsSPDisplayList(mat_character_model_black_f3d),
-	gsSPDisplayList(character_Head_mesh_tri_3),
+	gsSPEndDisplayList(),
+};
+
+
+
+Vtx character_Eye_L_mesh_vtx_0[4] = {
+	{{{-3, -9, 0},0, {-16, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{3, -9, 0},0, {496, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{3, 9, 0},0, {496, -16},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{-3, 9, 0},0, {-16, -16},{0x0, 0x0, 0x7F, 0xFF}}},
+};
+
+Gfx character_Eye_L_mesh_tri_0[] = {
+	gsSPVertex(character_Eye_L_mesh_vtx_0 + 0, 4, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+	gsSPEndDisplayList(),
+};
+
+Gfx character_Eye_L_mesh[] = {
+	gsSPDisplayList(mat_character_model_eye_decal_f3d),
+	gsSPDisplayList(character_Eye_L_mesh_tri_0),
+	gsSPEndDisplayList(),
+};
+
+
+
+Vtx character_Eye_R_mesh_vtx_0[4] = {
+	{{{-3, -9, 0},0, {-16, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{4, -9, 0},0, {496, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{4, 9, 0},0, {496, -16},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{-3, 9, 0},0, {-16, -16},{0x0, 0x0, 0x7F, 0xFF}}},
+};
+
+Gfx character_Eye_R_mesh_tri_0[] = {
+	gsSPVertex(character_Eye_R_mesh_vtx_0 + 0, 4, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+	gsSPEndDisplayList(),
+};
+
+Gfx character_Eye_R_mesh[] = {
+	gsSPDisplayList(mat_character_model_eye_decal_f3d),
+	gsSPDisplayList(character_Eye_R_mesh_tri_0),
 	gsSPEndDisplayList(),
 };
 
@@ -592,6 +648,18 @@ BoneLayer character_model_bone7_layers[] = {
 };
 BoneLayer character_model_bone8_layers[] = {
     {
+        LAYER_XLU_DECAL,
+        character_Eye_L_mesh,
+    },
+};
+BoneLayer character_model_bone9_layers[] = {
+    {
+        LAYER_XLU_DECAL,
+        character_Eye_R_mesh,
+    },
+};
+BoneLayer character_model_bone10_layers[] = {
+    {
         LAYER_OPA_SURF,
         character_Torso_mesh,
     },
@@ -639,12 +707,12 @@ Bone character_model_bones[] = {
     },
     {
         3,
-        2,
+        1,
         1,
         0,
-        -36.803287506103516,
-        0.0,
-        0.0,
+        -94.40937042236328,
+        -5.496072769165039,
+        1.3452813625335693,
         character_model_bone3_layers,
         NULL,
         NULL,
@@ -652,12 +720,12 @@ Bone character_model_bones[] = {
     },
     {
         4,
-        3,
+        1,
         1,
         0,
-        -38.11804962158203,
-        0.0,
-        0.0,
+        -132.52743530273438,
+        -5.496072769165039,
+        1.3452813625335693,
         character_model_bone4_layers,
         NULL,
         NULL,
@@ -704,13 +772,39 @@ Bone character_model_bones[] = {
     },
     {
         8,
+        7,
+        1,
+        0,
+        10.858016014099121,
+        4.263944625854492,
+        16.17925453186035,
+        character_model_bone8_layers,
+        NULL,
+        NULL,
+        NULL,
+    },
+    {
+        9,
+        7,
+        1,
+        0,
+        -12.478515625,
+        7.585477828979492,
+        16.177051544189453,
+        character_model_bone9_layers,
+        NULL,
+        NULL,
+        NULL,
+    },
+    {
+        10,
         0,
         1,
         0,
         0.0,
         68.54440307617188,
         -2.996170678670751e-06,
-        character_model_bone8_layers,
+        character_model_bone10_layers,
         NULL,
         NULL,
         NULL,
@@ -718,7 +812,7 @@ Bone character_model_bones[] = {
 };
 
 Model character_model = {
-    9,
+    11,
     0,
     character_model_bones
 };

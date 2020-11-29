@@ -34,8 +34,8 @@ typedef struct BehaviorParams_t BehaviorParams;
 typedef struct InputData_t InputData;
 
 // Components
-#define COMPONENT(Name, Type) typedef Type Name;
-#include "components.inc.h"
-#undef COMPONENT
+// #define COMPONENT(Name, Type) typedef Type Name;
+// #include "components.inc.h"
+// #undef COMPONENT
 
 #endif

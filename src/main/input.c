@@ -4,6 +4,8 @@
 #include <mathutils.h>
 #include <mem.h>
 
+InputData g_PlayerInput;
+
 static OSContStatus controllerStatuses[MAXCONTROLLERS];
 static OSContPad contPads[MAXCONTROLLERS];
 
@@ -27,7 +29,9 @@ void beginInputPolling()
 // Sin of the above alpha value
 #define SIN_ALPHA (0.98443781700784162202923616551396f)
 
-void readInput(InputData *inputBuffer, int numControllers)
+#define numControllers 1
+
+void readInput()
 {
     OSContPad *curPad;
     osContGetReadData(contPads);
@@ -48,7 +52,7 @@ void readInput(InputData *inputBuffer, int numControllers)
         }
         else
         {
-            octantAngle &= 0x1FFF;
+            octantAngle = angle & 0x1FFF;
         }
 
         magnitude = MIN(curMagnitude * sins(octantAngle + ALPHA) / (R0 * SIN_ALPHA * 32768.0f), 1.0f);
@@ -58,10 +62,9 @@ void readInput(InputData *inputBuffer, int numControllers)
             magnitude = 0.0f;
         }
 
-        inputBuffer->magnitude = magnitude;
-        inputBuffer->angle = angle;
-        inputBuffer->x = (magnitude / 32768.0f) * coss(angle);
-        inputBuffer->y = (magnitude / 32768.0f) * sins(angle);
-        inputBuffer++;
+        g_PlayerInput.magnitude = magnitude;
+        g_PlayerInput.angle = angle;
+        g_PlayerInput.x = (magnitude / 32768.0f) * coss(angle);
+        g_PlayerInput.y = (magnitude / 32768.0f) * sins(angle);
     }
 }

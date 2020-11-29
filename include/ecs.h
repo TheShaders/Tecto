@@ -27,6 +27,9 @@ enum ComponentBits
 
 #undef COMPONENT
 
+#define ARCHETYPE_MODEL (Bit_Position | Bit_Rotation | Bit_Model)
+#define ARCHETYPE_PLAYER (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Behavior | Bit_Model)
+
 // Callback provided to the ecs to be called for every array of a given component selection when iterating
 typedef void (*EntityArrayCallback)(size_t count, void *arg, void **componentArrays);
 

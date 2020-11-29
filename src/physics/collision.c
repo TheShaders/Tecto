@@ -6,6 +6,7 @@
 // game code
 #include <types.h>
 #include <collision.h>
+#include <mathutils.h>
 
 #define CALC_TMIN_TMAX(coordIndex) {\
     t0 = (box->min[coordIndex] - rayStart[coordIndex]) * rayDirInv[coordIndex];\
@@ -38,7 +39,7 @@ u32 testVerticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin,
     return 1;
 }
 
-f32 verticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax)
+float verticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax)
 {
     float t0, t1;
 
@@ -95,7 +96,7 @@ u32 testRayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tm
     return 1;
 }
 
-f32 rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax)
+float rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax)
 {
     float t0, t1;
 
@@ -132,14 +133,14 @@ f32 rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax)
     return tmin;
 }
 
-f32 verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float tmax)
+float verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float tmax)
 {
-    f32 denom; // Denominator for calculating ray intersection distance
-    f32 distOnRay; // Intersection point distance on ray
+    float denom; // Denominator for calculating ray intersection distance
+    float distOnRay; // Intersection point distance on ray
     Vec3 intersection; // Ray/plane intersection point
     Vec3 w; // Intersection point - vertex1
-    f32 uu, uv, vv, wu, wv; // Dot products
-    f32 s, t; // Barycentric coordinates
+    float uu, uv, vv, wu, wv; // Dot products
+    float s, t; // Barycentric coordinates
 
     // Intersect the ray with the plane that the surface lies in
     denom = tri->normal[1] * length;
@@ -190,14 +191,14 @@ f32 verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float
     return distOnRay;
 }
 
-f32 rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax)
+float rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax)
 {
-    f32 denom; // Denominator for calculating ray intersection distance
-    f32 distOnRay; // Intersection point distance on ray
+    float denom; // Denominator for calculating ray intersection distance
+    float distOnRay; // Intersection point distance on ray
     Vec3 intersection; // Ray/plane intersection point
     Vec3 w; // Intersection point - vertex1
-    f32 uu, uv, vv, wu, wv; // Dot products
-    f32 s, t; // Barycentric coordinates
+    float uu, uv, vv, wu, wv; // Dot products
+    float s, t; // Barycentric coordinates
 
     // Intersect the ray with the plane that the surface lies in
     denom = VEC3_DOT(tri->normal, rayDir);

@@ -5,5 +5,5 @@
 
 #include "assets/logo/model.inc.c"
 #include "assets/character/model.inc.c"
-#include "assets/character/anims/anim_Walking.inc.c"
+#include "assets/character/anims/data.inc.c"
 #include "assets/test_collision/collision.inc.c"

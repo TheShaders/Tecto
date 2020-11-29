@@ -136,14 +136,14 @@ s16 atan2sTable[0x401] = {
 // http://nghiaho.com/?p=997
 float fastAtanf(float x)
 {
-    return M_PI_4*x - x*(fabs(x) - 1)*(0.2447 + 0.0663*fabs(x));
+    return M_PI_4*x - x*(ABS(x) - 1)*(0.2447 + 0.0663*ABS(x));
 }
 // atan2approx from https://github.com/ducha-aiki/fast_atan2/blob/master/fast_atan.cpp
 float fastAtan2f(float y, float x)
 {
   double absx, absy;
-  absy = fabs(y);
-  absx = fabs(x);
+  absy = ABS(y);
+  absx = ABS(x);
   short octant = ((x<0) << 2) + ((y<0) << 1 ) + (absx <= absy);
   switch (octant) {
     case 0: {

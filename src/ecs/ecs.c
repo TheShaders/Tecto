@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <model.h>
 
-#define COMPONENT(Name, Type) sizeof(Name),
+#define COMPONENT(Name, Type) sizeof(Type),
 
 const size_t g_componentSizes[] = {
 #include "components.inc.h"

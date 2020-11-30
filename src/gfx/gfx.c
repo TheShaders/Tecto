@@ -711,9 +711,9 @@ void drawColTris(u32 layer, ColTri *tris, u32 count, u32 color)
         verts[2].v.ob[1] = tris[i].vertex[1] + tris[i].v[1];
         verts[2].v.ob[2] = tris[i].vertex[2] + tris[i].v[2];
 
-        verts[0].n.n[0] = 127.0f * tris[i].normal[0];
-        verts[0].n.n[1] = 127.0f * tris[i].normal[1];
-        verts[0].n.n[2] = 127.0f * tris[i].normal[2];
+        verts[0].n.n[0] = verts[1].n.n[0] = verts[2].n.n[0] = 127.0f * tris[i].normal[0];
+        verts[0].n.n[1] = verts[1].n.n[1] = verts[2].n.n[1] = 127.0f * tris[i].normal[1];
+        verts[0].n.n[2] = verts[1].n.n[2] = verts[2].n.n[2] = 127.0f * tris[i].normal[2];
 
         gSPVertex(dlist++, verts, 3, 0);
         gSP1Triangle(dlist++, 0, 1, 2, 0x00);

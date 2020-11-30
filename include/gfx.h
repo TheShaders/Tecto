@@ -101,6 +101,7 @@ void drawLine(u32 layer, Vec3 start, Vec3 end, u32 color);
 void drawColTris(u32 layer, ColTri *tris, u32 count, u32 color);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b);
+void mtxfEulerXYZ(MtxF out, s16 rx, s16 ry, s16 rz);
 
 #define copyMat(dst, src) \
 { \
@@ -164,6 +165,13 @@ void mtxfMul(MtxF out, MtxF a, MtxF b);
 { \
     MtxF tmp; \
     guRotateF(tmp, angle, axisX, axisY, axisZ); \
+    mtxfMul(*g_curMatFPtr, *g_curMatFPtr, tmp); \
+}
+
+#define gfxRotateEulerXYZ(rx, ry, rz) \
+{ \
+    MtxF tmp; \
+    mtxfEulerXYZ(tmp, rx, ry, rz); \
     mtxfMul(*g_curMatFPtr, *g_curMatFPtr, tmp); \
 }
 

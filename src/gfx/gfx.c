@@ -334,6 +334,36 @@ void mtxfMul(MtxF out, MtxF a, MtxF b)
     out[3][3] = a03*b30+a13*b31+a23*b32+a33*b33;
 }
 
+void mtxfEulerXYZ(MtxF out, s16 rx, s16 ry, s16 rz)
+{
+    float s1 = sinsf(rx);
+    float c1 = cossf(rx);
+    float s2 = sinsf(ry);
+    float c2 = cossf(ry);
+    float s3 = sinsf(rz);
+    float c3 = cossf(rz);
+
+    out[0][0] = c2 * c3;
+    out[0][1] = -c2 * s3;
+    out[0][2] = s2;
+    out[0][3] = 0.0f;
+
+    out[1][0] = c1 * s3 + c3 * s1 * s2;
+    out[1][1] = c1 * c3 - s1 * s2 * s3;
+    out[1][2] = -c2 * s1;
+    out[1][3] = 0.0f;
+
+    out[2][0] = s1 * s3 - c1 * c3 * s2;
+    out[2][1] = c3 * s1 + c1 * s2 * s3;
+    out[2][2] = c1 * c2;
+    out[2][3] = 0.0f;
+
+    out[3][0] = 0.0f;
+    out[3][1] = 0.0f;
+    out[3][2] = 0.0f;
+    out[3][3] = 1.0f;
+}
+
 void rspUcodeLoadInit(void)
 {
     gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_CULL_BACK | G_LIGHTING);
@@ -417,6 +447,7 @@ void drawModel(Model *toDraw, Animation *anim, u32 frame)
             float z = 0.0f;
             u32 hasCurrentTransformComponent = 0;
             s16 *curBoneChannel = segmentedToVirtual(curBoneTable->channels);
+            s16 rx = 0; s16 ry = 0; s16 rz = 0;
             curBoneChannel += frame;
 
             if (curBoneTable->flags & CHANNEL_POS_X)
@@ -441,21 +472,31 @@ void drawModel(Model *toDraw, Animation *anim, u32 frame)
             {
                 gfxTranslate(x, y, z);
             }
+            
+            hasCurrentTransformComponent = 0;
 
             if (curBoneTable->flags & CHANNEL_ROT_X)
             {
-                gfxRotateAxisAngle(*curBoneChannel * (180.0f / 32768.0f), 1.0f, 0.0f, 0.0f);
+                rx = *curBoneChannel;
                 curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
             }
             if (curBoneTable->flags & CHANNEL_ROT_Y)
             {
-                gfxRotateAxisAngle(*curBoneChannel * (180.0f / 32768.0f), 0.0f, 1.0f, 0.0f);
+                ry = *curBoneChannel;
                 curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
             }
             if (curBoneTable->flags & CHANNEL_ROT_Z)
             {
-                gfxRotateAxisAngle(*curBoneChannel * (180.0f / 32768.0f), 0.0f, 0.0f, 1.0f);
+                rz = *curBoneChannel;
                 curBoneChannel += numFrames;
+                hasCurrentTransformComponent = 1;
+            }
+
+            if (hasCurrentTransformComponent)
+            {
+                gfxRotateEulerXYZ(rx, ry, rz);
             }
 
             hasCurrentTransformComponent = 0;

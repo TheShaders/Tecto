@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#define INPUT_DEADZONE 0.05f
+#define INPUT_DEADZONE 0.1f
 
 typedef struct InputData_t {
     float x;

@@ -62,9 +62,7 @@ void drawAnimatedModels(size_t count, __attribute__((unused)) void *arg, void **
     {
         gfxPushMat();
          gfxTranslate((*curPos)[0], (*curPos)[1], (*curPos)[2]);
-         gfxRotateAxisAngle((*curRot)[0] * (180.0f / 32768.0f), 1.0f, 0.0f, 0.0f);
-         gfxRotateAxisAngle((*curRot)[1] * (180.0f / 32768.0f), 0.0f, 1.0f, 0.0f);
-         gfxRotateAxisAngle((*curRot)[2] * (180.0f / 32768.0f), 0.0f, 0.0f, 1.0f);
+         gfxRotateEulerXYZ((*curRot)[0], (*curRot)[1], (*curRot)[2]);
           drawModel(*curModel, curAnimState->anim, ANIM_COUNTER_TO_FRAME(curAnimState->counter));
         gfxPopMat();
 
@@ -93,9 +91,7 @@ void drawModels(size_t count, __attribute__((unused)) void *arg, void **componen
     {
         gfxPushMat();
          gfxTranslate((*curPos)[0], (*curPos)[1], (*curPos)[2]);
-         gfxRotateAxisAngle((*curRot)[0] * (180.0f / 32768.0f), 1.0f, 0.0f, 0.0f);
-         gfxRotateAxisAngle((*curRot)[1] * (180.0f / 32768.0f), 0.0f, 1.0f, 0.0f);
-         gfxRotateAxisAngle((*curRot)[2] * (180.0f / 32768.0f), 0.0f, 0.0f, 1.0f);
+         gfxRotateEulerXYZ((*curRot)[0], (*curRot)[1], (*curRot)[2]);
           drawModel(*curModel, NULL, 0);
         gfxPopMat();
         count--;

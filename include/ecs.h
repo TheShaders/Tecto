@@ -30,7 +30,8 @@ enum ComponentBits
 #define COMPONENT_INDEX(Component, Archetype) (__builtin_popcount((Archetype) & (Bit_##Component - 1)))
 
 #define ARCHETYPE_MODEL (Bit_Position | Bit_Rotation | Bit_Model)
-#define ARCHETYPE_PLAYER (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Behavior | Bit_Model)
+#define ARCHETYPE_ANIM_MODEL (Bit_Position | Bit_Rotation | Bit_Model | Bit_AnimState)
+#define ARCHETYPE_PLAYER (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Behavior | Bit_Model | Bit_AnimState)
 
 // Callback provided to the ecs to be called for every array of a given component selection when iterating
 typedef void (*EntityArrayCallback)(size_t count, void *arg, void **componentArrays);

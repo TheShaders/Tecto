@@ -12,6 +12,7 @@ typedef struct Model_t Model;
 typedef struct Animation_t Animation;
 typedef struct BoneTable_t BoneTable;
 typedef struct AnimTrigger_t AnimTrigger;
+typedef struct AnimState_t AnimState;
 
 // Prototypes for collision structs
 typedef struct AABB_t AABB;

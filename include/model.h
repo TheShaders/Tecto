@@ -71,4 +71,15 @@ typedef struct AnimTrigger_t {
     void (*triggerCb)(Model* model, u32 frame); // The callback to run at the specified frame
 } AnimTrigger;
 
+#define ANIM_COUNTER_FACTOR 16.0f
+#define ANIM_COUNTER_SHIFT 4
+#define ANIM_COUNTER_TO_FRAME(x) ((x) >> (ANIM_COUNTER_SHIFT))
+
+typedef struct AnimState_t {
+    Animation* anim;
+    u16 counter; // Frame counter of format 12.4
+    s8 speed; // Animation playback speed of format s3.4
+    s8 triggerIndex; // Index of the previous trigger
+} AnimState;
+
 #endif

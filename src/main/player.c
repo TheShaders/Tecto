@@ -1,6 +1,8 @@
 #include <ultra64.h>
 
 #include <player.h>
+#include <mem.h>
+#include <model.h>
 #include <main.h>
 #include <input.h>
 #include <camera.h>
@@ -11,6 +13,8 @@
 #include <debug.h>
 
 extern Model character_model;
+extern Animation character_anim_Idle_Long;
+extern Animation character_anim_Walk;
 
 void createPlayer(void)
 {
@@ -20,7 +24,7 @@ void createPlayer(void)
 
 void createPlayerCallback(__attribute__((unused)) size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
-    // Components: Position, Velocity, Rotation, BehaviorParams, Model
+    // Components: Position, Velocity, Rotation, BehaviorParams, Model, AnimState
     Vec3 *pos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_PLAYER)];
     BehaviorParams *bhvParams = componentArrays[COMPONENT_INDEX(Behavior, ARCHETYPE_PLAYER)];
     Model **model = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_PLAYER)];
@@ -34,11 +38,13 @@ void createPlayerCallback(__attribute__((unused)) size_t count, __attribute__((u
 
 void playerCallback(__attribute__((unused)) void **components, __attribute__((unused)) void *data)
 {
-    // Components: Position, Velocity, Rotation, BehaviorParams, Model
+    // Components: Position, Velocity, Rotation, BehaviorParams, Model, AnimState
     Vec3 *pos = components[COMPONENT_INDEX(Position, ARCHETYPE_PLAYER)];
     Vec3 *vel = components[COMPONENT_INDEX(Velocity, ARCHETYPE_PLAYER)];
     Vec3s *rot = components[COMPONENT_INDEX(Rotation, ARCHETYPE_PLAYER)];
+    AnimState *animState = components[COMPONENT_INDEX(AnimState, ARCHETYPE_PLAYER)];
     float targetSpeed;
+    float newSpeed;
     // Vec3 rayDir = {0.0f, -1000.0f, 0.0f};
     // ColTri *hitTri;
     // float hitDist;
@@ -73,6 +79,27 @@ void playerCallback(__attribute__((unused)) void **components, __attribute__((un
     (*pos)[2] += (*vel)[2];
 
     (*rot)[1] = atan2s((*vel)[2], (*vel)[0]);
+
+    newSpeed = POW2((*vel)[0]) + POW2((*vel)[2]);
+
+    if (newSpeed >= POW2(0.1f))
+    {
+        if (animState->anim != (Animation*) segmentedToVirtual(&character_anim_Walk))
+        {
+            animState->anim = (Animation*) segmentedToVirtual(&character_anim_Walk);
+            animState->counter = 0;
+        }
+        animState->speed = (s16)(sqrtf(newSpeed) * (ANIM_COUNTER_FACTOR / MAX_PLAYER_SPEED));
+    }
+    else
+    {
+        if (animState->anim != (Animation*) segmentedToVirtual(&character_anim_Idle_Long))
+        {
+            animState->anim = (Animation*) segmentedToVirtual(&character_anim_Idle_Long);
+            animState->counter = 0;
+        }
+        animState->speed = (s16)(1.0f * ANIM_COUNTER_FACTOR);
+    }
 
     // hitDist = raycast(*pos, rayDir, 0.0f, 1.0f, &hitTri);
     // if (hitTri)

@@ -50,15 +50,13 @@ void processBehaviorEntities(size_t count, __attribute__((unused)) void *arg, in
     }
 }
 
-int animFrame = 0;
-
-void drawModels(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
+void drawAnimatedModels(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
 {
     // Components: Position, Rotation, Model
-    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_MODEL)];
-    Vec3s *curRot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_MODEL)];
-    Model **curModel = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_MODEL)];
-    Animation *anim = &character_anim_Walk;
+    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_ANIM_MODEL)];
+    Vec3s *curRot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_ANIM_MODEL)];
+    Model **curModel = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_ANIM_MODEL)];
+    AnimState *curAnimState = componentArrays[COMPONENT_INDEX(AnimState, ARCHETYPE_ANIM_MODEL)];
 
     while (count)
     {
@@ -67,17 +65,44 @@ void drawModels(size_t count, __attribute__((unused)) void *arg, void **componen
          gfxRotateAxisAngle((*curRot)[0] * (180.0f / 32768.0f), 1.0f, 0.0f, 0.0f);
          gfxRotateAxisAngle((*curRot)[1] * (180.0f / 32768.0f), 0.0f, 1.0f, 0.0f);
          gfxRotateAxisAngle((*curRot)[2] * (180.0f / 32768.0f), 0.0f, 0.0f, 1.0f);
-          drawModel(*curModel, anim, animFrame);
+          drawModel(*curModel, curAnimState->anim, ANIM_COUNTER_TO_FRAME(curAnimState->counter));
+        gfxPopMat();
+
+        curAnimState->counter += curAnimState->speed;
+        if (curAnimState->counter >= (curAnimState->anim->frameCount << (ANIM_COUNTER_SHIFT)))
+        {
+            curAnimState->counter -= (curAnimState->anim->frameCount << (ANIM_COUNTER_SHIFT));
+        }
+
+        count--;
+        curPos++;
+        curRot++;
+        curModel++;
+        curAnimState++;
+    }
+}
+
+void drawModels(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
+{
+    // Components: Position, Rotation, Model
+    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_MODEL)];
+    Vec3s *curRot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_MODEL)];
+    Model **curModel = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_MODEL)];
+
+    while (count)
+    {
+        gfxPushMat();
+         gfxTranslate((*curPos)[0], (*curPos)[1], (*curPos)[2]);
+         gfxRotateAxisAngle((*curRot)[0] * (180.0f / 32768.0f), 1.0f, 0.0f, 0.0f);
+         gfxRotateAxisAngle((*curRot)[1] * (180.0f / 32768.0f), 0.0f, 1.0f, 0.0f);
+         gfxRotateAxisAngle((*curRot)[2] * (180.0f / 32768.0f), 0.0f, 0.0f, 1.0f);
+          drawModel(*curModel, NULL, 0);
         gfxPopMat();
         count--;
         curPos++;
         curRot++;
         curModel++;
     }
-    
-    animFrame++;
-    if (animFrame >= ((Animation*)segmentedToVirtual(anim))->frameCount)
-        animFrame = 0;
 }
 
 void setCollision(size_t count, void *tree, void **componentArrays)
@@ -147,8 +172,10 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         // Set up the camera
         setupCameraMatrices(&g_Camera);
 
-        // Draw all entities that have a model
-        iterateOverEntities(drawModels, NULL, ARCHETYPE_MODEL, 0);
+        // Draw all entities that have a model and no animation
+        iterateOverEntities(drawModels, NULL, ARCHETYPE_MODEL, Bit_AnimState);
+        // Draw all entities that have a model and an animation
+        iterateOverEntities(drawAnimatedModels, NULL, ARCHETYPE_ANIM_MODEL, 0);
 
         if (1) {
             BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&test_collision_tree);

@@ -4,10 +4,10 @@
 #include <types.h>
 
 #define MAX_STEP_HEIGHT 30.0f
-#define MAX_PLAYER_SPEED 15.0f
+#define MAX_PLAYER_SPEED 5.0f
 #define MAX_PLAYER_SPEED_SQ POW2(MAX_PLAYER_SPEED)
 #define INV_MAX_PLAYER_SPEED_SQ (1.0f / MAX_PLAYER_SPEED_SQ)
-#define PLAYER_ACCEL_TIME_CONST (0.2f)
+#define PLAYER_ACCEL_TIME_CONST (0.1f)
 
 void createPlayer(void);
 void createPlayerCallback(size_t count, void *arg, void **componentArrays);

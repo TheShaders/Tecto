@@ -27,4 +27,7 @@ float fastAtanf(float x);
 float fastAtan2f(float y, float x);
 s16 atan2s(f32 y, f32 x);
 
+float sinsf(s16 angle);
+#define cossf(x) sinsf((x) + 0x4000)
+
 #endif

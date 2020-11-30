@@ -1,8 +1,9 @@
-#include <PR/gu.h>
+#include <ultra64.h>
 
 #include <player.h>
 #include <main.h>
 #include <input.h>
+#include <camera.h>
 #include <gfx.h>
 #include <ecs.h>
 #include <mathutils.h>
@@ -36,27 +37,50 @@ void playerCallback(__attribute__((unused)) void **components, __attribute__((un
     // Components: Position, Velocity, Rotation, BehaviorParams, Model
     Vec3 *pos = components[COMPONENT_INDEX(Position, ARCHETYPE_PLAYER)];
     Vec3 *vel = components[COMPONENT_INDEX(Velocity, ARCHETYPE_PLAYER)];
-    Vec3 rayDir = {0.0f, -1000.0f, 0.0f};
+    Vec3s *rot = components[COMPONENT_INDEX(Rotation, ARCHETYPE_PLAYER)];
     float targetSpeed;
-    ColTri *hitTri;
-    float hitDist;
-    Vec3 rayEnd;
+    // Vec3 rayDir = {0.0f, -1000.0f, 0.0f};
+    // ColTri *hitTri;
+    // float hitDist;
+    // Vec3 rayEnd;
+
+    if (g_PlayerInput.buttonsHeld & R_CBUTTONS)
+    {
+        g_Camera.yaw += 0x100;
+    }
+    if (g_PlayerInput.buttonsHeld & L_CBUTTONS)
+    {
+        g_Camera.yaw -= 0x100;
+    }
+    
+    if (g_PlayerInput.buttonsHeld & D_CBUTTONS)
+    {
+        g_Camera.pitch = MIN(g_Camera.pitch + 0x100, 0x3000);
+    }
+    if (g_PlayerInput.buttonsHeld & U_CBUTTONS)
+    {
+        g_Camera.pitch = MAX(g_Camera.pitch - 0x100, -0x1000);
+    }
+
+    VEC3_COPY(g_Camera.target, *pos);
 
     targetSpeed = MAX_PLAYER_SPEED * g_PlayerInput.magnitude;
 
-    (*vel)[0] = (*vel)[0] * (1.0f - PLAYER_ACCEL_TIME_CONST) + targetSpeed * (PLAYER_ACCEL_TIME_CONST / 65536.0f) * coss(g_PlayerInput.angle);
-    (*vel)[2] = (*vel)[2] * (1.0f - PLAYER_ACCEL_TIME_CONST) - targetSpeed * (PLAYER_ACCEL_TIME_CONST / 65536.0f) * sins(g_PlayerInput.angle);
+    (*vel)[0] = (*vel)[0] * (1.0f - PLAYER_ACCEL_TIME_CONST) + targetSpeed * (PLAYER_ACCEL_TIME_CONST) * cossf(g_PlayerInput.angle + g_Camera.yaw);
+    (*vel)[2] = (*vel)[2] * (1.0f - PLAYER_ACCEL_TIME_CONST) - targetSpeed * (PLAYER_ACCEL_TIME_CONST) * sinsf(g_PlayerInput.angle + g_Camera.yaw);
 
     (*pos)[0] += (*vel)[0];
     (*pos)[2] += (*vel)[2];
 
-    hitDist = raycast(*pos, rayDir, 0.0f, 1.0f, &hitTri);
-    if (hitTri)
-    {
-        drawColTris(LAYER_OPA_DECAL, hitTri, 1, 0x00FF00FF); //8000786c
-        VEC3_SCALE(rayDir, rayDir, hitDist);
-    }
-    VEC3_ADD(rayEnd, *pos, rayDir);
+    (*rot)[1] = atan2s((*vel)[2], (*vel)[0]);
 
-    drawLine(LAYER_OPA_LINE, *pos, rayEnd, 0x0000FF00);
+    // hitDist = raycast(*pos, rayDir, 0.0f, 1.0f, &hitTri);
+    // if (hitTri)
+    // {
+    //     drawColTris(LAYER_OPA_DECAL, hitTri, 1, 0x00FF00FF); //8000786c
+    //     VEC3_SCALE(rayDir, rayDir, hitDist);
+    // }
+    // VEC3_ADD(rayEnd, *pos, rayDir);
+
+    // drawLine(LAYER_OPA_LINE, *pos, rayEnd, 0x0000FF00);
 }

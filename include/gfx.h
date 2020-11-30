@@ -87,7 +87,7 @@ extern Gfx *g_dlistHead;
 void initGfx(void);
 
 void startFrame(void);
-void setupViewMatrix(float angle);
+void setupCameraMatrices(Camera *camera);
 void endFrame(void);
 
 u8* allocGfx(s32 size);

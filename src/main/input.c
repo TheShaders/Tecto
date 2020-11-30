@@ -55,7 +55,7 @@ void readInput()
             octantAngle = angle & 0x1FFF;
         }
 
-        magnitude = MIN(curMagnitude * sins(octantAngle + ALPHA) / (R0 * SIN_ALPHA * 32768.0f), 1.0f);
+        magnitude = MIN(curMagnitude * sinsf(octantAngle + ALPHA) / (R0 * SIN_ALPHA), 1.0f);
 
         if (magnitude < INPUT_DEADZONE)
         {
@@ -64,7 +64,9 @@ void readInput()
 
         g_PlayerInput.magnitude = magnitude;
         g_PlayerInput.angle = angle;
-        g_PlayerInput.x = (magnitude / 32768.0f) * coss(angle);
-        g_PlayerInput.y = (magnitude / 32768.0f) * sins(angle);
+        g_PlayerInput.x = (magnitude) * cossf(angle);
+        g_PlayerInput.y = (magnitude) * sinsf(angle);
+        g_PlayerInput.buttonsPressed = (curPad->button) & ~g_PlayerInput.buttonsHeld;
+        g_PlayerInput.buttonsHeld = curPad->button;
     }
 }

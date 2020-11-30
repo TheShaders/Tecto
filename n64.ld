@@ -61,6 +61,7 @@ SECTIONS
         BUILD_ROOT/src/main/mem.o(.text*);
         BUILD_ROOT/src/main/init.o(.text*);
         BUILD_ROOT/src/main/input.o(.text*);
+        BUILD_ROOT/src/main/camera.o(.text*);
         BUILD_ROOT/src/main/player.o(.text*);
         BUILD_ROOT/src/main/task_sched.o(.text*);
         BUILD_ROOT/src/main/multiarraylist.o(.text*);
@@ -73,6 +74,7 @@ SECTIONS
         BUILD_ROOT/src/main/mem.o(.*data*);
         BUILD_ROOT/src/main/init.o(.*data*);
         BUILD_ROOT/src/main/input.o(.*data*);
+        BUILD_ROOT/src/main/camera.o(.*data*);
         BUILD_ROOT/src/main/player.o(.*data*);
         BUILD_ROOT/src/main/task_sched.o(.*data*);
         BUILD_ROOT/src/main/multiarraylist.o(.*data*);
@@ -158,6 +160,7 @@ SECTIONS
         BUILD_ROOT/src/main/mem.o(.bss*);
         BUILD_ROOT/src/main/init.o(.bss*);
         BUILD_ROOT/src/main/input.o(.bss*);
+        BUILD_ROOT/src/main/camera.o(.bss*);
         BUILD_ROOT/src/main/player.o(.bss*);
         BUILD_ROOT/src/main/task_sched.o(.bss*);
         BUILD_ROOT/src/main/multiarraylist.o(.bss*);

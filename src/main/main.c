@@ -12,6 +12,7 @@
 #include <mathutils.h>
 #include <player.h>
 #include <physics.h>
+#include <camera.h>
 
 #include <segments/intro.h>
 
@@ -63,7 +64,10 @@ void drawModels(size_t count, __attribute__((unused)) void *arg, void **componen
     {
         gfxPushMat();
          gfxTranslate((*curPos)[0], (*curPos)[1], (*curPos)[2]);
-         drawModel(*curModel, anim, animFrame);
+         gfxRotateAxisAngle((*curRot)[0] * (180.0f / 32768.0f), 1.0f, 0.0f, 0.0f);
+         gfxRotateAxisAngle((*curRot)[1] * (180.0f / 32768.0f), 0.0f, 1.0f, 0.0f);
+         gfxRotateAxisAngle((*curRot)[2] * (180.0f / 32768.0f), 0.0f, 0.0f, 1.0f);
+          drawModel(*curModel, anim, animFrame);
         gfxPopMat();
         count--;
         curPos++;
@@ -135,11 +139,13 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 #endif
         beginInputPolling();
         startFrame();
-        setupViewMatrix(angle);
         readInput();
 
         // Process all entities that have a behavior
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
+        
+        // Set up the camera
+        setupCameraMatrices(&g_Camera);
 
         // Draw all entities that have a model
         iterateOverEntities(drawModels, NULL, ARCHETYPE_MODEL, 0);

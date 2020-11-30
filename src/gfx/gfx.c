@@ -8,6 +8,8 @@
 #include <task_sched.h>
 #include <model.h>
 #include <collision.h>
+#include <camera.h>
+#include <mathutils.h>
 
 u16 g_frameBuffers[NUM_FRAME_BUFFERS][SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
 u16 g_depthBuffer[SCREEN_WIDTH * SCREEN_HEIGHT] __attribute__((aligned (64)));
@@ -135,23 +137,6 @@ void initGfx(void)
 static LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
 Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
 
-void setupViewMatrix(float angle)
-{
-    gSPLookAt(g_dlistHead++, &lookAt);
-    gfxLookat(
-        300.0f * sinf((M_PI / 180.0f) * angle * 0), 250.0f, 300.0f * cosf((M_PI / 180.0f) * angle * 0), // Eye pos
-        0.0f, 150.0f, 0.0f, // Look pos
-        0.0f, 1.0f, 0.0f);
-
-    lookAt.l[0].l.dir[0] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][0] + g_lightDir[1] * (*g_curMatFPtr)[1][0] + g_lightDir[2] * (*g_curMatFPtr)[2][0]);
-    lookAt.l[0].l.dir[1] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][1] + g_lightDir[1] * (*g_curMatFPtr)[1][1] + g_lightDir[2] * (*g_curMatFPtr)[2][1]);
-    lookAt.l[0].l.dir[2] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][2] + g_lightDir[1] * (*g_curMatFPtr)[1][2] + g_lightDir[2] * (*g_curMatFPtr)[2][2]);
-
-    lookAt.l[1].l.dir[0] = (s8)(*g_curMatFPtr)[1][0];
-    lookAt.l[1].l.dir[1] = -(s8)(*g_curMatFPtr)[1][1];
-    lookAt.l[1].l.dir[2] = (s8)(*g_curMatFPtr)[1][2];
-}
-
 void setupDrawLayers(void)
 {
     int i;
@@ -210,15 +195,6 @@ void resetGfxFrame(void)
 
     // Clear the modelview matrix
     gfxIdentity();
-
-    // Set up projection matrix
-
-    // Perpsective matrix
-    gfxPerspective(60.0f, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 100.0f, 20000.0f, 1.0f);
-
-    // Ortho matrix
-    // guOrthoF(g_gfxContexts[g_curGfxContext].projMtxF, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2, SCREEN_HEIGHT / 2, 100.0f, 20000.0f, 1.0f);
-    // g_perspNorm = 0xFFFF;
 }
 
 void sendGfxTask(void)
@@ -368,7 +344,6 @@ void rspUcodeLoadInit(void)
 
 void startFrame(void)
 {
-    Mtx* projMtx;
     resetGfxFrame();
 
     gSPSegment(g_dlistHead++, 0x00, 0x00000000);
@@ -390,15 +365,6 @@ void startFrame(void)
     gSPDisplayList(g_dlistHead++, clearScreenDL);
     
     gDPSetCycleType(g_dlistHead++, G_CYC_1CYCLE);
-    
-    gSPViewport(g_dlistHead++, &viewport);
-    gSPPerspNormalize(g_dlistHead++, g_perspNorm);
-
-    projMtx = (Mtx*)allocGfx(sizeof(Mtx));
-    guMtxF2L(g_gfxContexts[g_curGfxContext].projMtxF, projMtx);
-    
-    gSPMatrix(g_dlistHead++, projMtx,
-	       G_MTX_PROJECTION|G_MTX_LOAD|G_MTX_NOPUSH);
     
     rspUcodeLoadInit();
 
@@ -764,6 +730,53 @@ u8* allocGfx(s32 size)
     if (curGfxPoolPtr >= curGfxPoolEnd)
         return NULL;
     return retVal;
+}
+
+void setupCameraMatrices(Camera *camera)
+{
+    Mtx* projMtx;
+    Vec3 eyePos;
+    Vec3 eyeOffset = {
+        camera->distance * sinsf(camera->yaw) * cossf(camera->pitch),
+        camera->distance * sinsf(camera->pitch) + camera->yOffset,
+        camera->distance * cossf(camera->yaw) * cossf(camera->pitch)
+    };
+
+    VEC3_ADD(eyePos, eyeOffset, camera->target);
+
+    // Set up view matrix
+
+    gSPLookAt(g_dlistHead++, &lookAt);
+    gfxLookat(
+        eyePos[0], eyePos[1], eyePos[2], // Eye pos
+        camera->target[0], camera->target[1] + camera->yOffset, camera->target[2], // Look pos
+        0.0f, 1.0f, 0.0f); // Up vector
+
+    lookAt.l[0].l.dir[0] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][0] + g_lightDir[1] * (*g_curMatFPtr)[0][1] + g_lightDir[2] * (*g_curMatFPtr)[0][2]);
+    lookAt.l[0].l.dir[1] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[1][0] + g_lightDir[1] * (*g_curMatFPtr)[1][1] + g_lightDir[2] * (*g_curMatFPtr)[1][2]);
+    lookAt.l[0].l.dir[2] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[2][0] + g_lightDir[1] * (*g_curMatFPtr)[2][1] + g_lightDir[2] * (*g_curMatFPtr)[2][2]);
+
+    lookAt.l[1].l.dir[0] = (s8)(*g_curMatFPtr)[0][1];
+    lookAt.l[1].l.dir[1] = -(s8)(*g_curMatFPtr)[1][1];
+    lookAt.l[1].l.dir[2] = (s8)(*g_curMatFPtr)[2][1];
+
+    projMtx = (Mtx*)allocGfx(sizeof(Mtx));
+    guMtxF2L(g_gfxContexts[g_curGfxContext].projMtxF, projMtx);
+    
+    // Set up projection matrix
+
+    // Perpsective
+    gfxPerspective(camera->fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 100.0f, 20000.0f, 1.0f);
+
+    // Ortho
+    // guOrthoF(g_gfxContexts[g_curGfxContext].projMtxF, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2, SCREEN_HEIGHT / 2, 100.0f, 20000.0f, 1.0f);
+    // g_perspNorm = 0xFFFF;
+    
+    gSPViewport(g_dlistHead++, &viewport);
+    gSPPerspNormalize(g_dlistHead++, g_perspNorm);
+    
+    gSPMatrix(g_dlistHead++, projMtx,
+	       G_MTX_PROJECTION|G_MTX_LOAD|G_MTX_NOPUSH);
 }
 
 void endFrame()

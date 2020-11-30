@@ -10,6 +10,8 @@ typedef struct InputData_t {
     float y;
     float magnitude;
     s16 angle;
+    u16 buttonsHeld;
+    u16 buttonsPressed;
 } InputData;
 
 extern InputData g_PlayerInput;

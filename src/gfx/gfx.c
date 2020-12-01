@@ -344,17 +344,17 @@ void mtxfEulerXYZ(MtxF out, s16 rx, s16 ry, s16 rz)
     float c3 = cossf(rz);
 
     out[0][0] = c2 * c3;
-    out[0][1] = -c2 * s3;
-    out[0][2] = s2;
+    out[0][1] = c2 * s3;
+    out[0][2] = -s2;
     out[0][3] = 0.0f;
 
-    out[1][0] = c1 * s3 + c3 * s1 * s2;
-    out[1][1] = c1 * c3 - s1 * s2 * s3;
-    out[1][2] = -c2 * s1;
+    out[1][0] = s1 * s2 * c3 - c1 * s3;
+    out[1][1] = s1 * s2 * s3 + c1 * c3;
+    out[1][2] = s1 * c2;
     out[1][3] = 0.0f;
 
-    out[2][0] = s1 * s3 - c1 * c3 * s2;
-    out[2][1] = c3 * s1 + c1 * s2 * s3;
+    out[2][0] = c1 * s2 * c3 + s1 * s3;
+    out[2][1] = c1 * s2 * s3 - s1 * c3;
     out[2][2] = c1 * c2;
     out[2][3] = 0.0f;
 

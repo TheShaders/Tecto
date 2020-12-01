@@ -153,6 +153,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
     while (1)
     {
+        Vec3 lightDir = { 127.0f * sinf((M_PI / 180.0f) * angle), 127.0f * cosf((M_PI / 180.0f) * angle), 0.0f};
 #ifdef DEBUG_MODE
         bzero(&ProfilerData, sizeof(ProfilerData));
         ProfilerData.cpuTime = osGetTime();
@@ -167,6 +168,8 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         
         // Set up the camera
         setupCameraMatrices(&g_Camera);
+
+        setLightDirection(lightDir);
 
         // Draw all entities that have a model and no animation
         iterateOverEntities(drawModels, NULL, ARCHETYPE_MODEL, Bit_AnimState);

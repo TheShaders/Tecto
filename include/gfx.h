@@ -88,6 +88,7 @@ void initGfx(void);
 
 void startFrame(void);
 void setupCameraMatrices(Camera *camera);
+void setLightDirection(Vec3 lightDir);
 void endFrame(void);
 
 u8* allocGfx(s32 size);

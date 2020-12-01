@@ -134,8 +134,8 @@ void initGfx(void)
     setSegment(0x04, introSegAddr);
 }
 
-static LookAt lookAt = gdSPDefLookAt(127, 0, 0, 0, 127, 0);
-Vec3 g_lightDir = {127.0f, -127.0f, 0.0f};
+static LookAt *lookAt;
+static Lights1 *light;
 
 void setupDrawLayers(void)
 {
@@ -192,6 +192,10 @@ void resetGfxFrame(void)
 
     // Reset the matrix stack index
     g_curMatFPtr = &g_gfxContexts[g_curGfxContext].mtxFStack[0];
+
+    // Allocate the lookAt and light
+    lookAt = (LookAt*) allocGfx(sizeof(LookAt));
+    light = (Lights1*) allocGfx(sizeof(Lights1));
 
     // Clear the modelview matrix
     gfxIdentity();
@@ -264,12 +268,6 @@ const Gfx clearDepthBuffer[] = {
     gsDPSetDepthImage(g_depthBuffer),
     gsSPEndDisplayList(),
 };
-
-const Lights1 whiteLight = gdSPDefLights1(
-    0x7F, 0x7F, 0x7F, // Ambient
-    0x7F, 0x7F, 0x7F, // diffuse
-    50, 0, 50 // Light direction forward from camera
-);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b)
 {
@@ -369,7 +367,8 @@ void rspUcodeLoadInit(void)
     gSPLoadGeometryMode(g_dlistHead++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_CULL_BACK | G_LIGHTING);
     gSPTexture(g_dlistHead++, 0, 0, 0, 0, G_OFF);
     
-    gSPSetLights1(g_dlistHead++, whiteLight);
+    gSPSetLights1(g_dlistHead++, (*light));
+    gSPLookAt(g_dlistHead++, lookAt);
 }
 
 void startFrame(void)
@@ -773,6 +772,29 @@ u8* allocGfx(s32 size)
     return retVal;
 }
 
+void setLightDirection(Vec3 lightDir)
+{
+    light->a.l.col[0] = light->a.l.colc[0] = 0x3F;
+    light->a.l.col[1] = light->a.l.colc[1] = 0x3F;
+    light->a.l.col[2] = light->a.l.colc[2] = 0x3F;
+
+    light->l->l.col[0] = light->l->l.colc[0] = 0x7F;
+    light->l->l.col[1] = light->l->l.colc[1] = 0x7F;
+    light->l->l.col[2] = light->l->l.colc[2] = 0x7F;
+
+    light->l->l.dir[0] = (s8)(lightDir[0] * (*g_curMatFPtr)[0][0] + lightDir[1] * (*g_curMatFPtr)[1][0] + lightDir[2] * (*g_curMatFPtr)[2][0]);
+    light->l->l.dir[1] = (s8)(lightDir[0] * (*g_curMatFPtr)[0][1] + lightDir[1] * (*g_curMatFPtr)[1][1] + lightDir[2] * (*g_curMatFPtr)[2][1]);
+    light->l->l.dir[2] = (s8)(lightDir[0] * (*g_curMatFPtr)[0][2] + lightDir[1] * (*g_curMatFPtr)[1][2] + lightDir[2] * (*g_curMatFPtr)[2][2]);
+
+    lookAt->l[0].l.dir[0] = -light->l->l.dir[0];
+    lookAt->l[0].l.dir[1] = -light->l->l.dir[1];
+    lookAt->l[0].l.dir[2] = -light->l->l.dir[2];
+
+    lookAt->l[1].l.dir[0] = 0;
+    lookAt->l[1].l.dir[1] = 127;
+    lookAt->l[1].l.dir[2] = 0;
+}
+
 void setupCameraMatrices(Camera *camera)
 {
     Mtx* projMtx;
@@ -786,25 +808,14 @@ void setupCameraMatrices(Camera *camera)
     VEC3_ADD(eyePos, eyeOffset, camera->target);
 
     // Set up view matrix
-
-    gSPLookAt(g_dlistHead++, &lookAt);
     gfxLookat(
         eyePos[0], eyePos[1], eyePos[2], // Eye pos
         camera->target[0], camera->target[1] + camera->yOffset, camera->target[2], // Look pos
         0.0f, 1.0f, 0.0f); // Up vector
 
-    lookAt.l[0].l.dir[0] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[0][0] + g_lightDir[1] * (*g_curMatFPtr)[0][1] + g_lightDir[2] * (*g_curMatFPtr)[0][2]);
-    lookAt.l[0].l.dir[1] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[1][0] + g_lightDir[1] * (*g_curMatFPtr)[1][1] + g_lightDir[2] * (*g_curMatFPtr)[1][2]);
-    lookAt.l[0].l.dir[2] = (s8)(g_lightDir[0] * (*g_curMatFPtr)[2][0] + g_lightDir[1] * (*g_curMatFPtr)[2][1] + g_lightDir[2] * (*g_curMatFPtr)[2][2]);
-
-    lookAt.l[1].l.dir[0] = (s8)(*g_curMatFPtr)[0][1];
-    lookAt.l[1].l.dir[1] = -(s8)(*g_curMatFPtr)[1][1];
-    lookAt.l[1].l.dir[2] = (s8)(*g_curMatFPtr)[2][1];
-
+    // Set up projection matrix
     projMtx = (Mtx*)allocGfx(sizeof(Mtx));
     guMtxF2L(g_gfxContexts[g_curGfxContext].projMtxF, projMtx);
-    
-    // Set up projection matrix
 
     // Perpsective
     gfxPerspective(camera->fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 100.0f, 20000.0f, 1.0f);

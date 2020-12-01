@@ -1,8 +1,3 @@
-Lights1 character_model_t_env_f3d_lights = gdSPDefLights1(
-	0x7F, 0x7F, 0x7F,
-	0xFE, 0xFE, 0xFE, 0x28, 0x28, 0x28);
-
-
 Gfx character_model_shading_i4_aligner[] = {gsSPEndDisplayList()};
 u8 character_model_shading_i4[] = {
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFB, 0xBB, 0x77, 0x77, 
@@ -156,7 +151,6 @@ Gfx mat_character_model_t_env_f3d[] = {
 	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 1, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 3, 0),
 	gsDPSetTileSize(0, 0, 0, 28, 0),
 	gsDPSetPrimColor(0, 0, 254, 89, 91, 255),
-	gsSPSetLights1(character_model_t_env_f3d_lights),
 	gsSPEndDisplayList(),
 };
 

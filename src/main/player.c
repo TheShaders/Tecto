@@ -78,12 +78,11 @@ void playerCallback(__attribute__((unused)) void **components, __attribute__((un
     (*pos)[0] += (*vel)[0];
     (*pos)[2] += (*vel)[2];
 
-    (*rot)[1] = atan2s((*vel)[2], (*vel)[0]);
-
     newSpeed = POW2((*vel)[0]) + POW2((*vel)[2]);
 
     if (newSpeed >= POW2(0.1f))
     {
+        (*rot)[1] = atan2s((*vel)[2], (*vel)[0]);
         if (animState->anim != (Animation*) segmentedToVirtual(&character_anim_Walk))
         {
             animState->anim = (Animation*) segmentedToVirtual(&character_anim_Walk);

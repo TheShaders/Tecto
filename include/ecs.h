@@ -27,6 +27,7 @@ enum ComponentBits
 
 #undef COMPONENT
 
+#define NUM_COMPONENTS(Archetype) (__builtin_popcount(Archetype))
 #define COMPONENT_INDEX(Component, Archetype) (__builtin_popcount((Archetype) & (Bit_##Component - 1)))
 
 #define ARCHETYPE_MODEL (Bit_Position | Bit_Rotation | Bit_Model)
@@ -53,6 +54,8 @@ typedef struct BehaviorParams_t
 
 // Creates a single entity, try to avoid using as creating entities in batches is more efficient
 Entity *createEntity(archetype_t archetype);
+// Deletes a single entity
+void deleteEntity(Entity *e);
 // Creates a number of entities
 void createEntities(archetype_t archetype, int count);
 // Creates a number of entities, and calls the provided callback for each block of allocated entities

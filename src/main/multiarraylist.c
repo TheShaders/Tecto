@@ -1,6 +1,9 @@
 #include <multiarraylist.h>
+#include <mathutils.h>
 #include <mem.h>
 #include <ecs.h>
+#include <stdint.h>
+#include <string.h>
 
 // For bzero, MIN
 #include <ultra64.h>
@@ -92,4 +95,54 @@ size_t multiarraylist_get_component_offset(MultiArrayList *arr, size_t component
         archetype &= ~(1 << curComponentType);
     }
     return offset;
+}
+
+void multiarraylist_delete(MultiArrayList *arr, size_t arrayIndex)
+{
+    archetype_t archetype = arr->archetype;
+    size_t elementCount = arr->elementCount;
+    MultiArrayListBlock *block = arr->start;
+    MultiArrayListBlock *end = arr->end;
+    archetype_t componentBits = archetype;
+    int componentIndex;
+
+    // Find the block
+    while (arrayIndex >= elementCount)
+    {
+        block = block->next;
+        arrayIndex -= elementCount;
+    }
+
+    componentIndex = 0;
+
+    // Swap the last element's components into the position of the deleted element's components
+    while (componentBits)
+    {
+        // If the archetype has this component, move the last component's data to the current one
+        if (componentBits & 0x01)
+        {
+            size_t componentOffset = multiarraylist_get_component_offset(arr, componentIndex);
+            void *deletedComponent = (void *)((uintptr_t)block + componentOffset * elementCount);
+            void *endComponent = (void *)((uintptr_t)end + componentOffset * (end->numElements - 1));
+            memcpy(deletedComponent, endComponent, g_componentSizes[componentIndex]);
+        }
+        componentBits >>= 1;
+        componentIndex++;
+    }
+
+    // Decrement the number of elements in the last block
+    end->numElements--;
+
+    // If the last block has no more elements in it, make the previous node the new end
+    if (end->numElements == 0)
+    {
+        MultiArrayListBlock *newEnd = arr->start;
+        while (newEnd->next != end)
+        {
+            newEnd = newEnd->next;
+        }
+        arr->end = newEnd;
+        newEnd->next = NULL;
+        end = newEnd;
+    }
 }

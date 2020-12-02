@@ -151,6 +151,29 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     debug_printf("Creating collision entity\n");
     createEntitiesCallback(Bit_Collision, segmentedToVirtual(&test_collision_tree), 1, setCollision);
 
+    {
+        Entity *toDelete;
+        Entity *lastEntity;
+        debug_printf("Creating 5000 position only entities\n");
+        createEntities(Bit_Position, 5000);
+
+        debug_printf("Creating 1 position only entity to delete\n");
+        toDelete = createEntity(Bit_Position);
+        debug_printf("To delete entity archetype array index: %d\n", toDelete->archetypeArrayIndex);
+
+        debug_printf("Creating 5000 more position only entities\n");
+        createEntities(Bit_Position, 5000);
+
+        debug_printf("Creating 1 position only entity to test\n");
+        lastEntity = createEntity(Bit_Position);
+        debug_printf("Test entity archetype array index: %d\n", lastEntity->archetypeArrayIndex);
+        
+        debug_printf("Deleting entity at array position %d\n", toDelete->archetypeArrayIndex);
+        deleteEntity(toDelete);
+
+        debug_printf("Last entity was moved to %d\n", lastEntity->archetypeArrayIndex);
+    }
+
     while (1)
     {
         Vec3 lightDir = { 127.0f * sinf((M_PI / 180.0f) * angle), 127.0f * cosf((M_PI / 180.0f) * angle), 0.0f};
@@ -217,9 +240,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         ProfilerData.rdpPipeTime = IO_READ(DPC_PIPEBUSY_REG);
         ProfilerData.rdpTmemTime = IO_READ(DPC_TMEM_REG);
 
-        debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
-            ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
-            ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
+        // debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
+        //     ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
+        //     ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
 #endif
     }
 }

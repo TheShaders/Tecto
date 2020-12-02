@@ -18,8 +18,14 @@ MultiArrayList archetypeArrays[MAX_ARCHETYPES];
 int numArchetypes = 0;
 
 Entity allEntities[MAX_ENTITIES];
+// End of the populated entities in the array
+int entitiesEnd = 0;
+// Actual number of entities (accounts for gaps in the array)
 int numEntities = 0;
+int numGaps = 0;
+int firstGap = INT32_MAX;
 
+// Underlying implementation for popcount
 // https://stackoverflow.com/questions/109023/how-to-count-the-number-of-set-bits-in-a-32-bit-integer
 int numberOfSetBits(uint32_t i)
 {
@@ -31,7 +37,7 @@ int numberOfSetBits(uint32_t i)
 void iterateOverEntities(EntityArrayCallback callback, void *arg, archetype_t componentMask, archetype_t rejectMask)
 {
     int componentIndex, curArchetypeIndex;
-    int numComponents = numberOfSetBits(componentMask);
+    int numComponents = NUM_COMPONENTS(componentMask);
     int numComponentsFound = 0;
     size_t components[numComponents];
     archetype_t componentBits = componentMask;
@@ -91,7 +97,7 @@ void iterateOverEntitiesAllComponents(EntityArrayCallbackAll callback, void *arg
         if (((curArchetype & componentMask) == componentMask) && !(curArchetype & rejectMask))
         {
             int curComponentIndex;
-            int curNumComponents = numberOfSetBits(curArchetype);
+            int curNumComponents = NUM_COMPONENTS(curArchetype);
             int curNumComponentsFound = 0;
             archetype_t componentBits = curArchetype;
             MultiArrayList *arr = &archetypeArrays[curArchetypeIndex];
@@ -165,6 +171,19 @@ int getArchetypeIndex(archetype_t archetype)
     return numArchetypes - 1;
 }
 
+int findNextGap(int prevGap)
+{
+    int retVal;
+    for (retVal = prevGap + 1; retVal < entitiesEnd; retVal++)
+    {
+        if (allEntities[retVal].archetype == 0)
+        {
+            return retVal;
+        }
+    }
+    return -1;
+}
+
 void allocEntities(archetype_t archetype, int count)
 {
     // The index of this archetype
@@ -172,33 +191,165 @@ void allocEntities(archetype_t archetype, int count)
     int archetypeEntityCount = archetypeEntityCounts[archetypeIndex];
     Entity *curEntity;
     int curNumEntities = numEntities;
-    for (curEntity = &allEntities[numEntities]; curEntity < &allEntities[numEntities + count]; curEntity++)
+    int curGap = firstGap;
+
+    // Fill in any gaps in the entity array
+    while (numGaps)
+    {
+        allEntities[curGap].archetype = archetype;
+        allEntities[curGap].archetypeArrayIndex = archetypeEntityCount++;
+        curGap = findNextGap(curGap);
+        curNumEntities++;
+        numGaps--;
+        count--;
+    }
+    // Update the first gap index
+    firstGap = curGap;
+
+    // Append new entities to the end of the array
+    for (curEntity = &allEntities[entitiesEnd]; curEntity < &allEntities[entitiesEnd + count]; curEntity++)
     {
         curEntity->archetype = archetype;
         curEntity->archetypeArrayIndex = archetypeEntityCount++;
         curNumEntities++;
     }
+
+    // Update the count of entities of this archetype
     archetypeEntityCounts[archetypeIndex] = archetypeEntityCount;
-    curNumEntities = numEntities;
+    // Update the total entity count
+    numEntities = curNumEntities;
+
+    // If the entity list has run past the previous end index, update the end
+    if (numEntities > entitiesEnd)
+    {
+        entitiesEnd = numEntities;
+    }
 }
 
 Entity *createEntity(archetype_t archetype)
 {
     // The index of this archetype
     int archetypeIndex = getArchetypeIndex(archetype);
-    Entity *curEntity = &allEntities[numEntities];
+    Entity *curEntity;
     // The arraylist for this archetype
     MultiArrayList *archetypeList = &archetypeArrays[archetypeIndex];
     
     // Allocate the components for the new entity
     multiarraylist_alloccount(archetypeList, 1);
 
+    if (numGaps)
+    {
+        curEntity = &allEntities[firstGap];
+        firstGap = findNextGap(firstGap);
+    }
+    else
+    {
+        curEntity = &allEntities[entitiesEnd];
+        entitiesEnd++;
+    }
+
     curEntity->archetype = archetype;
-    curEntity->archetypeArrayIndex = archetypeEntityCounts[archetypeIndex]++;
+    curEntity->archetypeArrayIndex = archetypeEntityCounts[archetypeIndex];
 
     archetypeEntityCounts[archetypeIndex]++;
+    numEntities++;
 
     return curEntity;
+}
+
+void deleteEntity(Entity *e)
+{
+    // The index of this archetype
+    int archetypeIndex = getArchetypeIndex(e->archetype);
+    size_t newLength = --archetypeEntityCounts[archetypeIndex];
+    Entity *curEntity;
+    int i;
+
+    multiarraylist_delete(&archetypeArrays[archetypeIndex], e->archetypeArrayIndex);
+
+    // Ugly linear search over all entities to update the archetype array index of the entity that was moved in the delete
+    // TODO keep the entity list sorted?
+    for (curEntity = &allEntities[0]; curEntity != &allEntities[entitiesEnd]; curEntity++)
+    {
+        if (curEntity->archetypeArrayIndex == newLength)
+        {
+            curEntity->archetypeArrayIndex = e->archetypeArrayIndex;
+            break;
+        }
+    }
+    
+    // Find the deleted entity in the list and clear its data
+    for (i = 0; i < entitiesEnd; i++)
+    {
+        if (&allEntities[i] == e)
+        {
+            allEntities[i].archetype = 0;
+            allEntities[i].archetypeArrayIndex = 0;
+            numEntities--;
+            // If this is the last entity, update the end index
+            if (i == entitiesEnd - 1)
+            {
+                entitiesEnd--;
+            }
+            // Otherwise, increase the number of gaps
+            else
+            {
+                numGaps++;
+                // If this new gap is less than the previous first gap, update the first gap to this one
+                if (i < firstGap)
+                {
+                    firstGap = i;
+                }
+            }
+            break;
+        }
+    }
+}
+
+void deleteEntityIndex(int index)
+{
+    // The archetype and array list index for this entity
+    archetype_t archetype = allEntities[index].archetype;
+    size_t archetypeArrayIndex = allEntities[index].archetypeArrayIndex;
+    // The index of this archetype
+    int archetypeIndex = getArchetypeIndex(archetype);
+    size_t newLength = --archetypeEntityCounts[archetypeIndex];
+    Entity *curEntity;
+
+    // Delete this entity's component info
+    multiarraylist_delete(&archetypeArrays[archetypeIndex], archetypeArrayIndex);
+
+    // Ugly linear search over all entities to update the archetype array index of the entity that was moved in the delete
+    // TODO keep the entity list sorted?
+    for (curEntity = &allEntities[0]; curEntity != &allEntities[entitiesEnd]; curEntity++)
+    {
+        if (curEntity->archetypeArrayIndex == newLength)
+        {
+            curEntity->archetypeArrayIndex = archetypeArrayIndex;
+            break;
+        }
+    }
+    
+    // Clear the deleted entity's data
+    allEntities[index].archetype = 0;
+    allEntities[index].archetypeArrayIndex = 0;
+    numEntities--;
+
+    // If this is the last entity, update the end index
+    if (index == entitiesEnd - 1)
+    {
+        entitiesEnd--;
+    }
+    // Otherwise, increase the number of gaps
+    else
+    {
+        numGaps++;
+        // If this new gap is less than the previous first gap, update the first gap to this one
+        if (index < firstGap)
+        {
+            firstGap = index;
+        }
+    }
 }
 
 void createEntities(archetype_t archetype, int count)
@@ -212,8 +363,6 @@ void createEntities(archetype_t archetype, int count)
     multiarraylist_alloccount(archetypeList, count);
     // Allocate the number of entities given of the archetype given
     allocEntities(archetype, count);
-    // Increase the entity count for the given archetype by the given amount
-    archetypeEntityCounts[archetypeIndex] += count;
 }
 
 void createEntitiesCallback(archetype_t archetype, void *arg, int count, EntityArrayCallback callback)
@@ -223,7 +372,7 @@ void createEntitiesCallback(archetype_t archetype, void *arg, int count, EntityA
     // The arraylist for this archetype
     MultiArrayList *archetypeList = &archetypeArrays[archetypeIndex];
     // Number of components in the given archetype
-    int numComponents = numberOfSetBits(archetype);
+    int numComponents = NUM_COMPONENTS(archetype);
 
     // Iteration values
     // Offsets for each component in the arraylist blocks

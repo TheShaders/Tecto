@@ -36,5 +36,9 @@ void multiarraylist_alloccount(MultiArrayList *arr, size_t count);
 // Returns the offset into the chunk for the start of the array for a given component
 size_t multiarraylist_get_component_offset(MultiArrayList *arr, size_t componentIndex);
 
+// Removes the specified entity from the array list and moves the last one's components into its place
+// Returns the new length of the array list
+void multiarraylist_delete(MultiArrayList *arr, size_t arrayIndex);
+
 
 #endif

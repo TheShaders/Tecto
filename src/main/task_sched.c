@@ -30,7 +30,11 @@ void initScheduler(void)
         mode = OS_VI_NTSC_LAN1;
     #endif
     #endif
+    #ifdef FPS30
+    osCreateScheduler(&scheduler, &schedStack[OS_SC_STACKSIZE / sizeof(u64)], SCHEDULER_PRI, mode, 2);
+    #else
     osCreateScheduler(&scheduler, &schedStack[OS_SC_STACKSIZE / sizeof(u64)], SCHEDULER_PRI, mode, 1);
+    #endif
     osCreateMesgQueue(&schedQueue, &schedMesg, 1);
     osScAddClient(&scheduler, &gfxClient, &schedQueue);
 }

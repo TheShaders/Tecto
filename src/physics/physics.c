@@ -2,6 +2,7 @@
 #include <collision.h>
 #include <ecs.h>
 #include <mathutils.h>
+#include <config.h>
 
 #define ARCHETYPE_POSVEL (Bit_Position | Bit_Velocity)
 

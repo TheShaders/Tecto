@@ -64,7 +64,6 @@ SECTIONS
         BUILD_ROOT/src/main/camera.o(.text*);
         BUILD_ROOT/src/main/player.o(.text*);
         BUILD_ROOT/src/main/task_sched.o(.text*);
-        BUILD_ROOT/src/main/multiarraylist.o(.text*);
         BUILD_ROOT/src/math/asmmath.o(.text*);
         BUILD_ROOT/src/math/algorithms.o(.text*);
         BUILD_ROOT/src/math/mathutils.o(.text*);
@@ -77,7 +76,6 @@ SECTIONS
         BUILD_ROOT/src/main/camera.o(.*data*);
         BUILD_ROOT/src/main/player.o(.*data*);
         BUILD_ROOT/src/main/task_sched.o(.*data*);
-        BUILD_ROOT/src/main/multiarraylist.o(.*data*);
         BUILD_ROOT/src/math/algorithms.o(.*data*);
         BUILD_ROOT/src/math/mathutils.o(.*data*);
         BUILD_ROOT/src/usb/usb.o(.*data*);
@@ -97,15 +95,21 @@ SECTIONS
     START_SEGMENT_AFTER(ecs, gfx)
     {
         BUILD_ROOT/src/ecs/ecs.o(.text*);
+        BUILD_ROOT/src/ecs/multiarraylist.o(.text*);
+        BUILD_ROOT/src/ecs/level.o(.text*);
         BUILD_ROOT/src/ecs/ecs.o(.*data*);
+        BUILD_ROOT/src/ecs/multiarraylist.o(.*data*);
+        BUILD_ROOT/src/ecs/level.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(ecs);
 
     START_SEGMENT_AFTER(physics, ecs)
     {
+        BUILD_ROOT/src/physics/physics.o(.text*);
         BUILD_ROOT/src/physics/collision.o(.text*);
         BUILD_ROOT/src/physics/traversal.o(.text*);
+        BUILD_ROOT/src/physics/physics.o(.*data*);
         BUILD_ROOT/src/physics/collision.o(.*data*);
         BUILD_ROOT/src/physics/traversal.o(.*data*);
         . = ALIGN(16);
@@ -163,7 +167,6 @@ SECTIONS
         BUILD_ROOT/src/main/camera.o(.bss*);
         BUILD_ROOT/src/main/player.o(.bss*);
         BUILD_ROOT/src/main/task_sched.o(.bss*);
-        BUILD_ROOT/src/main/multiarraylist.o(.bss*);
         BUILD_ROOT/src/math/algorithms.o(.bss*);
         BUILD_ROOT/src/math/mathutils.o(.bss*);
         BUILD_ROOT/src/usb/usb.o(.bss*);
@@ -182,13 +185,17 @@ SECTIONS
     START_NOLOAD_AFTER(ecs, gfx.noload)
     {
         BUILD_ROOT/src/ecs/ecs.o(.bss*);
+        BUILD_ROOT/src/ecs/multiarraylist.o(.bss*);
+        BUILD_ROOT/src/ecs/level.o(.bss*);
         . = ALIGN(16);
     }
     END_NOLOAD(ecs);
 
     START_NOLOAD_AFTER(physics, ecs.noload)
     {
+        BUILD_ROOT/src/physics/physics.o(.bss*);
         BUILD_ROOT/src/physics/collision.o(.bss*);
+        BUILD_ROOT/src/physics/traversal.o(.bss*);
         . = ALIGN(16);
     }
     END_NOLOAD(physics);

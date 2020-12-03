@@ -13,6 +13,7 @@
 #include <player.h>
 #include <physics.h>
 #include <camera.h>
+#include <level.h>
 
 #include <segments/intro.h>
 
@@ -67,6 +68,9 @@ void drawAnimatedModels(size_t count, __attribute__((unused)) void *arg, void **
         gfxPopMat();
 
         curAnimState->counter += curAnimState->speed;
+#ifdef FPS30
+        curAnimState->counter += curAnimState->speed;
+#endif
         if (curAnimState->counter >= (curAnimState->anim->frameCount << (ANIM_COUNTER_SHIFT)))
         {
             curAnimState->counter -= (curAnimState->anim->frameCount << (ANIM_COUNTER_SHIFT));
@@ -127,6 +131,8 @@ static struct {
 #define xstr(a) str(a)
 #define str(a) #a
 
+extern LevelHeader sampleHeader;
+
 u32 __osSetFpcCsr(u32);
 
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
@@ -172,6 +178,10 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         deleteEntity(toDelete);
 
         debug_printf("Last entity was moved to %d\n", lastEntity->archetypeArrayIndex);
+
+        debug_printf("Processing level header\n");
+        processLevelHeader(&sampleHeader);
+        
     }
 
     while (1)
@@ -186,8 +196,17 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         startFrame();
         readInput();
 
+        // Increment the physics state
+        physicsTick();
         // Process all entities that have a behavior
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
+#ifdef FPS30
+        // Just run everything twice per frame to match 60 fps gameplay speed lol
+        // Increment the physics state
+        physicsTick();
+        // Process all entities that have a behavior
+        iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
+#endif
         
         // Set up the camera
         setupCameraMatrices(&g_Camera);
@@ -240,9 +259,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         ProfilerData.rdpPipeTime = IO_READ(DPC_PIPEBUSY_REG);
         ProfilerData.rdpTmemTime = IO_READ(DPC_TMEM_REG);
 
-        // debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
-        //     ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
-        //     ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
+        debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
+            ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
+            ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
 #endif
     }
 }

@@ -37,6 +37,9 @@ typedef struct InputData_t InputData;
 // Prototypes for camera structs
 typedef struct Camera_t Camera;
 
+// Prototypes for level structs
+typedef struct LevelHeader_t LevelHeader;
+
 // Components
 // #define COMPONENT(Name, Type) typedef Type Name;
 // #include "components.inc.h"

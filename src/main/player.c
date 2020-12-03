@@ -52,20 +52,20 @@ void playerCallback(__attribute__((unused)) void **components, __attribute__((un
 
     if (g_PlayerInput.buttonsHeld & R_CBUTTONS)
     {
-        g_Camera.yaw += 0x100;
+        g_Camera.yaw += PLAYER_CAMERA_TURN_SPEED;
     }
     if (g_PlayerInput.buttonsHeld & L_CBUTTONS)
     {
-        g_Camera.yaw -= 0x100;
+        g_Camera.yaw -= PLAYER_CAMERA_TURN_SPEED;
     }
     
     if (g_PlayerInput.buttonsHeld & D_CBUTTONS)
     {
-        g_Camera.pitch = MIN(g_Camera.pitch + 0x100, 0x3000);
+        g_Camera.pitch = MIN(g_Camera.pitch + PLAYER_CAMERA_TURN_SPEED, 0x3000);
     }
     if (g_PlayerInput.buttonsHeld & U_CBUTTONS)
     {
-        g_Camera.pitch = MAX(g_Camera.pitch - 0x100, -0x1000);
+        g_Camera.pitch = MAX(g_Camera.pitch - PLAYER_CAMERA_TURN_SPEED, -0x1000);
     }
 
     VEC3_COPY(g_Camera.target, *pos);
@@ -74,9 +74,6 @@ void playerCallback(__attribute__((unused)) void **components, __attribute__((un
 
     (*vel)[0] = (*vel)[0] * (1.0f - PLAYER_ACCEL_TIME_CONST) + targetSpeed * (PLAYER_ACCEL_TIME_CONST) * cossf(g_PlayerInput.angle + g_Camera.yaw);
     (*vel)[2] = (*vel)[2] * (1.0f - PLAYER_ACCEL_TIME_CONST) - targetSpeed * (PLAYER_ACCEL_TIME_CONST) * sinsf(g_PlayerInput.angle + g_Camera.yaw);
-
-    (*pos)[0] += (*vel)[0];
-    (*pos)[2] += (*vel)[2];
 
     newSpeed = POW2((*vel)[0]) + POW2((*vel)[2]);
 

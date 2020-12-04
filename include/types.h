@@ -40,6 +40,9 @@ typedef struct Camera_t Camera;
 // Prototypes for level structs
 typedef struct LevelHeader_t LevelHeader;
 
+// Prototypes for physics structs
+typedef struct GravityParams_t GravityParams;
+
 // Components
 // #define COMPONENT(Name, Type) typedef Type Name;
 // #include "components.inc.h"

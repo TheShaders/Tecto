@@ -237,12 +237,12 @@ float rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax)
     // Calculate and check the barycentric coordinates
     denom = (uv * uv - uu * vv); // Doesn't need to be checked for 0 (assuming non-degenerate triangles)
     s = (uv * wv - vv * wu) / denom;
-    if (s < 0 || s > 1)
+    if (s < -EPSILON || s > (1 + EPSILON))
     {
         return FLT_MAX;
     }
     t = (uv * wu - uu * wv) / denom;
-    if (t < 0 || (s + t) > 1)
+    if (t < -EPSILON || (s + t) > (1 + EPSILON))
     {
         return FLT_MAX;
     }

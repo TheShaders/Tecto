@@ -180,13 +180,13 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         debug_printf("Last entity was moved to %d\n", lastEntity->archetypeArrayIndex);
 
         debug_printf("Processing level header\n");
-        processLevelHeader(&sampleHeader);
+        // processLevelHeader(&sampleHeader);
         
     }
 
     while (1)
     {
-        Vec3 lightDir = { 127.0f * sinf((M_PI / 180.0f) * angle), 127.0f * cosf((M_PI / 180.0f) * angle), 0.0f};
+        Vec3 lightDir = { 127.0f * sinf((M_PI / 180.0f) * 45.0f), 127.0f * cosf((M_PI / 180.0f) * 45.0f), 0.0f};
 #ifdef DEBUG_MODE
         bzero(&ProfilerData, sizeof(ProfilerData));
         ProfilerData.cpuTime = osGetTime();
@@ -259,9 +259,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         ProfilerData.rdpPipeTime = IO_READ(DPC_PIPEBUSY_REG);
         ProfilerData.rdpTmemTime = IO_READ(DPC_TMEM_REG);
 
-        debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
-            ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
-            ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
+        // debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
+        //     ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
+        //     ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
 #endif
     }
 }

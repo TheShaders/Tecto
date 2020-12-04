@@ -2,6 +2,7 @@
 #include <multiarraylist.h>
 #include <stdint.h>
 #include <model.h>
+#include <physics.h>
 
 #define COMPONENT(Name, Type) sizeof(Type),
 

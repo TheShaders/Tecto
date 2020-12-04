@@ -34,6 +34,7 @@ void *samplePlayerComponentData[NUM_COMPONENTS(ARCHETYPE_PLAYER)] = {
     samplePlayerBehaviors, // behavior
     samplePlayerModels, // model
     NULL, // anim state
+    NULL, // gravity
 };
 
 archetype_t sampleArchetypes[1] = {

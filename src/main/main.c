@@ -26,7 +26,7 @@ extern u8 _introSegmentStart[];
 extern Animation character_anim_Idle_Long;
 extern Animation character_anim_Jump_Start;
 extern Animation character_anim_Walk;
-extern BVHTree test_collision_tree;
+extern BVHTree test_collision_collision_tree;
 
 void processBehaviorEntities(size_t count, __attribute__((unused)) void *arg, int numComponents, archetype_t archetype, void **componentArrays, size_t *componentSizes)
 {
@@ -155,7 +155,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
     // Create the level collision entity
     debug_printf("Creating collision entity\n");
-    createEntitiesCallback(Bit_Collision, segmentedToVirtual(&test_collision_tree), 1, setCollision);
+    createEntitiesCallback(Bit_Collision, segmentedToVirtual(&test_collision_collision_tree), 1, setCollision);
 
     {
         Entity *toDelete;
@@ -186,7 +186,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
     while (1)
     {
-        Vec3 lightDir = { 127.0f * sinf((M_PI / 180.0f) * 45.0f), 127.0f * cosf((M_PI / 180.0f) * 45.0f), 0.0f};
+        Vec3 lightDir = { 100.0f * sinf((M_PI / 180.0f) * 45.0f), 100.0f * cosf((M_PI / 180.0f) * 45.0f), 0.0f};
 #ifdef DEBUG_MODE
         bzero(&ProfilerData, sizeof(ProfilerData));
         ProfilerData.cpuTime = osGetTime();
@@ -219,7 +219,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         iterateOverEntities(drawAnimatedModels, NULL, ARCHETYPE_ANIM_MODEL, 0);
 
         if (1) {
-            BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&test_collision_tree);
+            BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&test_collision_collision_tree);
             ColTri *tris = segmentedToVirtual(test_collision_virtual->tris);
             
             drawColTris(LAYER_OPA_SURF, tris, test_collision_virtual->triCount, 0x7F3300FF);
@@ -259,9 +259,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         ProfilerData.rdpPipeTime = IO_READ(DPC_PIPEBUSY_REG);
         ProfilerData.rdpTmemTime = IO_READ(DPC_TMEM_REG);
 
-        // debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
-        //     ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
-        //     ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
+        debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
+            ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
+            ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
 #endif
     }
 }

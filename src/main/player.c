@@ -41,28 +41,86 @@ void createPlayerCallback(__attribute__((unused)) size_t count, __attribute__((u
     gravity->terminalVelocity = -30.0f;
 }
 
+ColTri* handleFloorOnGround(Vec3 pos, Vec3 vel)
+{
+    ColTri *floor;
+    float downdist = raycastVertical(pos, -1.0f, -PLAYER_MAX_STEP_UP, PLAYER_MAX_STEP_DOWN, &floor);
+    if (floor)
+    {
+        pos[1] -= downdist;
+        vel[1] = 0.0f;
+        return floor;
+    }
+    return NULL;
+}
+
+Vec3 wallRayDirs[PLAYER_WALL_RAYCAST_RADIAL_COUNT] = {
+    {  1.0000f * PLAYER_RADIUS, 0.0f,  0.0000f * PLAYER_RADIUS },
+    {  0.9239f * PLAYER_RADIUS, 0.0f,  0.3827f * PLAYER_RADIUS },
+    {  0.7071f * PLAYER_RADIUS, 0.0f,  0.7071f * PLAYER_RADIUS },
+    {  0.3827f * PLAYER_RADIUS, 0.0f,  0.9239f * PLAYER_RADIUS },
+    {  0.0000f * PLAYER_RADIUS, 0.0f,  1.0000f * PLAYER_RADIUS },
+    { -0.3827f * PLAYER_RADIUS, 0.0f,  0.9239f * PLAYER_RADIUS },
+    { -0.7071f * PLAYER_RADIUS, 0.0f,  0.7071f * PLAYER_RADIUS },
+    { -0.9239f * PLAYER_RADIUS, 0.0f,  0.3827f * PLAYER_RADIUS },
+    { -1.0000f * PLAYER_RADIUS, 0.0f,  0.0000f * PLAYER_RADIUS },
+    { -0.9239f * PLAYER_RADIUS, 0.0f, -0.3827f * PLAYER_RADIUS },
+    { -0.7071f * PLAYER_RADIUS, 0.0f, -0.7071f * PLAYER_RADIUS },
+    { -0.3827f * PLAYER_RADIUS, 0.0f, -0.9239f * PLAYER_RADIUS },
+    {  0.0000f * PLAYER_RADIUS, 0.0f, -1.0000f * PLAYER_RADIUS },
+    {  0.3827f * PLAYER_RADIUS, 0.0f, -0.9239f * PLAYER_RADIUS },
+    {  0.7071f * PLAYER_RADIUS, 0.0f, -0.7071f * PLAYER_RADIUS },
+    {  0.9239f * PLAYER_RADIUS, 0.0f, -0.3827f * PLAYER_RADIUS },
+};
+
+void handleWalls(Vec3 pos, Vec3 vel)
+{
+    int heightIndex, radialIndex;
+    Vec3 rayStart = { pos[0], pos[1] + (PLAYER_HEIGHT - PLAYER_MAX_STEP_UP) / PLAYER_WALL_RAYCAST_HEIGHT_COUNT, pos[2] };
+    VEC3_DIFF(rayStart, rayStart, vel);
+    for (heightIndex = 0; heightIndex < PLAYER_WALL_RAYCAST_HEIGHT_COUNT; heightIndex++)
+    {
+        for (radialIndex = 0; radialIndex < PLAYER_WALL_RAYCAST_RADIAL_COUNT; radialIndex++)
+        {
+            ColTri *curWall;
+            Vec3 rayDir;
+            VEC3_ADD(rayDir, wallRayDirs[radialIndex], vel);
+            float hitDist = raycast(rayStart, rayDir, 0.0f, 1.0f, &curWall);
+            if (curWall)
+            {
+                float pushDist = hitDist - 1.0f;
+                Vec3 pushVec;
+                VEC3_SCALE(pushVec, wallRayDirs[radialIndex], pushDist);
+                VEC3_ADD(pos, pos, pushVec);
+                // vel[0] = 0.0f;
+                // vel[2] = 0.0f;
+                rayStart[0] = pos[0];
+                rayStart[2] = pos[2];
+                // pos[0] = rayStart[0];
+                // pos[2] = rayStart[2];
+            }
+        }
+        rayStart[1] += ((PLAYER_HEIGHT - PLAYER_MAX_STEP_UP) / PLAYER_WALL_RAYCAST_HEIGHT_COUNT);
+    }
+}
+
 ColTri* resolvePlayerCollisions(Vec3 pos, Vec3 vel, Vec3s rot)
 {
+    handleWalls(pos, vel);
     // If the player has approximately 0 vertical velocity (accounting for 1 frame of gravity)
     if (vel[1] <= EPSILON && vel[1] >= -PLAYER_GRAVITY - EPSILON)
     {
-        ColTri *floor;
-        Vec3 downRay = {0.0f, -1.0f, 0.0f};
-        float downdist = raycast(pos, downRay, -PLAYER_MAX_STEP_UP, PLAYER_MAX_STEP_DOWN, &floor);
-        if (floor)
-        {
-            pos[1] -= downdist;
-            vel[1] = 0.0f;
-            return floor;
-        }
+        ColTri* floor;
+        handleWalls(pos, vel);
+        floor = handleFloorOnGround(pos, vel);
     }
     // If the player is falling, check for ground below them
     if (vel[1] <= 0.0f)
     {
         float groundRayLength = PLAYER_GROUND_RAYCAST_MIN_LENGTH - vel[1];
-        Vec3 groundRayDir = {0.0f, -groundRayLength, 0.0f};
         ColTri *hitTri;
-        float hitDist = raycast(pos, groundRayDir, -1.0f, EPSILON, &hitTri);
+        float hitDist;
+        hitDist = raycastVertical(pos, -groundRayLength, -1.0f, EPSILON, &hitTri);
         if (hitTri)
         {
             float velProjFloor;
@@ -107,6 +165,13 @@ void playerCallback(__attribute__((unused)) void **components, __attribute__((un
     if (g_PlayerInput.buttonsHeld & U_CBUTTONS)
     {
         g_Camera.pitch = MAX(g_Camera.pitch - PLAYER_CAMERA_TURN_SPEED, -0x1000);
+    }
+
+    if (g_PlayerInput.buttonsPressed & Z_TRIG)
+    {
+        (*pos)[0] = 0.0f;
+        (*pos)[1] = 500.0f;
+        (*pos)[2] = 0.0f;
     }
 
     VEC3_COPY(g_Camera.target, *pos);

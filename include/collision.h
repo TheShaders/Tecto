@@ -42,6 +42,7 @@ typedef struct BVHTree_t {
     u16 nodeCount;
     ColTri* tris;
     BVHNode* nodes;
+    SurfaceType* surfaceTypes;
 } BVHTree;
 
 u32 testVerticalRayVsAABB(Vec3 rayStart, float lengthInv, AABB *box, float tmin, float tmax);
@@ -54,6 +55,7 @@ float rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax);
 float rayVsBvh(Vec3 rayStart, Vec3 rayDirInv, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut);
 float verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut);
 
+float raycastVertical(Vec3 rayOrigin, float rayLength, float tmin, float tmax, ColTri **hitOut);
 float raycast(Vec3 rayOrigin, Vec3 rayDir, float tmin, float tmax, ColTri **hitOut);
 
 #endif

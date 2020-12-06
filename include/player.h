@@ -21,8 +21,8 @@
 // Minimum length of the ray to cast downward to find ground (added to y velocity)
 #define PLAYER_GROUND_RAYCAST_MIN_LENGTH 30.0f
 // Max step up and down heights
-#define PLAYER_MAX_STEP_UP   30.0f
-#define PLAYER_MAX_STEP_DOWN 30.0f
+#define PLAYER_MAX_STEP_UP   20.0f
+#define PLAYER_MAX_STEP_DOWN 20.0f
 // Number of radial rays to cast to find walls
 #define PLAYER_WALL_RAYCAST_RADIAL_COUNT 16
 // Number of times to cast the radial rays

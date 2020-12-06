@@ -92,6 +92,15 @@ float rayVsBvh(Vec3 rayStart, Vec3 rayDir, BVHTree *bvh, float tmin, float tmax,
     return hitDist;
 }
 
+typedef struct RaycastVerticalData_t {
+    float *origin;
+    float len;
+    float tmin;
+    float tmax;
+    ColTri *hitTri; // Triangle hit by the ray, if any
+    float hitDist; // Distance of hit point along ray (scaled by the ray's length)
+} RaycastVerticalData;
+
 typedef struct RaycastData_t {
     float *origin;
     float *rayDir;
@@ -100,6 +109,29 @@ typedef struct RaycastData_t {
     ColTri *hitTri; // Triangle hit by the ray, if any
     float hitDist; // Distance of hit point along ray (scaled by the ray's length)
 } RaycastData;
+
+void raycastVerticalIterator(size_t count, void *data, void **componentArrays)
+{
+    BVHTree **curTree = componentArrays[0];
+    RaycastVerticalData *rayData = (RaycastVerticalData *)data;
+    ColTri *curTri;
+    Vec3 origin = { rayData->origin[0], rayData->origin[1], rayData->origin[2] };
+    float rayLen = rayData->len;
+    float tmin = rayData->tmin;
+    float tmax = rayData->tmax;
+
+    while (count)
+    {
+        float curDist = verticalRayVsBvh(origin, rayLen, *curTree, tmin, tmax, &curTri);
+        if (curDist < rayData->hitDist)
+        {
+            rayData->hitDist = curDist;
+            rayData->hitTri = curTri;
+        }
+        curTree++;
+        count--;
+    }
+}
 
 void raycastIterator(size_t count, void *data, void **componentArrays)
 {
@@ -122,6 +154,16 @@ void raycastIterator(size_t count, void *data, void **componentArrays)
         curTree++;
         count--;
     }
+}
+
+float raycastVertical(Vec3 rayOrigin, float rayLength, float tmin, float tmax, ColTri **hitOut)
+{
+    RaycastVerticalData data = {rayOrigin, rayLength, tmin, tmax, NULL, FLT_MAX};
+
+    iterateOverEntities(raycastVerticalIterator, &data, Bit_Collision, 0);
+
+    *hitOut = segmentedToVirtual(data.hitTri);
+    return data.hitDist;
 }
 
 float raycast(Vec3 rayOrigin, Vec3 rayDir, float tmin, float tmax, ColTri **hitOut)

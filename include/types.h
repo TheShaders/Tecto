@@ -19,6 +19,7 @@ typedef struct AABB_t AABB;
 typedef struct ColTri_t ColTri;
 typedef struct BVHNode_t BVHNodeBase;
 typedef struct BVHTree_t BVHTree;
+typedef u8 SurfaceType;
 
 typedef float MtxF[4][4];
 typedef float Vec3[3];

@@ -53,7 +53,7 @@ void fillAudioBuffer(u32 bufferIndex)
     while (audioPtr != endPtr);
 }
 
-void audioThreadFunc(__attribute__((unused)) void *arg)
+void audioThreadFunc(UNUSED void *arg)
 {
     audioInit();
 

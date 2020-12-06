@@ -7,7 +7,7 @@
 #define ARCHETYPE_POSVEL (Bit_Position | Bit_Velocity)
 #define ARCHETYPE_GRAVITY (Bit_Velocity | Bit_Gravity)
 
-void applyGravityCallback(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
+void applyGravityCallback(size_t count, UNUSED void *arg, void **componentArrays)
 {
     // Components: Velocity, Gravity
     Vec3 *curVel = componentArrays[COMPONENT_INDEX(Velocity, ARCHETYPE_GRAVITY)];
@@ -28,7 +28,7 @@ void applyGravityCallback(size_t count, __attribute__((unused)) void *arg, void 
     }
 }
 
-void applyVelocityCallback(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
+void applyVelocityCallback(size_t count, UNUSED void *arg, void **componentArrays)
 {
     // Components: Position, Velocity
     Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_POSVEL)];

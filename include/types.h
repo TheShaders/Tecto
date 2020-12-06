@@ -3,6 +3,8 @@
 
 #include <PR/ultratypes.h>
 
+#define UNUSED __attribute__((unused))
+
 // Prototypes for model structs
 typedef struct BoneLayer_t BoneLayer;
 typedef struct Bone_t Bone;
@@ -43,6 +45,9 @@ typedef struct LevelHeader_t LevelHeader;
 
 // Prototypes for physics structs
 typedef struct GravityParams_t GravityParams;
+
+// Prototypes for player structs
+typedef struct PlayerState_t PlayerState;
 
 // Components
 // #define COMPONENT(Name, Type) typedef Type Name;

@@ -3,7 +3,7 @@
 #include <mem.h>
 #include <string.h>
 
-extern void playerCallback(__attribute__((unused)) void **components, __attribute__((unused)) void *data);
+extern void playerCallback(UNUSED void **components, UNUSED void *data);
 extern Model character_model;
 
 Vec3 samplePlayerPositions[4] = {

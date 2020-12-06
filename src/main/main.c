@@ -28,7 +28,7 @@ extern Animation character_anim_Jump_Start;
 extern Animation character_anim_Walk;
 extern BVHTree test_collision_collision_tree;
 
-void processBehaviorEntities(size_t count, __attribute__((unused)) void *arg, int numComponents, archetype_t archetype, void **componentArrays, size_t *componentSizes)
+void processBehaviorEntities(size_t count, UNUSED void *arg, int numComponents, archetype_t archetype, void **componentArrays, size_t *componentSizes)
 {
     int i = 0;
     // Get the index of the BehaviorParams component in the component array and iterate over it
@@ -51,7 +51,7 @@ void processBehaviorEntities(size_t count, __attribute__((unused)) void *arg, in
     }
 }
 
-void drawAnimatedModels(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
+void drawAnimatedModels(size_t count, UNUSED void *arg, void **componentArrays)
 {
     // Components: Position, Rotation, Model
     Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_ANIM_MODEL)];
@@ -84,7 +84,7 @@ void drawAnimatedModels(size_t count, __attribute__((unused)) void *arg, void **
     }
 }
 
-void drawModels(size_t count, __attribute__((unused)) void *arg, void **componentArrays)
+void drawModels(size_t count, UNUSED void *arg, void **componentArrays)
 {
     // Components: Position, Rotation, Model
     Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_MODEL)];
@@ -135,6 +135,8 @@ extern LevelHeader sampleHeader;
 
 u32 __osSetFpcCsr(u32);
 
+PlayerState playerState;
+
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
     float angle = 0.0f;
@@ -151,7 +153,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     initGfx();
 
     // Create the player entity
-    createPlayer();
+    createPlayer(&playerState);
 
     // Create the level collision entity
     debug_printf("Creating collision entity\n");
@@ -213,11 +215,6 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         setLightDirection(lightDir);
 
-        // Draw all entities that have a model and no animation
-        iterateOverEntities(drawModels, NULL, ARCHETYPE_MODEL, Bit_AnimState);
-        // Draw all entities that have a model and an animation
-        iterateOverEntities(drawAnimatedModels, NULL, ARCHETYPE_ANIM_MODEL, 0);
-
         if (1) {
             BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&test_collision_collision_tree);
             ColTri *tris = segmentedToVirtual(test_collision_virtual->tris);
@@ -244,6 +241,11 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             //     }
             // }
         }
+
+        // Draw all entities that have a model and no animation
+        iterateOverEntities(drawModels, NULL, ARCHETYPE_MODEL, Bit_AnimState);
+        // Draw all entities that have a model and an animation
+        iterateOverEntities(drawAnimatedModels, NULL, ARCHETYPE_ANIM_MODEL, 0);
         
 #ifdef DEBUG_MODE
         ProfilerData.cpuTime = osGetTime() - ProfilerData.cpuTime;

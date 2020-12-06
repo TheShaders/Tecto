@@ -2,7 +2,7 @@
 #define __CONFIG_H__
 
 // Define this to split the target framerate in half (to 30)
-// #define FPS30
+#define FPS30
 
 // Define this if you want to use 640 x 480 resolution
 // #define HIGH_RES

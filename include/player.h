@@ -12,7 +12,7 @@ typedef struct PlayerState_t
     Entity *heldEntity;
 } PlayerState;
 
-#define MAX_PLAYER_SPEED 4.0f
+#define MAX_PLAYER_SPEED 8.0f
 #define MAX_PLAYER_SPEED_SQ POW2(MAX_PLAYER_SPEED)
 #define INV_MAX_PLAYER_SPEED_SQ (1.0f / MAX_PLAYER_SPEED_SQ)
 #define PLAYER_AIR_ACCEL_TIME_CONST (0.025f)

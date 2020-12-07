@@ -38,13 +38,13 @@ void updateGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, UNUSED 
             case PGSUBSTATE_STANDING:
                 if (input->buttonsPressed & A_BUTTON)
                     state->subState = PGSUBSTATE_JUMPING;
-                else if (input->magnitude > INPUT_DEADZONE)
+                else if (input->magnitude)
                     state->subState = PGSUBSTATE_WALKING;
                 break;
             case PGSUBSTATE_WALKING:
                 if (input->buttonsPressed & A_BUTTON)
                     state->subState = PGSUBSTATE_JUMPING;
-                else if (input->magnitude <= INPUT_DEADZONE)
+                else if (input->magnitude == 0)
                     state->subState = PGSUBSTATE_STANDING;
                 break;
             case PGSUBSTATE_JUMPING:
@@ -82,7 +82,7 @@ void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 v
             adjustAnim = 1;
             break;
         case PGSUBSTATE_WALKING:
-            targetSpeed = MAX_PLAYER_SPEED * 2 * g_PlayerInput.magnitude;
+            targetSpeed = MAX_PLAYER_SPEED * g_PlayerInput.magnitude;
             adjustAnim = 1;
             break;
     }
@@ -98,7 +98,7 @@ void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 v
         {
             rot[1] = atan2s(vel[2], vel[0]);
             setAnim(animState, &character_anim_Walk);
-            animState->speed = (s16)(sqrtf(newSpeed) * (ANIM_COUNTER_FACTOR / MAX_PLAYER_SPEED));
+            animState->speed = (s16)(sqrtf(newSpeed) * (2.0f * ANIM_COUNTER_FACTOR / MAX_PLAYER_SPEED));
         }
         else
         {
@@ -113,6 +113,12 @@ void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, 
     if (state->subState == PASUBSTATE_JUMPING)
     {
         vel[1] = 25.0f;
+        if (input->magnitude)
+        {
+            rot[1] = input->angle + g_Camera.yaw + 0x4000;
+            vel[0] = input->magnitude * MAX_PLAYER_SPEED * cossf(input->angle + g_Camera.yaw);
+            vel[2] = input->magnitude * -MAX_PLAYER_SPEED * sinsf(input->angle + g_Camera.yaw);
+        }
         state->subState = PASUBSTATE_FALLING;
     }
     else
@@ -120,7 +126,7 @@ void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, 
         if (collider->floor)
         {
             state->state = PSTATE_GROUND;
-            if (input->magnitude > INPUT_DEADZONE)
+            if (input->magnitude)
                 state->subState = PGSUBSTATE_WALKING;
             else
                 state->subState = PGSUBSTATE_STANDING;
@@ -154,7 +160,7 @@ void processAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel,
             {
                 animState->speed = 0;
             }
-            targetSpeed = MAX_PLAYER_SPEED * 2 * g_PlayerInput.magnitude;
+            targetSpeed = MAX_PLAYER_SPEED * g_PlayerInput.magnitude;
             break;
     }
 

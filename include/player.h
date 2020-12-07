@@ -6,6 +6,7 @@
 
 typedef struct PlayerState_t
 {
+    Entity *playerEntity;
     u8 state;
     u8 subState;
     u16 stateArg;

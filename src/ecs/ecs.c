@@ -1,6 +1,8 @@
+#include <stdint.h>
+
 #include <ecs.h>
 #include <multiarraylist.h>
-#include <stdint.h>
+#include <mem.h>
 #include <model.h>
 #include <physics.h>
 #include <collision.h>
@@ -437,4 +439,62 @@ void createEntitiesCallback(archetype_t archetype, void *arg, int count, EntityA
             curBlock = curBlock->next;
         }
     }
+}
+
+void getEntityComponents(Entity *entity, void **componentArrayOut)
+{
+    archetype_t archetype = entity->archetype;
+    int archetypeIndex = getArchetypeIndex(archetype);
+    MultiArrayList *archetypeArray = &archetypeArrays[archetypeIndex];
+    size_t blockElementCount = archetypeArray->elementCount;
+    size_t arrayIndex = entity->archetypeArrayIndex;
+    MultiArrayListBlock *curBlock = archetypeArray->start;
+    int componentIndex = 0; // Index of the component in all components
+    int componentArrayIndex = 0; // Index of the component in those in the archetype
+
+    while (arrayIndex >= blockElementCount)
+    {
+        curBlock = curBlock->next;
+        arrayIndex -= blockElementCount;
+    }
+
+    while (archetype)
+    {
+        if (archetype & 0x01)
+        {
+            componentArrayOut[componentArrayIndex] = (void *)(
+                (uintptr_t)curBlock + // skip the block header
+                multiarraylist_get_component_offset(archetypeArray, componentIndex) + // go to the start of the component array for this component
+                g_componentSizes[componentIndex] * arrayIndex), // index the component array
+            componentArrayIndex++;
+        }
+        componentIndex++;
+        archetype >>= 1;
+    }
+}
+
+Entity *findEntity(archetype_t archetype, size_t archetypeArrayIndex)
+{
+    Entity* curEntity;
+
+    for (curEntity = &allEntities[0]; curEntity != &allEntities[entitiesEnd]; curEntity++)
+    {
+        if (curEntity->archetype == archetype && curEntity->archetypeArrayIndex == archetypeArrayIndex)
+            return curEntity;
+    }
+    return NULL;
+}
+
+Entity *findEntityFromComponent(archetype_t archetype, int componentIndex, void* componentPointer)
+{
+    MultiArrayList *archetypeArray = &archetypeArrays[getArchetypeIndex(archetype)];
+    // Take advantage of the fact that array list blocks are chunk aligned and chunk sized,
+    // so round down to the nearest chunk start to get the block this component is in
+    MultiArrayListBlock *archetypeArrayBlock = ROUND_DOWN((uintptr_t)componentPointer, MEM_CHUNK_SIZE);
+    // Get the start of the component array for the given component type
+    uintptr_t componentArrayStart = (uintptr_t)archetypeArrayBlock + multiarraylist_get_component_offset(archetypeArray, componentIndex);
+    // Get the index into the array by dividing the offset into the array by the component's size
+    size_t archetypeArrayIndex = ((uintptr_t)componentPointer - componentArrayStart) / g_componentSizes[componentIndex];
+
+    return findEntity(archetype, archetypeArrayIndex);
 }

@@ -251,25 +251,26 @@ float rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax)
 }
 
 // Number of radial rays to cast to find walls
-#define COLLIDER_RAYCAST_RADIAL_COUNT 16
+// #define COLLIDER_RAYCAST_RADIAL_COUNT 16
+#define COLLIDER_RAYCAST_RADIAL_COUNT 8
 
 static const Vec3 wallRayDirs[COLLIDER_RAYCAST_RADIAL_COUNT] = {
     {  1.0000f, 0.0f,  0.0000f },
-    {  0.9239f, 0.0f,  0.3827f },
+    // {  0.9239f, 0.0f,  0.3827f },
     {  0.7071f, 0.0f,  0.7071f },
-    {  0.3827f, 0.0f,  0.9239f },
+    // {  0.3827f, 0.0f,  0.9239f },
     {  0.0000f, 0.0f,  1.0000f },
-    { -0.3827f, 0.0f,  0.9239f },
+    // { -0.3827f, 0.0f,  0.9239f },
     { -0.7071f, 0.0f,  0.7071f },
-    { -0.9239f, 0.0f,  0.3827f },
+    // { -0.9239f, 0.0f,  0.3827f },
     { -1.0000f, 0.0f,  0.0000f },
-    { -0.9239f, 0.0f, -0.3827f },
+    // { -0.9239f, 0.0f, -0.3827f },
     { -0.7071f, 0.0f, -0.7071f },
-    { -0.3827f, 0.0f, -0.9239f },
+    // { -0.3827f, 0.0f, -0.9239f },
     {  0.0000f, 0.0f, -1.0000f },
-    {  0.3827f, 0.0f, -0.9239f },
+    // {  0.3827f, 0.0f, -0.9239f },
     {  0.7071f, 0.0f, -0.7071f },
-    {  0.9239f, 0.0f, -0.3827f },
+    // {  0.9239f, 0.0f, -0.3827f },
 };
 
 void handleWalls(Vec3 pos, Vec3 vel, ColliderParams *collider)

@@ -3,6 +3,7 @@
 
 #include <config.h>
 #include <types.h>
+#include <mathutils.h>
 #include <PR/gbi.h>
 #include <PR/os_thread.h>
 #include <PR/os_message.h>
@@ -100,9 +101,6 @@ void drawModel(Model *toDraw, Animation* anim, u32 frame);
 void drawAABB(u32 layer, AABB *toDraw, u32 color);
 void drawLine(u32 layer, Vec3 start, Vec3 end, u32 color);
 void drawColTris(u32 layer, ColTri *tris, u32 count, u32 color);
-
-void mtxfMul(MtxF out, MtxF a, MtxF b);
-void mtxfEulerXYZ(MtxF out, s16 rx, s16 ry, s16 rz);
 
 #define copyMat(dst, src) \
 { \

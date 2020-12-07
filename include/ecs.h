@@ -32,7 +32,14 @@ enum ComponentBits
 
 #define ARCHETYPE_MODEL (Bit_Position | Bit_Rotation | Bit_Model)
 #define ARCHETYPE_ANIM_MODEL (Bit_Position | Bit_Rotation | Bit_Model | Bit_AnimState)
-#define ARCHETYPE_PLAYER (Bit_Position | Bit_Velocity | Bit_Collider | Bit_Rotation | Bit_Behavior | Bit_Model | Bit_AnimState | Bit_Gravity)
+#define ARCHETYPE_PLAYER (Bit_Position | Bit_Velocity | Bit_Collider | Bit_Rotation | Bit_Behavior | Bit_Model | Bit_AnimState | Bit_Gravity | Bit_Holder)
+
+typedef struct Entity_t {
+    // The archetype of this entity
+    archetype_t archetype;
+    // The index of this entity in the archetype's arraylist
+    size_t archetypeArrayIndex;
+} Entity;
 
 // Callback provided to the ecs to be called for every array of a given component selection when iterating
 typedef void (*EntityArrayCallback)(size_t count, void *arg, void **componentArrays);
@@ -67,8 +74,13 @@ void iterateOverEntities(EntityArrayCallback callback, void *arg, archetype_t co
 void iterateOverEntitiesAllComponents(EntityArrayCallbackAll callback, void *arg, archetype_t componentMask, archetype_t rejectMask);
 // Registers a new archetype
 void registerArchetype(archetype_t archetype);
-// Gets the arraylist for a given archetype
-MultiArrayList* getArchetypeArray(archetype_t archetype);
+// Outputs the component pointers for the given entity into the provided pointer array
+void getEntityComponents(Entity *entity, void **componentArrayOut);
+
+// Finds the entity that has the given archetype and the given archetype array index
+Entity *findEntity(archetype_t archetype, size_t archetypeArrayIndex);
+// Finds the entity that the given component belongs to, given the index of the given component (e.g. Component_Position) and the entity's archetype
+Entity *findEntityFromComponent(archetype_t archetype, int componentArchetypeIndex, void* componentPointer);
 
 extern const size_t g_componentSizes[];
 

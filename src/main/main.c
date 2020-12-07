@@ -6,7 +6,6 @@
 #include <mem.h>
 #include <collision.h>
 #include <ecs.h>
-#include <multiarraylist.h>
 #include <debug.h>
 #include <algorithms.h>
 #include <mathutils.h>
@@ -132,6 +131,7 @@ static struct {
 #define str(a) #a
 
 extern LevelHeader sampleHeader;
+extern Model logo_model;
 
 u32 __osSetFpcCsr(u32);
 
@@ -140,6 +140,7 @@ PlayerState playerState;
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
     float angle = 0.0f;
+    int frame = 0;
     u32 fpccsr;
 
     // Read fpcsr
@@ -198,11 +199,18 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         startFrame();
         readInput();
 
+        if (frame == 0)
+        {
+            bzero(&g_PlayerInput, sizeof(g_PlayerInput));
+        }
+
         // Increment the physics state
         physicsTick();
         // Process all entities that have a behavior
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
 #ifdef FPS30
+        beginInputPolling();
+        readInput();
         // Just run everything twice per frame to match 60 fps gameplay speed lol
         // Increment the physics state
         physicsTick();
@@ -260,6 +268,8 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         ProfilerData.rdpCmdTime = IO_READ(DPC_BUFBUSY_REG);
         ProfilerData.rdpPipeTime = IO_READ(DPC_PIPEBUSY_REG);
         ProfilerData.rdpTmemTime = IO_READ(DPC_TMEM_REG);
+
+        frame++;
 
         debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
             ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,

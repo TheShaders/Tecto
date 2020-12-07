@@ -190,10 +190,12 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
 {
     // Components: Position, Velocity, Rotation, BehaviorParams, Model, AnimState, Gravity
     Vec3 *pos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_PLAYER)];
+    Vec3s *rot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_PLAYER)];
     ColliderParams *collider = componentArrays[COMPONENT_INDEX(Collider, ARCHETYPE_PLAYER)];
     BehaviorParams *bhvParams = componentArrays[COMPONENT_INDEX(Behavior, ARCHETYPE_PLAYER)];
     Model **model = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_PLAYER)];
     GravityParams *gravity = componentArrays[COMPONENT_INDEX(Gravity, ARCHETYPE_PLAYER)];
+    HoldOffset *holdOffset = componentArrays[COMPONENT_INDEX(Holder, ARCHETYPE_PLAYER)];
     PlayerState *state = (PlayerState *)arg;
     *model = &character_model;
 
@@ -202,6 +204,11 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
     (*pos)[1] = 500.0f;
     (*pos)[2] = 0.0f;
 
+    // Set up position
+    (*rot)[0] = 0x0000;
+    (*rot)[1] = 0x0000;
+    (*rot)[2] = 0x0000;
+
     // Set up gravity
     gravity->accel = -PLAYER_GRAVITY;
     gravity->terminalVelocity = -30.0f;
@@ -209,6 +216,7 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
     // Set up behavior code
     bhvParams->callback = playerCallback;
     bhvParams->data = arg;
+    state->playerEntity = findEntityFromComponent(ARCHETYPE_PLAYER, Component_Position, pos);
     state->state = PSTATE_AIR;
     state->subState = PASUBSTATE_FALLING;
     state->stateArg = 0;
@@ -220,7 +228,14 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
     collider->startOffset = PLAYER_HEIGHT / PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
     collider->ySpacing = PLAYER_HEIGHT / PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
     collider->floor = NULL;
+
+    // Set up hold offset
+    holdOffset->holdOffset[0] = 0.0f;
+    holdOffset->holdOffset[1] = 90.0f;
+    holdOffset->holdOffset[2] = 100.0f;
 }
+
+extern Model logo_model;
 
 void playerCallback(UNUSED void **components, void *data)
 {
@@ -259,6 +274,59 @@ void playerCallback(UNUSED void **components, void *data)
     }
 
     VEC3_COPY(g_Camera.target, *pos);
+
+    // if(0)
+    
+    // test held entity
+    if (g_PlayerInput.buttonsPressed & B_BUTTON)
+    {
+        #define ARCHETYPE_HOLDABLE (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Model | Bit_Holdable | Bit_Gravity | Bit_Collider)
+        if (state->heldEntity == NULL)
+        {
+            Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
+            void *heldComponents[NUM_COMPONENTS(ARCHETYPE_HOLDABLE)];
+            HoldState *heldState;
+            Model **heldModel;
+            GravityParams *heldGravity;
+            ColliderParams *heldCollider;
+
+            getEntityComponents(heldEntity, heldComponents);
+
+            heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
+            heldState->holder = state->playerEntity;
+            state->heldEntity = heldEntity;
+
+            heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
+            *heldModel = &logo_model;
+
+            heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
+            heldGravity->accel = -1.0f;
+            heldGravity->terminalVelocity = -30.0f;
+
+            heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
+            heldCollider->numHeights = 1;
+            heldCollider->radius = 58.0f;
+            heldCollider->startOffset = 29.0f;
+            heldCollider->ySpacing = 0.0f;
+        }
+        else
+        {
+            void *heldComponents[NUM_COMPONENTS(state->heldEntity->archetype)];
+            Vec3 *heldVel;
+            HoldState *heldState;
+            getEntityComponents(state->heldEntity, heldComponents);
+
+            heldVel = heldComponents[COMPONENT_INDEX(Velocity, state->heldEntity->archetype)];
+            heldState = heldComponents[COMPONENT_INDEX(Holdable, state->heldEntity->archetype)];
+
+            (*heldVel)[0] = (*vel)[0] + 5.0f * sinsf((*rot)[1]);
+            (*heldVel)[1] = (*vel)[1] + 15.0f;
+            (*heldVel)[2] = (*vel)[2] + 5.0f * cossf((*rot)[1]);
+
+            heldState->holder = NULL;
+            state->heldEntity = NULL;
+        }
+    }
     
     // Transition between states if applicable
     stateUpdateCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, animState);

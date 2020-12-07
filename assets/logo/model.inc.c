@@ -212,7 +212,20 @@ Gfx logo_logo_mesh_tri_3[] = {
 	gsSPEndDisplayList(),
 };
 
+Vtx cull_vertices[] = {
+	{{{0, 37, -58},0, {1008, -16},{0xA6, 0x0, 0xA6, 0xFF}}},
+	{{{0, -37, -58},0, {-16, 1008},{0xA6, 0x0, 0xA6, 0xFF}}},
+	{{{0, -37, 58},0, {-16, 1008},{0x0, 0x81, 0x0, 0xFF}}},
+	{{{0, 37, 58},0, {-16, 1008},{0x0, 0x81, 0x0, 0xFF}}},
+	{{{58, -37, 0},0, {-16, 1008},{0x0, 0x81, 0x0, 0xFF}}},
+	{{{58, 37, 0},0, {-16, 1008},{0x0, 0x81, 0x0, 0xFF}}},
+	{{{-58, -37, 0},0, {-16, 1008},{0x0, 0x81, 0x0, 0xFF}}},
+	{{{-58, 37, 0},0, {-16, 1008},{0x0, 0x81, 0x0, 0xFF}}},
+};
+
 Gfx logo_logo_mesh[] = {
+	gsSPVertex(cull_vertices, 8, 0),
+	gsSPCullDisplayList(0, 7),
 	gsDPPipeSync(),
 	gsDPSetCombineLERP(ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1, ENVIRONMENT, 0, SHADE, 0, 0, 0, 0, 1),
 	gsDPSetEnvColor(5, 147, 48, 255),
@@ -228,4 +241,33 @@ Gfx logo_logo_mesh[] = {
 	gsSPDisplayList(logo_logo_mesh_tri_3),
 	gsDPPipeSync(),
 	gsSPEndDisplayList(),
+};
+
+BoneLayer logo_bone_layers[] = {
+    {
+        LAYER_OPA_SURF,
+        logo_logo_mesh,
+    },
+};
+
+Bone logo_bones[] = {
+    {
+        0,
+        255,
+        1,
+        0,
+        0.0,
+        29.0,
+        0.0,
+        logo_bone_layers,
+        NULL,
+        NULL,
+        NULL,
+    },
+};
+
+Model logo_model = {
+    1,
+    0,
+    logo_bones
 };

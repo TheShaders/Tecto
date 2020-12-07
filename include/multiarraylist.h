@@ -3,13 +3,6 @@
 
 #include <types.h>
 
-typedef struct Entity_t {
-    // The archetype of this entity
-    archetype_t archetype;
-    // The index of this entity in the archetype's arraylist
-    size_t archetypeArrayIndex;
-} Entity;
-
 typedef struct MultiArrayListBlock_t {
     MultiArrayListBlock *next;
     u32 numElements;

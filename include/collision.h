@@ -63,6 +63,7 @@ typedef struct ColliderParams_t {
     int numHeights; // Number of sets of cylindrical rays to cast, offset in a vertical pattern
     float startOffset; // The y offset for the first set of rays
     float ySpacing; // The y spacing between sets of rays
+    float frictionDamping; // The fraction of velocity maintained while on the ground each physics frame (e.g. if it's 0 then the object will instantly stop)
     ColTri *floor; // The floor this object is on (NULL if it's in the air)
 } ColliderParams;
 

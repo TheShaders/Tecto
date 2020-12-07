@@ -273,32 +273,37 @@ static const Vec3 wallRayDirs[COLLIDER_RAYCAST_RADIAL_COUNT] = {
     // {  0.9239f, 0.0f, -0.3827f },
 };
 
+#define VEL_THRESHOLD 0.1f
+
 void handleWalls(Vec3 pos, Vec3 vel, ColliderParams *collider)
 {
-    int heightIndex, radialIndex;
-    Vec3 rayStart = { pos[0], pos[1] + collider->startOffset, pos[2] };
-    Vec3 scaledVel;
-    VEC3_DIFF(rayStart, rayStart, vel);
-    VEC3_SCALE(scaledVel, vel, 1.0f / collider->radius);
-    for (heightIndex = 0; heightIndex < collider->numHeights; heightIndex++)
+    if (ABS(vel[0]) >= VEL_THRESHOLD || ABS(vel[2]) >= VEL_THRESHOLD || collider->floor == NULL)
     {
-        for (radialIndex = 0; radialIndex < COLLIDER_RAYCAST_RADIAL_COUNT; radialIndex++)
+        int heightIndex, radialIndex;
+        Vec3 rayStart = { pos[0], pos[1] + collider->startOffset, pos[2] };
+        Vec3 scaledVel;
+        VEC3_DIFF(rayStart, rayStart, vel);
+        VEC3_SCALE(scaledVel, vel, 1.0f / collider->radius);
+        for (heightIndex = 0; heightIndex < collider->numHeights; heightIndex++)
         {
-            ColTri *curWall;
-            Vec3 rayDir;
-            VEC3_ADD(rayDir, wallRayDirs[radialIndex], scaledVel);
-            float hitDist = raycast(rayStart, rayDir, 0.0f, collider->radius, &curWall);
-            if (curWall)
+            for (radialIndex = 0; radialIndex < COLLIDER_RAYCAST_RADIAL_COUNT; radialIndex++)
             {
-                float pushDist = hitDist - collider->radius;
-                Vec3 pushVec;
-                VEC3_SCALE(pushVec, wallRayDirs[radialIndex], pushDist);
-                VEC3_ADD(pos, pos, pushVec);
-                rayStart[0] = pos[0];
-                rayStart[2] = pos[2];
+                ColTri *curWall;
+                Vec3 rayDir;
+                VEC3_ADD(rayDir, wallRayDirs[radialIndex], scaledVel);
+                float hitDist = raycast(rayStart, rayDir, 0.0f, collider->radius, &curWall);
+                if (curWall)
+                {
+                    float pushDist = hitDist - collider->radius;
+                    Vec3 pushVec;
+                    VEC3_SCALE(pushVec, wallRayDirs[radialIndex], pushDist);
+                    VEC3_ADD(pos, pos, pushVec);
+                    rayStart[0] = pos[0];
+                    rayStart[2] = pos[2];
+                }
             }
+            rayStart[1] += collider->ySpacing;
         }
-        rayStart[1] += collider->ySpacing;
     }
 }
 

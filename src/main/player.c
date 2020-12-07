@@ -227,6 +227,7 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
     collider->numHeights = PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
     collider->startOffset = PLAYER_HEIGHT / PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
     collider->ySpacing = PLAYER_HEIGHT / PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
+    collider->frictionDamping = 1.0f;
     collider->floor = NULL;
 
     // Set up hold offset
@@ -308,6 +309,7 @@ void playerCallback(UNUSED void **components, void *data)
             heldCollider->radius = 58.0f;
             heldCollider->startOffset = 29.0f;
             heldCollider->ySpacing = 0.0f;
+            heldCollider->frictionDamping = 0.9f;
         }
         else
         {

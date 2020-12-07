@@ -145,6 +145,11 @@ void resolveCollisionsCallback(size_t count, UNUSED void *arg, void **componentA
         {
             curCollider->floor = handleFloorInAir(*curPos, *curVel);
         }
+        if (curCollider->floor != NULL)
+        {
+            (*curVel)[0] *= curCollider->frictionDamping;
+            (*curVel)[2] *= curCollider->frictionDamping;
+        }
 
         curPos++;
         curVel++;
@@ -174,6 +179,11 @@ void resolveHoldableCollisionsCallback(size_t count, UNUSED void *arg, void **co
             else
             {
                 curCollider->floor = handleFloorInAir(*curPos, *curVel);
+            }
+            if (curCollider->floor != NULL)
+            {
+                (*curVel)[0] *= curCollider->frictionDamping;
+                (*curVel)[2] *= curCollider->frictionDamping;
             }
         }
 

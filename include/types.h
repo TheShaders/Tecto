@@ -22,6 +22,7 @@ typedef struct ColTri_t ColTri;
 typedef struct BVHNode_t BVHNodeBase;
 typedef struct BVHTree_t BVHTree;
 typedef u8 SurfaceType;
+typedef struct ColliderParams_t ColliderParams;
 
 typedef float MtxF[4][4];
 typedef float Vec3[3];
@@ -45,6 +46,7 @@ typedef struct LevelHeader_t LevelHeader;
 
 // Prototypes for physics structs
 typedef struct GravityParams_t GravityParams;
+typedef struct HoldState_t HoldState;
 
 // Prototypes for player structs
 typedef struct PlayerState_t PlayerState;

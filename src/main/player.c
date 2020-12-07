@@ -18,29 +18,6 @@ extern Animation character_anim_Idle_Long;
 extern Animation character_anim_Walk;
 extern Animation character_anim_Jump_Start;
 
-static const Vec3 wallRayDirs[PLAYER_WALL_RAYCAST_RADIAL_COUNT] = {
-    {  1.0000f * PLAYER_RADIUS, 0.0f,  0.0000f * PLAYER_RADIUS },
-    {  0.9239f * PLAYER_RADIUS, 0.0f,  0.3827f * PLAYER_RADIUS },
-    {  0.7071f * PLAYER_RADIUS, 0.0f,  0.7071f * PLAYER_RADIUS },
-    {  0.3827f * PLAYER_RADIUS, 0.0f,  0.9239f * PLAYER_RADIUS },
-    {  0.0000f * PLAYER_RADIUS, 0.0f,  1.0000f * PLAYER_RADIUS },
-    { -0.3827f * PLAYER_RADIUS, 0.0f,  0.9239f * PLAYER_RADIUS },
-    { -0.7071f * PLAYER_RADIUS, 0.0f,  0.7071f * PLAYER_RADIUS },
-    { -0.9239f * PLAYER_RADIUS, 0.0f,  0.3827f * PLAYER_RADIUS },
-    { -1.0000f * PLAYER_RADIUS, 0.0f,  0.0000f * PLAYER_RADIUS },
-    { -0.9239f * PLAYER_RADIUS, 0.0f, -0.3827f * PLAYER_RADIUS },
-    { -0.7071f * PLAYER_RADIUS, 0.0f, -0.7071f * PLAYER_RADIUS },
-    { -0.3827f * PLAYER_RADIUS, 0.0f, -0.9239f * PLAYER_RADIUS },
-    {  0.0000f * PLAYER_RADIUS, 0.0f, -1.0000f * PLAYER_RADIUS },
-    {  0.3827f * PLAYER_RADIUS, 0.0f, -0.9239f * PLAYER_RADIUS },
-    {  0.7071f * PLAYER_RADIUS, 0.0f, -0.7071f * PLAYER_RADIUS },
-    {  0.9239f * PLAYER_RADIUS, 0.0f, -0.3827f * PLAYER_RADIUS },
-};
-
-void handleWalls(Vec3 pos, Vec3 vel);
-ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel);
-ColTri *handleFloorInAir(Vec3 pos, Vec3 vel);
-
 void setAnim(AnimState *animState, Animation *newAnim)
 {
     newAnim = (Animation *)segmentedToVirtual(newAnim);
@@ -52,11 +29,9 @@ void setAnim(AnimState *animState, Animation *newAnim)
     }
 }
 
-
-void updateGround(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, UNUSED Vec3s rot, UNUSED AnimState *animState)
+void updateGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, UNUSED Vec3 vel, ColliderParams *collider, UNUSED Vec3s rot, UNUSED AnimState *animState)
 {
-    ColTri* floor = handleFloorOnGround(pos, vel);
-    if (floor)
+    if (collider->floor)
     {
         switch (state->subState)
         {
@@ -86,11 +61,9 @@ void updateGround(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, UNUS
         state->state = PSTATE_AIR;
         state->subState = PASUBSTATE_FALLING;
     }
-
-    state->floorTri = floor;
 }
 
-void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, UNUSED Vec3s rot, AnimState *animState)
+void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, UNUSED ColliderParams *collider, UNUSED Vec3s rot, AnimState *animState)
 {
     int adjustAnim = 0;
     float targetSpeed = 0.0f;
@@ -135,9 +108,8 @@ void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 v
     }
 }
 
-void updateAir(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, UNUSED Vec3s rot, UNUSED AnimState *animState)
+void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, ColliderParams *collider, UNUSED Vec3s rot, UNUSED AnimState *animState)
 {
-    
     if (state->subState == PASUBSTATE_JUMPING)
     {
         vel[1] = 25.0f;
@@ -145,8 +117,7 @@ void updateAir(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, UNUSED 
     }
     else
     {
-        ColTri *floor = handleFloorInAir(pos, vel);
-        if (floor)
+        if (collider->floor)
         {
             state->state = PSTATE_GROUND;
             if (input->magnitude > INPUT_DEADZONE)
@@ -162,11 +133,10 @@ void updateAir(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, UNUSED 
                     break;
             }
         }
-        state->floorTri = floor;
     }
 }
 
-void processAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, UNUSED Vec3s rot, AnimState *animState)
+void processAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, UNUSED ColliderParams *collider, UNUSED Vec3s rot, AnimState *animState)
 {
     float targetSpeed = 0.0f;
     switch (state->subState)
@@ -192,12 +162,14 @@ void processAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel,
     vel[2] = vel[2] * (1.0f - PLAYER_AIR_ACCEL_TIME_CONST) - targetSpeed * (PLAYER_AIR_ACCEL_TIME_CONST) * sinsf(input->angle + g_Camera.yaw);
 }
 
-void (*stateUpdateCallbacks[])(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, Vec3s rot, AnimState *anim) = {
+// These functions handle state transitions
+void (*stateUpdateCallbacks[])(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, ColliderParams *collider, Vec3s rot, AnimState *anim) = {
     updateGround, // Ground
     updateAir, // Air
 };
 
-void (*stateProcessCallbacks[])(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, Vec3s rot, AnimState *anim) = {
+// These functions handle the actual state behavioral code
+void (*stateProcessCallbacks[])(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, ColliderParams *collider, Vec3s rot, AnimState *anim) = {
     processGround, // Ground
     processAir, // Air
 };
@@ -212,78 +184,36 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
 {
     // Components: Position, Velocity, Rotation, BehaviorParams, Model, AnimState, Gravity
     Vec3 *pos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_PLAYER)];
+    ColliderParams *collider = componentArrays[COMPONENT_INDEX(Collider, ARCHETYPE_PLAYER)];
     BehaviorParams *bhvParams = componentArrays[COMPONENT_INDEX(Behavior, ARCHETYPE_PLAYER)];
     Model **model = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_PLAYER)];
     GravityParams *gravity = componentArrays[COMPONENT_INDEX(Gravity, ARCHETYPE_PLAYER)];
     PlayerState *state = (PlayerState *)arg;
     *model = &character_model;
-    bhvParams->callback = playerCallback;
-    bhvParams->data = arg;
+
+    // Set up position
     (*pos)[0] = 0.0f;
     (*pos)[1] = 500.0f;
     (*pos)[2] = 0.0f;
+
+    // Set up gravity
     gravity->accel = -PLAYER_GRAVITY;
     gravity->terminalVelocity = -30.0f;
+
+    // Set up behavior code
+    bhvParams->callback = playerCallback;
+    bhvParams->data = arg;
     state->state = PSTATE_AIR;
     state->subState = PASUBSTATE_FALLING;
     state->stateArg = 0;
     state->heldEntity = NULL;
-}
 
-ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel)
-{
-    ColTri *floor;
-    float downdist = raycastVertical(pos, -1.0f, -PLAYER_MAX_STEP_UP, PLAYER_MAX_STEP_DOWN, &floor);
-    if (floor)
-    {
-        pos[1] -= downdist;
-        vel[1] = 0.0f;
-        return floor;
-    }
-    return NULL;
-}
-
-ColTri *handleFloorInAir(Vec3 pos, Vec3 vel)
-{
-    float groundRayLength = PLAYER_GROUND_RAYCAST_MIN_LENGTH - vel[1];
-    ColTri *hitTri;
-    float hitDist;
-    hitDist = raycastVertical(pos, -groundRayLength, -1.0f, EPSILON, &hitTri);
-    if (hitTri)
-    {
-        pos[1] -= hitDist * groundRayLength;
-        vel[1] = 0.0f;
-
-        return hitTri;
-    }
-    return NULL;
-}
-
-void handleWalls(Vec3 pos, Vec3 vel)
-{
-    int heightIndex, radialIndex;
-    Vec3 rayStart = { pos[0], pos[1] + (PLAYER_HEIGHT - PLAYER_MAX_STEP_UP) / PLAYER_WALL_RAYCAST_HEIGHT_COUNT, pos[2] };
-    VEC3_DIFF(rayStart, rayStart, vel);
-    for (heightIndex = 0; heightIndex < PLAYER_WALL_RAYCAST_HEIGHT_COUNT; heightIndex++)
-    {
-        for (radialIndex = 0; radialIndex < PLAYER_WALL_RAYCAST_RADIAL_COUNT; radialIndex++)
-        {
-            ColTri *curWall;
-            Vec3 rayDir;
-            VEC3_ADD(rayDir, wallRayDirs[radialIndex], vel);
-            float hitDist = raycast(rayStart, rayDir, 0.0f, 1.0f, &curWall);
-            if (curWall)
-            {
-                float pushDist = hitDist - 1.0f;
-                Vec3 pushVec;
-                VEC3_SCALE(pushVec, wallRayDirs[radialIndex], pushDist);
-                VEC3_ADD(pos, pos, pushVec);
-                rayStart[0] = pos[0];
-                rayStart[2] = pos[2];
-            }
-        }
-        rayStart[1] += ((PLAYER_HEIGHT - PLAYER_MAX_STEP_UP) / PLAYER_WALL_RAYCAST_HEIGHT_COUNT);
-    }
+    // Set up collider
+    collider->radius = PLAYER_RADIUS;
+    collider->numHeights = PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
+    collider->startOffset = PLAYER_HEIGHT / PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
+    collider->ySpacing = PLAYER_HEIGHT / PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
+    collider->floor = NULL;
 }
 
 void playerCallback(UNUSED void **components, void *data)
@@ -293,6 +223,7 @@ void playerCallback(UNUSED void **components, void *data)
     Vec3 *vel = components[COMPONENT_INDEX(Velocity, ARCHETYPE_PLAYER)];
     Vec3s *rot = components[COMPONENT_INDEX(Rotation, ARCHETYPE_PLAYER)];
     AnimState *animState = components[COMPONENT_INDEX(AnimState, ARCHETYPE_PLAYER)];
+    ColliderParams *collider = components[COMPONENT_INDEX(Collider, ARCHETYPE_PLAYER)];
     UNUSED GravityParams *gravity = components[COMPONENT_INDEX(Gravity, ARCHETYPE_PLAYER)];
     PlayerState *state = (PlayerState *)data;
 
@@ -323,10 +254,8 @@ void playerCallback(UNUSED void **components, void *data)
 
     VEC3_COPY(g_Camera.target, *pos);
     
-    // Handle wall collision (since it's universal across states currently)
-    handleWalls(*pos, *vel);
     // Transition between states if applicable
-    stateUpdateCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, *rot, animState);
+    stateUpdateCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, animState);
     // Process the current state
-    stateProcessCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, *rot, animState);
+    stateProcessCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, animState);
 }

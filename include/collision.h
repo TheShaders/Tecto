@@ -58,4 +58,16 @@ float verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, fl
 float raycastVertical(Vec3 rayOrigin, float rayLength, float tmin, float tmax, ColTri **hitOut);
 float raycast(Vec3 rayOrigin, Vec3 rayDir, float tmin, float tmax, ColTri **hitOut);
 
+typedef struct ColliderParams_t {
+    float radius; // Radius of the cylindrical rays to cast
+    int numHeights; // Number of sets of cylindrical rays to cast, offset in a vertical pattern
+    float startOffset; // The y offset for the first set of rays
+    float ySpacing; // The y spacing between sets of rays
+    ColTri *floor; // The floor this object is on (NULL if it's in the air)
+} ColliderParams;
+
+void handleWalls(Vec3 pos, Vec3 vel, ColliderParams *collider);
+ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel, float stepUp, float stepDown);
+ColTri *handleFloorInAir(Vec3 pos, Vec3 vel);
+
 #endif

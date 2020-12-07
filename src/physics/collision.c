@@ -5,6 +5,7 @@
 
 // game code
 #include <types.h>
+#include <physics.h>
 #include <collision.h>
 #include <mathutils.h>
 
@@ -247,4 +248,84 @@ float rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax)
         return FLT_MAX;
     }
     return distOnRay;
+}
+
+// Number of radial rays to cast to find walls
+#define COLLIDER_RAYCAST_RADIAL_COUNT 16
+
+static const Vec3 wallRayDirs[COLLIDER_RAYCAST_RADIAL_COUNT] = {
+    {  1.0000f, 0.0f,  0.0000f },
+    {  0.9239f, 0.0f,  0.3827f },
+    {  0.7071f, 0.0f,  0.7071f },
+    {  0.3827f, 0.0f,  0.9239f },
+    {  0.0000f, 0.0f,  1.0000f },
+    { -0.3827f, 0.0f,  0.9239f },
+    { -0.7071f, 0.0f,  0.7071f },
+    { -0.9239f, 0.0f,  0.3827f },
+    { -1.0000f, 0.0f,  0.0000f },
+    { -0.9239f, 0.0f, -0.3827f },
+    { -0.7071f, 0.0f, -0.7071f },
+    { -0.3827f, 0.0f, -0.9239f },
+    {  0.0000f, 0.0f, -1.0000f },
+    {  0.3827f, 0.0f, -0.9239f },
+    {  0.7071f, 0.0f, -0.7071f },
+    {  0.9239f, 0.0f, -0.3827f },
+};
+
+void handleWalls(Vec3 pos, Vec3 vel, ColliderParams *collider)
+{
+    int heightIndex, radialIndex;
+    Vec3 rayStart = { pos[0], pos[1] + collider->startOffset, pos[2] };
+    Vec3 scaledVel;
+    VEC3_DIFF(rayStart, rayStart, vel);
+    VEC3_SCALE(scaledVel, vel, 1.0f / collider->radius);
+    for (heightIndex = 0; heightIndex < collider->numHeights; heightIndex++)
+    {
+        for (radialIndex = 0; radialIndex < COLLIDER_RAYCAST_RADIAL_COUNT; radialIndex++)
+        {
+            ColTri *curWall;
+            Vec3 rayDir;
+            VEC3_ADD(rayDir, wallRayDirs[radialIndex], scaledVel);
+            float hitDist = raycast(rayStart, rayDir, 0.0f, collider->radius, &curWall);
+            if (curWall)
+            {
+                float pushDist = hitDist - collider->radius;
+                Vec3 pushVec;
+                VEC3_SCALE(pushVec, wallRayDirs[radialIndex], pushDist);
+                VEC3_ADD(pos, pos, pushVec);
+                rayStart[0] = pos[0];
+                rayStart[2] = pos[2];
+            }
+        }
+        rayStart[1] += collider->ySpacing;
+    }
+}
+
+ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel, float stepUp, float stepDown)
+{
+    ColTri *floor;
+    float downdist = raycastVertical(pos, -1.0f, -stepUp, stepDown, &floor);
+    if (floor)
+    {
+        pos[1] -= downdist;
+        vel[1] = 0.0f;
+        return floor;
+    }
+    return NULL;
+}
+
+ColTri *handleFloorInAir(Vec3 pos, Vec3 vel)
+{
+    float groundRayLength = vel[1];
+    ColTri *hitTri;
+    float hitDist;
+    hitDist = raycastVertical(pos, groundRayLength, -1.0f, EPSILON, &hitTri);
+    if (hitTri)
+    {
+        pos[1] += hitDist * groundRayLength;
+        vel[1] = 0.0f;
+
+        return hitTri;
+    }
+    return NULL;
 }

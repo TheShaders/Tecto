@@ -25,6 +25,8 @@ typedef struct PlayerState_t
 #define PLAYER_RADIUS 50.0f
 // Number of times to cast the radial rays
 #define PLAYER_WALL_RAYCAST_HEIGHT_COUNT 3
+#define PLAYER_WALL_RAYCAST_OFFSET 20.0f
+#define PLAYER_WALL_RAYCAST_SPACING ((PLAYER_HEIGHT - PLAYER_WALL_RAYCAST_OFFSET) / (PLAYER_WALL_RAYCAST_HEIGHT_COUNT - 1))
 #define PLAYER_GRAVITY 1.0f
 
 void createPlayer(PlayerState *state);

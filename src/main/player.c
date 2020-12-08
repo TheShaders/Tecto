@@ -225,8 +225,8 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
     // Set up collider
     collider->radius = PLAYER_RADIUS;
     collider->numHeights = PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
-    collider->startOffset = PLAYER_HEIGHT / PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
-    collider->ySpacing = PLAYER_HEIGHT / PLAYER_WALL_RAYCAST_HEIGHT_COUNT;
+    collider->startOffset = PLAYER_WALL_RAYCAST_OFFSET;
+    collider->ySpacing = PLAYER_WALL_RAYCAST_SPACING;
     collider->frictionDamping = 1.0f;
     collider->floor = NULL;
 

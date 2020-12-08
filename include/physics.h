@@ -6,7 +6,7 @@
 #define GRAVITY (-16.67f)
 
 // Max step up and down heights for objects
-#define MAX_STEP_UP   20.0f
+#define MAX_STEP_UP   50.0f
 #define MAX_STEP_DOWN 20.0f
 
 typedef struct GravityParams_t {

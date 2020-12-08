@@ -4,8 +4,6 @@
 #include <types.h>
 
 typedef struct LevelHeader_t {
-    Model *model;
-    BVHTree *collision;
     // Number of archetypes in the level (length of entityArchetypes)
     int archetypeCount;
     // Every archetype in the level

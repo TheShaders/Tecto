@@ -122,7 +122,7 @@ void raycastVerticalIterator(size_t count, void *data, void **componentArrays)
 
     while (count)
     {
-        float curDist = verticalRayVsBvh(origin, rayLen, *curTree, tmin, tmax, &curTri);
+        float curDist = verticalRayVsBvh(origin, rayLen, segmentedToVirtual(*curTree), tmin, tmax, &curTri);
         if (curDist < rayData->hitDist)
         {
             rayData->hitDist = curDist;
@@ -145,7 +145,7 @@ void raycastIterator(size_t count, void *data, void **componentArrays)
 
     while (count)
     {
-        float curDist = rayVsBvh(origin, rayDir, *curTree, tmin, tmax, &curTri);
+        float curDist = rayVsBvh(origin, rayDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri);
         if (curDist < rayData->hitDist)
         {
             rayData->hitDist = curDist;

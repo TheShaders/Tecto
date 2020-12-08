@@ -7933,13 +7933,13 @@ Gfx main_model_VIS_OPAQUE_mesh[] = {
 
 BoneLayer main_model_bone0_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         main_model_VISCOL_OPAQUE_mesh,
     },
 };
 BoneLayer main_model_bone1_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         main_model_VIS_OPAQUE_mesh,
     },
 };

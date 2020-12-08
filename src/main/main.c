@@ -25,7 +25,7 @@ extern u8 _introSegmentStart[];
 extern Animation character_anim_Idle_Long;
 extern Animation character_anim_Jump_Start;
 extern Animation character_anim_Walk;
-extern BVHTree test_collision_collision_tree;
+extern BVHTree main_collision_tree;
 
 void processBehaviorEntities(size_t count, UNUSED void *arg, int numComponents, archetype_t archetype, void **componentArrays, size_t *componentSizes)
 {
@@ -130,7 +130,7 @@ static struct {
 #define xstr(a) str(a)
 #define str(a) #a
 
-extern LevelHeader sampleHeader;
+extern LevelHeader mainHeader;
 extern Model logo_model;
 
 u32 __osSetFpcCsr(u32);
@@ -157,35 +157,33 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     createPlayer(&playerState);
 
     // Create the level collision entity
-    debug_printf("Creating collision entity\n");
-    createEntitiesCallback(Bit_Collision, segmentedToVirtual(&test_collision_collision_tree), 1, setCollision);
+    // debug_printf("Creating collision entity\n");
+    // createEntitiesCallback(Bit_Collision, segmentedToVirtual(&test_collision_collision_tree), 1, setCollision);
 
-    {
-        Entity *toDelete;
-        Entity *lastEntity;
-        debug_printf("Creating 5000 position only entities\n");
-        createEntities(Bit_Position, 5000);
+    // {
+    //     Entity *toDelete;
+    //     Entity *lastEntity;
+    //     debug_printf("Creating 5000 position only entities\n");
+    //     createEntities(Bit_Position, 5000);
 
-        debug_printf("Creating 1 position only entity to delete\n");
-        toDelete = createEntity(Bit_Position);
-        debug_printf("To delete entity archetype array index: %d\n", toDelete->archetypeArrayIndex);
+    //     debug_printf("Creating 1 position only entity to delete\n");
+    //     toDelete = createEntity(Bit_Position);
+    //     debug_printf("To delete entity archetype array index: %d\n", toDelete->archetypeArrayIndex);
 
-        debug_printf("Creating 5000 more position only entities\n");
-        createEntities(Bit_Position, 5000);
+    //     debug_printf("Creating 5000 more position only entities\n");
+    //     createEntities(Bit_Position, 5000);
 
-        debug_printf("Creating 1 position only entity to test\n");
-        lastEntity = createEntity(Bit_Position);
-        debug_printf("Test entity archetype array index: %d\n", lastEntity->archetypeArrayIndex);
+    //     debug_printf("Creating 1 position only entity to test\n");
+    //     lastEntity = createEntity(Bit_Position);
+    //     debug_printf("Test entity archetype array index: %d\n", lastEntity->archetypeArrayIndex);
         
-        debug_printf("Deleting entity at array position %d\n", toDelete->archetypeArrayIndex);
-        deleteEntity(toDelete);
+    //     debug_printf("Deleting entity at array position %d\n", toDelete->archetypeArrayIndex);
+    //     deleteEntity(toDelete);
 
-        debug_printf("Last entity was moved to %d\n", lastEntity->archetypeArrayIndex);
-
-        debug_printf("Processing level header\n");
-        // processLevelHeader(&sampleHeader);
-        
-    }
+    //     debug_printf("Last entity was moved to %d\n", lastEntity->archetypeArrayIndex);
+    // }
+    debug_printf("Processing level header\n");
+    processLevelHeader(segmentedToVirtual(&mainHeader));
 
     while (1)
     {
@@ -224,10 +222,10 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         setLightDirection(lightDir);
 
         if (1) {
-            BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&test_collision_collision_tree);
+            BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&main_collision_tree);
             ColTri *tris = segmentedToVirtual(test_collision_virtual->tris);
             
-            drawColTris(LAYER_OPA_SURF, tris, test_collision_virtual->triCount, 0x7F3300FF);
+            // drawColTris(LAYER_OPA_SURF, tris, test_collision_virtual->triCount, 0x7F3300FF);
             // {
             //     Vec3 rayOrigin = { 150.0f * sinf((M_PI / 180.0f) * angle), 80.0f, 150.0f * cosf((M_PI / 180.0f) * angle) };
             //     Vec3 rayDir = { 0.0f, -1000.0f, 0.0f };

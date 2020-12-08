@@ -3,61 +3,6 @@
 #include <mem.h>
 #include <string.h>
 
-extern void playerCallback(UNUSED void **components, UNUSED void *data);
-extern Model character_model;
-
-Vec3 samplePlayerPositions[4] = {
-    {100.0f, 0.0f,   0.0f},
-    {  0.0f, 0.0f, 100.0f},
-    {100.0f, 0.0f, 100.0f},
-    {100.0f, 0.0f, 200.0f},
-};
-
-BehaviorParams samplePlayerBehaviors[4] = {
-    { playerCallback, NULL },
-    { playerCallback, NULL },
-    { playerCallback, NULL },
-    { playerCallback, NULL },
-};
-
-Model *samplePlayerModels[4] = {
-    &character_model,
-    &character_model,
-    &character_model,
-    &character_model,
-};
-
-void *samplePlayerComponentData[NUM_COMPONENTS(ARCHETYPE_PLAYER)] = {
-    samplePlayerPositions, // pos
-    NULL, // vel
-    NULL, // rot
-    samplePlayerBehaviors, // behavior
-    samplePlayerModels, // model
-    NULL, // anim state
-    NULL, // gravity
-};
-
-archetype_t sampleArchetypes[1] = {
-    ARCHETYPE_PLAYER,
-};
-
-int sampleArchetypeCounts[1] = {
-    4,
-};
-
-void **sampleComponentData[1] = {
-    samplePlayerComponentData,
-};
-
-LevelHeader sampleHeader = {
-    NULL,
-    NULL,
-    1, // archetype count
-    sampleArchetypes, // archetypes
-    sampleArchetypeCounts, // archetype counts
-    sampleComponentData, // archetype component data
-};
-
 struct LevelCreateEntitiesCallbackArg_t {
     archetype_t archetype;
     void **componentArrays;

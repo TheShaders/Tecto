@@ -12,6 +12,7 @@
 #include <collision.h>
 #include <debug.h>
 #include <physics.h>
+#include <resize.h>
 
 extern Model character_model;
 extern Animation character_anim_Idle_Long;
@@ -281,7 +282,7 @@ void playerCallback(UNUSED void **components, void *data)
     // test held entity
     if (g_PlayerInput.buttonsPressed & B_BUTTON)
     {
-        #define ARCHETYPE_HOLDABLE (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Model | Bit_Holdable | Bit_Gravity | Bit_Collider)
+        #define ARCHETYPE_HOLDABLE (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Model | Bit_Holdable | Bit_Gravity | Bit_Collider | Bit_Resizable | Bit_Scale)
         if (state->heldEntity == NULL)
         {
             Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
@@ -290,12 +291,14 @@ void playerCallback(UNUSED void **components, void *data)
             Model **heldModel;
             GravityParams *heldGravity;
             ColliderParams *heldCollider;
+            ResizeParams *heldResizable;
 
             getEntityComponents(heldEntity, heldComponents);
 
             heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
             heldState->holder = state->playerEntity;
             state->heldEntity = heldEntity;
+            state->recentResizable = heldEntity;
 
             heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
             *heldModel = &logo_model;
@@ -310,6 +313,13 @@ void playerCallback(UNUSED void **components, void *data)
             heldCollider->startOffset = 29.0f;
             heldCollider->ySpacing = 0.0f;
             heldCollider->frictionDamping = 0.9f;
+
+            heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
+            heldResizable->curSize = Size_Shrunk;
+            heldResizable->shrinkAllowed = 1;
+            heldResizable->growAllowed = 1;
+            heldResizable->smallScale = 1.0f;
+            heldResizable->largeScale = 3.0f;
         }
         else
         {
@@ -328,6 +338,26 @@ void playerCallback(UNUSED void **components, void *data)
             heldState->holder = NULL;
             state->heldEntity = NULL;
         }
+    }
+
+    if ((g_PlayerInput.buttonsPressed & R_TRIG) && state->recentResizable)
+    {
+        void *resizableComponents[NUM_COMPONENTS(state->recentResizable->archetype)];
+        ResizeParams* resizeParams;
+
+        getEntityComponents(state->recentResizable, resizableComponents);
+
+        resizeParams = resizableComponents[COMPONENT_INDEX(Resizable, state->recentResizable->archetype)];
+        if (resizeParams->resizeTimer == 0)
+        {
+            resizeParams->curSize ^= 1;
+            resizeParams->resizeTimer = RESIZE_TIMER_START;
+        }
+    }
+
+    if ((g_PlayerInput.buttonsHeld & L_TRIG))
+    {
+        (*vel)[1] = 10.0f;
     }
     
     // Transition between states if applicable

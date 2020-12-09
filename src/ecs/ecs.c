@@ -6,6 +6,7 @@
 #include <model.h>
 #include <physics.h>
 #include <collision.h>
+#include <resize.h>
 
 #define COMPONENT(Name, Type) sizeof(Type),
 

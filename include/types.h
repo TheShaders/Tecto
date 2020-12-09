@@ -51,6 +51,9 @@ typedef struct HoldState_t HoldState;
 // Prototypes for player structs
 typedef struct PlayerState_t PlayerState;
 
+// Prototypes for resizing logic structs
+typedef struct ResizeParams_t ResizeParams;
+
 // Components
 // #define COMPONENT(Name, Type) typedef Type Name;
 // #include "components.inc.h"

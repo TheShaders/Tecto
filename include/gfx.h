@@ -102,6 +102,8 @@ void drawAABB(u32 layer, AABB *toDraw, u32 color);
 void drawLine(u32 layer, Vec3 start, Vec3 end, u32 color);
 void drawColTris(u32 layer, ColTri *tris, u32 count, u32 color);
 
+void drawAllEntities(void);
+
 #define copyMat(dst, src) \
 { \
     float* srcPtr = (float*)(&(*src)[0][0]); \
@@ -160,6 +162,8 @@ void drawColTris(u32 layer, ColTri *tris, u32 count, u32 color);
     mtxfMul(*g_curMatFPtr, *g_curMatFPtr, tmp); \
 }
 
+void guRotateF(float mf[4][4], float a, float x, float y, float z);
+
 #define gfxRotateAxisAngle(angle, axisX, axisY, axisZ) \
 { \
     MtxF tmp; \
@@ -174,12 +178,16 @@ void drawColTris(u32 layer, ColTri *tris, u32 count, u32 color);
     mtxfMul(*g_curMatFPtr, *g_curMatFPtr, tmp); \
 }
 
+void guTranslateF(float mf[4][4], float x, float y, float z);
+
 #define gfxTranslate(x, y, z) \
 { \
     MtxF tmp; \
     guTranslateF(tmp, x, y, z); \
     mtxfMul(*g_curMatFPtr, *g_curMatFPtr, tmp); \
 }
+
+void guScaleF(float mf[4][4], float x, float y, float z);
 
 #define gfxScale(sx, sy, sz) \
 { \

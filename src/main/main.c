@@ -13,6 +13,7 @@
 #include <physics.h>
 #include <camera.h>
 #include <level.h>
+#include <resize.h>
 
 #include <segments/intro.h>
 
@@ -47,60 +48,6 @@ void processBehaviorEntities(size_t count, UNUSED void *arg, int numComponents, 
         curBhvParams++;
         // Decrement the remaining entity count
         count--;
-    }
-}
-
-void drawAnimatedModels(size_t count, UNUSED void *arg, void **componentArrays)
-{
-    // Components: Position, Rotation, Model
-    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_ANIM_MODEL)];
-    Vec3s *curRot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_ANIM_MODEL)];
-    Model **curModel = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_ANIM_MODEL)];
-    AnimState *curAnimState = componentArrays[COMPONENT_INDEX(AnimState, ARCHETYPE_ANIM_MODEL)];
-
-    while (count)
-    {
-        gfxPushMat();
-         gfxTranslate((*curPos)[0], (*curPos)[1], (*curPos)[2]);
-         gfxRotateEulerXYZ((*curRot)[0], (*curRot)[1], (*curRot)[2]);
-          drawModel(*curModel, curAnimState->anim, ANIM_COUNTER_TO_FRAME(curAnimState->counter));
-        gfxPopMat();
-
-        curAnimState->counter += curAnimState->speed;
-#ifdef FPS30
-        curAnimState->counter += curAnimState->speed;
-#endif
-        if (curAnimState->counter >= (curAnimState->anim->frameCount << (ANIM_COUNTER_SHIFT)))
-        {
-            curAnimState->counter -= (curAnimState->anim->frameCount << (ANIM_COUNTER_SHIFT));
-        }
-
-        count--;
-        curPos++;
-        curRot++;
-        curModel++;
-        curAnimState++;
-    }
-}
-
-void drawModels(size_t count, UNUSED void *arg, void **componentArrays)
-{
-    // Components: Position, Rotation, Model
-    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_MODEL)];
-    Vec3s *curRot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_MODEL)];
-    Model **curModel = componentArrays[COMPONENT_INDEX(Model, ARCHETYPE_MODEL)];
-
-    while (count)
-    {
-        gfxPushMat();
-         gfxTranslate((*curPos)[0], (*curPos)[1], (*curPos)[2]);
-         gfxRotateEulerXYZ((*curRot)[0], (*curRot)[1], (*curRot)[2]);
-          drawModel(*curModel, NULL, 0);
-        gfxPopMat();
-        count--;
-        curPos++;
-        curRot++;
-        curModel++;
     }
 }
 
@@ -188,6 +135,8 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     while (1)
     {
         Vec3 lightDir = { 100.0f * sinf((M_PI / 180.0f) * 45.0f), 100.0f * cosf((M_PI / 180.0f) * 45.0f), 0.0f};
+        
+        // Vec3 lightDir = { 100.0f * sinf((M_PI / 180.0f) * angle), 100.0f * cosf((M_PI / 180.0f) * angle), 0.0f};
 #ifdef DEBUG_MODE
         bzero(&ProfilerData, sizeof(ProfilerData));
         ProfilerData.cpuTime = osGetTime();
@@ -197,61 +146,39 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         startFrame();
         readInput();
 
-        if (frame == 0)
+        if (frame < 10)
         {
             bzero(&g_PlayerInput, sizeof(g_PlayerInput));
         }
 
         // Increment the physics state
         physicsTick();
+        // Increment resizables' states
+        tickResizables();
         // Process all entities that have a behavior
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
 #ifdef FPS30
         beginInputPolling();
         readInput();
+
+        if (frame < 10)
+        {
+            bzero(&g_PlayerInput, sizeof(g_PlayerInput));
+        }
         // Just run everything twice per frame to match 60 fps gameplay speed lol
         // Increment the physics state
         physicsTick();
+        // Increment resizables' states
+        tickResizables();
         // Process all entities that have a behavior
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
 #endif
         
         // Set up the camera
         setupCameraMatrices(&g_Camera);
-
         setLightDirection(lightDir);
 
-        if (1) {
-            BVHTree *test_collision_virtual = (BVHTree*)segmentedToVirtual(&main_collision_tree);
-            ColTri *tris = segmentedToVirtual(test_collision_virtual->tris);
-            
-            // drawColTris(LAYER_OPA_SURF, tris, test_collision_virtual->triCount, 0x7F3300FF);
-            // {
-            //     Vec3 rayOrigin = { 150.0f * sinf((M_PI / 180.0f) * angle), 80.0f, 150.0f * cosf((M_PI / 180.0f) * angle) };
-            //     Vec3 rayDir = { 0.0f, -1000.0f, 0.0f };
-            //     ColTri *hit = NULL;
-            //     BVHNode *nodes = (BVHNode*)segmentedToVirtual(test_collision_virtual->nodes);
-            //     int i;
-
-
-            //     Off(O2) :              105000 -  107000
-            //     On (O2) :             1500000 - 1700000
-            //     On (Ofast) :          1500000 - 2480000
-            //     On (vertical/O2) :    1070000 - 1440000
-            //     On (vertical/Ofast) : 1160000 - 1700000
-            //     On (O1) :             1080000 - 1380000
-            //     On (Os) :              990000 - 1380000
-            //     for (i = 0; i < 1000; i++)
-            //     {
-            //         verticalRayVsBvh(rayOrigin, rayDir[1], test_collision_virtual, 0.0f, 1.0f, &hit);
-            //     }
-            // }
-        }
-
-        // Draw all entities that have a model and no animation
-        iterateOverEntities(drawModels, NULL, ARCHETYPE_MODEL, Bit_AnimState);
-        // Draw all entities that have a model and an animation
-        iterateOverEntities(drawAnimatedModels, NULL, ARCHETYPE_ANIM_MODEL, 0);
+        drawAllEntities();
         
 #ifdef DEBUG_MODE
         ProfilerData.cpuTime = osGetTime() - ProfilerData.cpuTime;

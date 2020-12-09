@@ -322,7 +322,7 @@ ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel, float stepUp, float stepDown)
 
 ColTri *handleFloorInAir(Vec3 pos, Vec3 vel)
 {
-    float groundRayLength = vel[1];
+    float groundRayLength = vel[1] - 10.0f;
     ColTri *hitTri;
     float hitDist;
     hitDist = raycastVertical(pos, groundRayLength, -1.0f, EPSILON, &hitTri);

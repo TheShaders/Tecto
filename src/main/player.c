@@ -13,6 +13,7 @@
 #include <debug.h>
 #include <physics.h>
 #include <resize.h>
+#include <surface_types.h>
 
 extern Model character_model;
 extern Animation character_anim_Idle_Long;
@@ -37,13 +38,13 @@ void updateGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, UNUSED 
         switch (state->subState)
         {
             case PGSUBSTATE_STANDING:
-                if (input->buttonsPressed & A_BUTTON)
+                if (input->buttonsPressed & A_BUTTON && collider->floorSurfaceType != SURFACE_SLOW)
                     state->subState = PGSUBSTATE_JUMPING;
                 else if (input->magnitude)
                     state->subState = PGSUBSTATE_WALKING;
                 break;
             case PGSUBSTATE_WALKING:
-                if (input->buttonsPressed & A_BUTTON)
+                if (input->buttonsPressed & A_BUTTON && collider->floorSurfaceType != SURFACE_SLOW)
                     state->subState = PGSUBSTATE_JUMPING;
                 else if (input->magnitude == 0)
                     state->subState = PGSUBSTATE_STANDING;
@@ -86,6 +87,10 @@ void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 v
             targetSpeed = MAX_PLAYER_SPEED * g_PlayerInput.magnitude;
             adjustAnim = 1;
             break;
+    }
+    if (collider->floorSurfaceType == SURFACE_SLOW)
+    {
+        targetSpeed *= 0.5f;
     }
 
     vel[0] = vel[0] * (1.0f - PLAYER_GROUND_ACCEL_TIME_CONST) + targetSpeed * (PLAYER_GROUND_ACCEL_TIME_CONST) * cossf(input->angle + g_Camera.yaw);

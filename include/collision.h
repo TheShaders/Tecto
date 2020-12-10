@@ -52,11 +52,11 @@ float rayVsAABB(Vec3 rayStart, Vec3 rayDirInv, AABB *box, float tmin, float tmax
 float verticalRayVsTri(Vec3 rayStart, float length, ColTri *tri, float tmin, float tmax);
 float rayVsTri(Vec3 rayStart, Vec3 rayDir, ColTri *tri, float tmin, float tmax);
 
-float rayVsBvh(Vec3 rayStart, Vec3 rayDirInv, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut);
-float verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut);
+float rayVsBvh(Vec3 rayStart, Vec3 rayDirInv, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut, SurfaceType *floorSurface);
+float verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut, SurfaceType *floorSurface);
 
-float raycastVertical(Vec3 rayOrigin, float rayLength, float tmin, float tmax, ColTri **hitOut);
-float raycast(Vec3 rayOrigin, Vec3 rayDir, float tmin, float tmax, ColTri **hitOut);
+float raycastVertical(Vec3 rayOrigin, float rayLength, float tmin, float tmax, ColTri **hitOut, SurfaceType *floorSurface);
+float raycast(Vec3 rayOrigin, Vec3 rayDir, float tmin, float tmax, ColTri **hitOut, SurfaceType *floorSurface);
 
 typedef struct ColliderParams_t {
     float radius; // Radius of the cylindrical rays to cast
@@ -65,10 +65,11 @@ typedef struct ColliderParams_t {
     float ySpacing; // The y spacing between sets of rays
     float frictionDamping; // The fraction of velocity maintained while on the ground each physics frame (e.g. if it's 0 then the object will instantly stop)
     ColTri *floor; // The floor this object is on (NULL if it's in the air)
+    SurfaceType floorSurfaceType; // The surface type of the floor
 } ColliderParams;
 
 void handleWalls(Vec3 pos, Vec3 vel, ColliderParams *collider);
-ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel, float stepUp, float stepDown);
-ColTri *handleFloorInAir(Vec3 pos, Vec3 vel);
+ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel, float stepUp, float stepDown, SurfaceType *surfaceTypeHit);
+ColTri *handleFloorInAir(Vec3 pos, Vec3 vel, SurfaceType *surfaceTypeHit);
 
 #endif

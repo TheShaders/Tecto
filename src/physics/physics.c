@@ -139,11 +139,11 @@ void resolveCollisionsCallback(size_t count, UNUSED void *arg, void **componentA
         handleWalls(*curPos, *curVel, curCollider);
         if (curCollider->floor != NULL)
         {
-            curCollider->floor = handleFloorOnGround(*curPos, *curVel, MAX_STEP_UP, MAX_STEP_DOWN);
+            curCollider->floor = handleFloorOnGround(*curPos, *curVel, MAX_STEP_UP, MAX_STEP_DOWN, &curCollider->floorSurfaceType);
         }
         else
         {
-            curCollider->floor = handleFloorInAir(*curPos, *curVel);
+            curCollider->floor = handleFloorInAir(*curPos, *curVel, &curCollider->floorSurfaceType);
         }
         if (curCollider->floor != NULL)
         {
@@ -174,11 +174,11 @@ void resolveHoldableCollisionsCallback(size_t count, UNUSED void *arg, void **co
             handleWalls(*curPos, *curVel, curCollider);
             if (curCollider->floor != NULL)
             {
-                curCollider->floor = handleFloorOnGround(*curPos, *curVel, MAX_STEP_UP, MAX_STEP_DOWN);
+                curCollider->floor = handleFloorOnGround(*curPos, *curVel, MAX_STEP_UP, MAX_STEP_DOWN, &curCollider->floorSurfaceType);
             }
             else
             {
-                curCollider->floor = handleFloorInAir(*curPos, *curVel);
+                curCollider->floor = handleFloorInAir(*curPos, *curVel, &curCollider->floorSurfaceType);
             }
             if (curCollider->floor != NULL)
             {

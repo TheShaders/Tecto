@@ -6,6 +6,7 @@
 #include <model.h>
 #include <physics.h>
 #include <collision.h>
+#include <resize.h>
 
 #define COMPONENT(Name, Type) sizeof(Type),
 
@@ -490,7 +491,7 @@ Entity *findEntityFromComponent(archetype_t archetype, int componentIndex, void*
     MultiArrayList *archetypeArray = &archetypeArrays[getArchetypeIndex(archetype)];
     // Take advantage of the fact that array list blocks are chunk aligned and chunk sized,
     // so round down to the nearest chunk start to get the block this component is in
-    MultiArrayListBlock *archetypeArrayBlock = ROUND_DOWN((uintptr_t)componentPointer, MEM_CHUNK_SIZE);
+    MultiArrayListBlock *archetypeArrayBlock = (MultiArrayListBlock *)ROUND_DOWN((uintptr_t)componentPointer, MEM_CHUNK_SIZE);
     // Get the start of the component array for the given component type
     uintptr_t componentArrayStart = (uintptr_t)archetypeArrayBlock + multiarraylist_get_component_offset(archetypeArray, componentIndex);
     // Get the index into the array by dividing the offset into the array by the component's size

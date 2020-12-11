@@ -289,9 +289,10 @@ void handleWalls(Vec3 pos, Vec3 vel, ColliderParams *collider)
             for (radialIndex = 0; radialIndex < COLLIDER_RAYCAST_RADIAL_COUNT; radialIndex++)
             {
                 ColTri *curWall;
+                SurfaceType curWallSurfaceType;
                 Vec3 rayDir;
                 VEC3_ADD(rayDir, wallRayDirs[radialIndex], scaledVel);
-                float hitDist = raycast(rayStart, rayDir, 0.0f, collider->radius, &curWall);
+                float hitDist = raycast(rayStart, rayDir, 0.0f, collider->radius, &curWall, &curWallSurfaceType);
                 if (curWall)
                 {
                     float pushDist = hitDist - collider->radius;
@@ -307,29 +308,36 @@ void handleWalls(Vec3 pos, Vec3 vel, ColliderParams *collider)
     }
 }
 
-ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel, float stepUp, float stepDown)
+ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel, float stepUp, float stepDown, SurfaceType *surfaceTypeHit)
 {
     ColTri *floor;
-    float downdist = raycastVertical(pos, -1.0f, -stepUp, stepDown, &floor);
+    SurfaceType floorSurfaceType;
+    float downdist = raycastVertical(pos, -1.0f, -stepUp, stepDown, &floor, &floorSurfaceType);
     if (floor)
     {
         pos[1] -= downdist;
         vel[1] = 0.0f;
+
+        *surfaceTypeHit = floorSurfaceType;
+
         return floor;
     }
     return NULL;
 }
 
-ColTri *handleFloorInAir(Vec3 pos, Vec3 vel)
+ColTri *handleFloorInAir(Vec3 pos, Vec3 vel, SurfaceType *surfaceTypeHit)
 {
-    float groundRayLength = vel[1];
+    float groundRayLength = vel[1] - 10.0f;
     ColTri *hitTri;
+    SurfaceType floorSurfaceType;
     float hitDist;
-    hitDist = raycastVertical(pos, groundRayLength, -1.0f, EPSILON, &hitTri);
+    hitDist = raycastVertical(pos, groundRayLength, -1.0f, EPSILON, &hitTri, &floorSurfaceType);
     if (hitTri)
     {
         pos[1] += hitDist * groundRayLength;
         vel[1] = 0.0f;
+
+        *surfaceTypeHit = floorSurfaceType;
 
         return hitTri;
     }

@@ -37,6 +37,7 @@ void initScheduler(void)
     #endif
     osCreateMesgQueue(&schedQueue, &schedMesg, 1);
     osScAddClient(&scheduler, &gfxClient, &schedQueue);
+    osViSetSpecialFeatures(OS_VI_GAMMA_OFF);
 }
 
 void scheduleGfxTask(OSScTask *task)

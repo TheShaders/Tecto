@@ -14,6 +14,7 @@
 #include <physics.h>
 #include <resize.h>
 #include <surface_types.h>
+#include <interaction.h>
 
 extern Model character_model;
 extern Animation character_anim_Idle_Long;
@@ -192,6 +193,8 @@ void createPlayer(PlayerState *state)
     createEntitiesCallback(ARCHETYPE_PLAYER, state, 1, createPlayerCallback);
 }
 
+#define ARCHETYPE_HOLDABLE (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Model | Bit_Holdable | Bit_Gravity | Bit_Collider | Bit_Resizable | Bit_Scale)
+
 void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays)
 {
     // Components: Position, Velocity, Rotation, BehaviorParams, Model, AnimState, Gravity
@@ -282,55 +285,54 @@ void playerCallback(UNUSED void **components, void *data)
 
     VEC3_COPY(g_Camera.target, *pos);
 
-    // if(0)
     
     // test held entity
+    if ((g_PlayerInput.buttonsPressed & D_JPAD) && state->heldEntity == NULL)
+    {
+        Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
+        void *heldComponents[NUM_COMPONENTS(ARCHETYPE_HOLDABLE)];
+        HoldState *heldState;
+        Model **heldModel;
+        GravityParams *heldGravity;
+        ColliderParams *heldCollider;
+        ResizeParams *heldResizable;
+
+        getEntityComponents(heldEntity, heldComponents);
+
+        heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
+        heldState->holder = state->playerEntity;
+        state->heldEntity = heldEntity;
+
+        heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
+        *heldModel = &logo_model;
+
+        heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
+        heldGravity->accel = -1.0f;
+        heldGravity->terminalVelocity = -30.0f;
+
+        heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
+        heldCollider->numHeights = 1;
+        heldCollider->radius = 58.0f;
+        heldCollider->startOffset = 29.0f;
+        heldCollider->ySpacing = 0.0f;
+        heldCollider->frictionDamping = 0.9f;
+
+        heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
+        heldResizable->curSize = Size_Shrunk;
+        heldResizable->shrinkAllowed = 1;
+        heldResizable->growAllowed = 1;
+        heldResizable->smallScale = 1.0f;
+        heldResizable->largeScale = 3.0f;
+    }
+
     if (g_PlayerInput.buttonsPressed & B_BUTTON)
     {
-        #define ARCHETYPE_HOLDABLE (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Model | Bit_Holdable | Bit_Gravity | Bit_Collider | Bit_Resizable | Bit_Scale)
-        if (state->heldEntity == NULL)
-        {
-            Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
-            void *heldComponents[NUM_COMPONENTS(ARCHETYPE_HOLDABLE)];
-            HoldState *heldState;
-            Model **heldModel;
-            GravityParams *heldGravity;
-            ColliderParams *heldCollider;
-            ResizeParams *heldResizable;
-
-            getEntityComponents(heldEntity, heldComponents);
-
-            heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
-            heldState->holder = state->playerEntity;
-            state->heldEntity = heldEntity;
-            state->recentResizable = heldEntity;
-
-            heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
-            *heldModel = &logo_model;
-
-            heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
-            heldGravity->accel = -1.0f;
-            heldGravity->terminalVelocity = -30.0f;
-
-            heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
-            heldCollider->numHeights = 1;
-            heldCollider->radius = 58.0f;
-            heldCollider->startOffset = 29.0f;
-            heldCollider->ySpacing = 0.0f;
-            heldCollider->frictionDamping = 0.9f;
-
-            heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
-            heldResizable->curSize = Size_Shrunk;
-            heldResizable->shrinkAllowed = 1;
-            heldResizable->growAllowed = 1;
-            heldResizable->smallScale = 1.0f;
-            heldResizable->largeScale = 3.0f;
-        }
-        else
+        if (state->heldEntity != NULL)
         {
             void *heldComponents[NUM_COMPONENTS(state->heldEntity->archetype)];
             Vec3 *heldVel;
             HoldState *heldState;
+            
             getEntityComponents(state->heldEntity, heldComponents);
 
             heldVel = heldComponents[COMPONENT_INDEX(Velocity, state->heldEntity->archetype)];
@@ -340,23 +342,56 @@ void playerCallback(UNUSED void **components, void *data)
             (*heldVel)[1] = (*vel)[1] + 15.0f;
             (*heldVel)[2] = (*vel)[2] + 5.0f * cossf((*rot)[1]);
 
+            if (state->heldEntity->archetype & Bit_Resizable)
+            {
+                ResizeParams *heldResize = heldComponents[COMPONENT_INDEX(Resizable, state->heldEntity->archetype)];
+                if (heldResize->type == ResizeType_Shrink_While_Held)
+                {
+                    heldResize->curSize = Size_Grown;
+                }
+                else
+                {
+                    heldResize->curSize = Size_Shrunk;
+                }
+                heldResize->resizeTimer = RESIZE_TIMER_START;
+            }
+
             heldState->holder = NULL;
             state->heldEntity = NULL;
         }
-    }
-
-    if ((g_PlayerInput.buttonsPressed & R_TRIG) && state->recentResizable)
-    {
-        void *resizableComponents[NUM_COMPONENTS(state->recentResizable->archetype)];
-        ResizeParams* resizeParams;
-
-        getEntityComponents(state->recentResizable, resizableComponents);
-
-        resizeParams = resizableComponents[COMPONENT_INDEX(Resizable, state->recentResizable->archetype)];
-        if (resizeParams->resizeTimer == 0)
+        else if (state->state == PSTATE_GROUND)
         {
-            resizeParams->curSize ^= 1;
-            resizeParams->resizeTimer = RESIZE_TIMER_START;
+            float holdableDist;
+            Entity *closestHoldable = findClosestEntity(*pos, Bit_Holdable, 200.0f, &holdableDist);
+
+            if (closestHoldable != NULL)
+            {
+                void *heldComponents[NUM_COMPONENTS(closestHoldable->archetype)];
+                
+                getEntityComponents(closestHoldable, heldComponents);
+
+                HoldState *heldState = heldComponents[COMPONENT_INDEX(Holdable, closestHoldable->archetype)];
+
+                if (heldState->holder == NULL)
+                {
+                    heldState->holder = state->playerEntity;
+                    state->heldEntity = closestHoldable;
+
+                    if (closestHoldable->archetype & Bit_Resizable)
+                    {
+                        ResizeParams *heldResize = heldComponents[COMPONENT_INDEX(Resizable, closestHoldable->archetype)];
+                        if (heldResize->type == ResizeType_Shrink_While_Held)
+                        {
+                            heldResize->curSize = Size_Shrunk;
+                        }
+                        else
+                        {
+                            heldResize->curSize = Size_Grown;
+                        }
+                        heldResize->resizeTimer = RESIZE_TIMER_START;
+                    }
+                }
+            }
         }
     }
 

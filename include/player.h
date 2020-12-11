@@ -11,7 +11,6 @@ typedef struct PlayerState_t
     u8 subState;
     u16 stateArg;
     Entity *heldEntity;
-    Entity *recentResizable;
 } PlayerState;
 
 #define MAX_PLAYER_SPEED 8.0f

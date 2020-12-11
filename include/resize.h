@@ -11,6 +11,14 @@ typedef enum
     Size_Shrunk
 } SizeState;
 
+enum
+{
+    ResizeType_Shrink_While_Held,
+    ResizeType_Grow_While_Held,
+};
+
+typedef u8 ResizeType;
+
 typedef void (*ResizeCallback)(SizeState newState, Entity *entity, void **componentArrays);
 
 typedef struct ResizeParams_t {
@@ -20,7 +28,8 @@ typedef struct ResizeParams_t {
     int reserved : 5;
 
     u8 resizeTimer;
-    u16 reserved2;
+    ResizeType type;
+    u8 reserved2;
     float smallScale;
     float largeScale;
     ResizeCallback callback;

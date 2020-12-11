@@ -9,6 +9,11 @@
 #define MAX_STEP_UP   50.0f
 #define MAX_STEP_DOWN 20.0f
 
+typedef enum HoldType_t {
+    HOLD_NORMAL, // Standard holdable object
+    HOLD_GLIDE, // Holdable object that allows you to glide
+} HoldType;
+
 typedef struct GravityParams_t {
     float accel;
     float terminalVelocity;
@@ -16,6 +21,7 @@ typedef struct GravityParams_t {
 
 typedef struct HoldState_t {
     Entity *holder;
+    HoldType type;
 } HoldState;
 
 typedef struct HoldOffset_t {

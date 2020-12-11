@@ -65,11 +65,15 @@ SECTIONS
         BUILD_ROOT/src/main/player.o(.text*);
         BUILD_ROOT/src/main/task_sched.o(.text*);
         BUILD_ROOT/src/main/resize.o(.text*);
+        BUILD_ROOT/src/main/interaction.o(.text*);
+
         BUILD_ROOT/src/math/asmmath.o(.text*);
         BUILD_ROOT/src/math/algorithms.o(.text*);
         BUILD_ROOT/src/math/mathutils.o(.text*);
+
         BUILD_ROOT/src/usb/usb.o(.text*);
         BUILD_ROOT/src/usb/debug.o(.text*);
+
         BUILD_ROOT/src/main/main.o(.*data*);
         BUILD_ROOT/src/main/mem.o(.*data*);
         BUILD_ROOT/src/main/init.o(.*data*);
@@ -78,8 +82,11 @@ SECTIONS
         BUILD_ROOT/src/main/player.o(.*data*);
         BUILD_ROOT/src/main/task_sched.o(.*data*);
         BUILD_ROOT/src/main/resize.o(.*data*);
+        BUILD_ROOT/src/main/interaction.o(.*data*);
+
         BUILD_ROOT/src/math/algorithms.o(.*data*);
         BUILD_ROOT/src/math/mathutils.o(.*data*);
+
         BUILD_ROOT/src/usb/usb.o(.*data*);
         BUILD_ROOT/src/usb/debug.o(.*data*);
         . = ALIGN(16);
@@ -172,8 +179,11 @@ SECTIONS
         BUILD_ROOT/src/main/player.o(.bss*);
         BUILD_ROOT/src/main/task_sched.o(.bss*);
         BUILD_ROOT/src/main/resize.o(.bss*);
+        BUILD_ROOT/src/main/interaction.o(.bss*);
+
         BUILD_ROOT/src/math/algorithms.o(.bss*);
         BUILD_ROOT/src/math/mathutils.o(.bss*);
+        
         BUILD_ROOT/src/usb/usb.o(.bss*);
         BUILD_ROOT/src/usb/debug.o(.bss*);
         . = ALIGN(16);

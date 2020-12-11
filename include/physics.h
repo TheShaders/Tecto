@@ -10,8 +10,8 @@
 #define MAX_STEP_DOWN 20.0f
 
 typedef enum HoldType_t {
-    HOLD_NORMAL, // Standard holdable object
-    HOLD_GLIDE, // Holdable object that allows you to glide
+    HoldType_Normal, // Standard holdable object
+    HoldType_Glide, // Holdable object that allows you to glide
 } HoldType;
 
 typedef struct GravityParams_t {

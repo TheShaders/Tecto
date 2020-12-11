@@ -32,7 +32,7 @@ void setAnim(AnimState *animState, Animation *newAnim)
     }
 }
 
-void updateGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, UNUSED Vec3 vel, ColliderParams *collider, UNUSED Vec3s rot, UNUSED AnimState *animState)
+void updateGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, UNUSED Vec3 vel, ColliderParams *collider, UNUSED Vec3s rot, UNUSED GravityParams *gravity, UNUSED AnimState *animState)
 {
     if (collider->floor)
     {
@@ -66,7 +66,7 @@ void updateGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, UNUSED 
     }
 }
 
-void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, UNUSED ColliderParams *collider, UNUSED Vec3s rot, AnimState *animState)
+void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, UNUSED ColliderParams *collider, UNUSED Vec3s rot, UNUSED GravityParams *gravity, AnimState *animState)
 {
     int adjustAnim = 0;
     float targetSpeed = 0.0f;
@@ -115,7 +115,7 @@ void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 v
     }
 }
 
-void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, ColliderParams *collider, UNUSED Vec3s rot, UNUSED AnimState *animState)
+void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, ColliderParams *collider, UNUSED Vec3s rot, UNUSED GravityParams *gravity, UNUSED AnimState *animState)
 {
     if (state->subState == PASUBSTATE_JUMPING)
     {
@@ -149,7 +149,7 @@ void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, 
     }
 }
 
-void processAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, UNUSED ColliderParams *collider, UNUSED Vec3s rot, AnimState *animState)
+void processAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, UNUSED ColliderParams *collider, UNUSED Vec3s rot, GravityParams *gravity, AnimState *animState)
 {
     float targetSpeed = 0.0f;
     switch (state->subState)
@@ -171,18 +171,37 @@ void processAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel,
             break;
     }
 
+    if (state->heldEntity)
+    {
+        void *heldComponents[NUM_COMPONENTS(state->heldEntity->archetype)];
+        HoldState *heldState;
+
+        getEntityComponents(state->heldEntity, heldComponents);
+
+        heldState = heldComponents[COMPONENT_INDEX(Holdable, state->heldEntity->archetype)];
+
+        if (heldState->type == HoldType_Glide)
+        {
+            gravity->terminalVelocity = -PLAYER_SLOW_TERMINAL_VELOCITY;
+        }
+    }
+    else
+    {
+        gravity->terminalVelocity = -PLAYER_TERMINAL_VELOCITY;
+    }
+
     vel[0] = vel[0] * (1.0f - PLAYER_AIR_ACCEL_TIME_CONST) + targetSpeed * (PLAYER_AIR_ACCEL_TIME_CONST) * cossf(input->angle + g_Camera.yaw);
     vel[2] = vel[2] * (1.0f - PLAYER_AIR_ACCEL_TIME_CONST) - targetSpeed * (PLAYER_AIR_ACCEL_TIME_CONST) * sinsf(input->angle + g_Camera.yaw);
 }
 
 // These functions handle state transitions
-void (*stateUpdateCallbacks[])(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, ColliderParams *collider, Vec3s rot, AnimState *anim) = {
+void (*stateUpdateCallbacks[])(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, ColliderParams *collider, Vec3s rot, GravityParams *gravity, AnimState *anim) = {
     updateGround, // Ground
     updateAir, // Air
 };
 
 // These functions handle the actual state behavioral code
-void (*stateProcessCallbacks[])(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, ColliderParams *collider, Vec3s rot, AnimState *anim) = {
+void (*stateProcessCallbacks[])(PlayerState *state, InputData *input, Vec3 pos, Vec3 vel, ColliderParams *collider, Vec3s rot, GravityParams *gravity, AnimState *anim) = {
     processGround, // Ground
     processAir, // Air
 };
@@ -220,7 +239,7 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
 
     // Set up gravity
     gravity->accel = -PLAYER_GRAVITY;
-    gravity->terminalVelocity = -30.0f;
+    gravity->terminalVelocity = -PLAYER_TERMINAL_VELOCITY;
 
     // Set up behavior code
     bhvParams->callback = playerCallback;
@@ -255,7 +274,7 @@ void playerCallback(UNUSED void **components, void *data)
     Vec3s *rot = components[COMPONENT_INDEX(Rotation, ARCHETYPE_PLAYER)];
     AnimState *animState = components[COMPONENT_INDEX(AnimState, ARCHETYPE_PLAYER)];
     ColliderParams *collider = components[COMPONENT_INDEX(Collider, ARCHETYPE_PLAYER)];
-    UNUSED GravityParams *gravity = components[COMPONENT_INDEX(Gravity, ARCHETYPE_PLAYER)];
+    GravityParams *gravity = components[COMPONENT_INDEX(Gravity, ARCHETYPE_PLAYER)];
     PlayerState *state = (PlayerState *)data;
 
     if (g_PlayerInput.buttonsHeld & R_CBUTTONS)
@@ -301,6 +320,7 @@ void playerCallback(UNUSED void **components, void *data)
 
         heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
         heldState->holder = state->playerEntity;
+        heldState->type = HoldType_Normal;
         state->heldEntity = heldEntity;
 
         heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
@@ -319,12 +339,58 @@ void playerCallback(UNUSED void **components, void *data)
 
         heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
         heldResizable->curSize = Size_Shrunk;
+        heldResizable->type = ResizeType_Shrink_While_Held;
         heldResizable->shrinkAllowed = 1;
         heldResizable->growAllowed = 1;
         heldResizable->smallScale = 1.0f;
         heldResizable->largeScale = 3.0f;
     }
+    // test held entity
+    if ((g_PlayerInput.buttonsPressed & U_JPAD) && state->heldEntity == NULL)
+    {
+        Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
+        void *heldComponents[NUM_COMPONENTS(ARCHETYPE_HOLDABLE)];
+        HoldState *heldState;
+        Model **heldModel;
+        GravityParams *heldGravity;
+        ColliderParams *heldCollider;
+        ResizeParams *heldResizable;
 
+        getEntityComponents(heldEntity, heldComponents);
+
+        heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
+        heldState->holder = state->playerEntity;
+        heldState->type = HoldType_Glide;
+        state->heldEntity = heldEntity;
+
+        heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
+        *heldModel = &logo_model;
+
+        heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
+        heldGravity->accel = -1.0f;
+        heldGravity->terminalVelocity = -30.0f;
+
+        heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
+        heldCollider->numHeights = 1;
+        heldCollider->radius = 58.0f;
+        heldCollider->startOffset = 29.0f;
+        heldCollider->ySpacing = 0.0f;
+        heldCollider->frictionDamping = 0.9f;
+
+        heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
+        heldResizable->curSize = Size_Grown;
+        heldResizable->type = ResizeType_Grow_While_Held;
+        heldResizable->shrinkAllowed = 1;
+        heldResizable->growAllowed = 1;
+        heldResizable->smallScale = 0.25f;
+        heldResizable->largeScale = 1.0f;
+    }
+    
+    // Transition between states if applicable
+    stateUpdateCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, gravity, animState);
+    // Process the current state
+    stateProcessCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, gravity, animState);
+    
     if (g_PlayerInput.buttonsPressed & B_BUTTON)
     {
         if (state->heldEntity != NULL)
@@ -394,14 +460,4 @@ void playerCallback(UNUSED void **components, void *data)
             }
         }
     }
-
-    if ((g_PlayerInput.buttonsHeld & L_TRIG))
-    {
-        (*vel)[1] = 10.0f;
-    }
-    
-    // Transition between states if applicable
-    stateUpdateCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, animState);
-    // Process the current state
-    stateProcessCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, animState);
 }

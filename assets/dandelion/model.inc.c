@@ -253,7 +253,7 @@ Gfx mat_dande_model_fuzz_f3d[] = {
 	gsDPLoadSync(),
 	gsDPLoadTile(7, 0, 0, 174, 348),
 	gsDPPipeSync(),
-	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_4b, 6, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 7, 0),
+	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_4b, 6, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 7, 0, G_TX_CLAMP | G_TX_NOMIRROR, 7, 0),
 	gsDPSetTileSize(0, 0, 0, 348, 348),
 	gsDPSetPrimColor(0, 0, 207, 207, 207, 255),
 	gsSPEndDisplayList(),
@@ -405,19 +405,19 @@ Gfx dandelion_Billboard_mesh[] = {
 
 BoneLayer dande_model_bone0_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         dandelion_Root_mesh,
     },
 };
 BoneLayer dande_model_bone1_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         dandelion_Stem2_mesh,
     },
 };
 BoneLayer dande_model_bone2_layers[] = {
     {
-        5,
+        LAYER_XLU_SURF,
         dandelion_Billboard_mesh,
     },
 };
@@ -458,8 +458,8 @@ Bone dande_model_bones[] = {
         32.001976013183594,
         -3.5898867736250395e-06,
         dande_model_bone2_layers,
-        NULL,
-        NULL,
+        gfxCbBeforeBillboard,
+        gfxCbAfterBillboard,
         NULL,
     },
 };

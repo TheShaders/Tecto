@@ -212,8 +212,6 @@ void createPlayer(PlayerState *state)
     createEntitiesCallback(ARCHETYPE_PLAYER, state, 1, createPlayerCallback);
 }
 
-#define ARCHETYPE_HOLDABLE (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Model | Bit_Holdable | Bit_Gravity | Bit_Collider | Bit_Resizable | Bit_Scale)
-
 void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays)
 {
     // Components: Position, Velocity, Rotation, BehaviorParams, Model, AnimState, Gravity
@@ -460,4 +458,5 @@ void playerCallback(UNUSED void **components, void *data)
             }
         }
     }
+    debug_printf("Player position: %5.2f %5.2f %5.2f\n", (*pos)[0], (*pos)[1], (*pos)[2]);
 }

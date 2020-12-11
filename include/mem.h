@@ -41,6 +41,7 @@ extern u8 _libultraSegmentBssEnd[];
 
 void setSegment(u32 segmentIndex, void* virtualAddress);
 
+u32 isSegmented(void* segmented);
 void* segmentedToVirtual(void* segmented);
 
 // Set up the memory allocation parameters

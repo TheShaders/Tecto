@@ -194,11 +194,11 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         ProfilerData.rdpPipeTime = IO_READ(DPC_PIPEBUSY_REG);
         ProfilerData.rdpTmemTime = IO_READ(DPC_TMEM_REG);
 
-        frame++;
-
         // debug_printf("CPU:  %8u RSP:  %8u CLK:  %8u\nCMD:  %8u PIPE: %8u TMEM: %8u\n",
         //     ProfilerData.cpuTime, ProfilerData.rspTime, ProfilerData.rdpClockTime, ProfilerData.rdpCmdTime,
         //     ProfilerData.rdpPipeTime, ProfilerData.rdpTmemTime);
 #endif
+
+        frame++;
     }
 }

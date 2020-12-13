@@ -27,15 +27,18 @@ void drawAnimatedModels(size_t count, UNUSED void *arg, void **componentArrays)
 #ifdef FPS30
         curAnimState->counter += curAnimState->speed;
 #endif
-        if (curAnimState->counter >= (anim->frameCount << (ANIM_COUNTER_SHIFT)))
+        if (anim)
         {
-            if (anim->flags & ANIM_LOOP)
+            if (curAnimState->counter >= (anim->frameCount << (ANIM_COUNTER_SHIFT)))
             {
-                curAnimState->counter -= (anim->frameCount << (ANIM_COUNTER_SHIFT));
-            }
-            else
-            {
-                curAnimState->counter = (anim->frameCount - 1) << (ANIM_COUNTER_SHIFT);
+                if (anim->flags & ANIM_LOOP)
+                {
+                    curAnimState->counter -= (anim->frameCount << (ANIM_COUNTER_SHIFT));
+                }
+                else
+                {
+                    curAnimState->counter = (anim->frameCount - 1) << (ANIM_COUNTER_SHIFT);
+                }
             }
         }
 
@@ -92,15 +95,18 @@ void drawResizableAnimatedModels(size_t count, UNUSED void *arg, void **componen
 #ifdef FPS30
         curAnimState->counter += curAnimState->speed;
 #endif
-        if (curAnimState->counter >= (anim->frameCount << (ANIM_COUNTER_SHIFT)))
+        if (anim)
         {
-            if (anim->flags & ANIM_LOOP)
+            if (curAnimState->counter >= (anim->frameCount << (ANIM_COUNTER_SHIFT)))
             {
-                curAnimState->counter -= (anim->frameCount << (ANIM_COUNTER_SHIFT));
-            }
-            else
-            {
-                curAnimState->counter = (anim->frameCount - 1) << (ANIM_COUNTER_SHIFT);
+                if (anim->flags & ANIM_LOOP)
+                {
+                    curAnimState->counter -= (anim->frameCount << (ANIM_COUNTER_SHIFT));
+                }
+                else
+                {
+                    curAnimState->counter = (anim->frameCount - 1) << (ANIM_COUNTER_SHIFT);
+                }
             }
         }
 

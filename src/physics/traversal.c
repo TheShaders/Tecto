@@ -7,6 +7,11 @@
 #include <PR/gbi.h>
 #include <gfx.h>
 
+#define ARCHETYPE_COLLISION (Bit_Collision)
+#define ARCHETYPE_POS_COLLISION (Bit_Position | Bit_Collision)
+#define ARCHETYPE_ROT_COLLISION (Bit_Collision | Bit_Rotation)
+#define ARCHETYPE_POSROT_COLLISION (Bit_Position | Bit_Collision | Bit_Rotation)
+
 float verticalRayVsBvh(Vec3 rayStart, float length, BVHTree *bvh, float tmin, float tmax, ColTri **hitOut, SurfaceType *floorSurface)
 {
     float hitDist = FLT_MAX;
@@ -127,7 +132,7 @@ typedef struct RaycastData_t {
 
 void raycastVerticalIterator(size_t count, void *data, void **componentArrays)
 {
-    BVHTree **curTree = componentArrays[0];
+    BVHTree **curTree = componentArrays[COMPONENT_INDEX(Collision, ARCHETYPE_COLLISION)];
     RaycastVerticalData *rayData = (RaycastVerticalData *)data;
     ColTri *curTri;
     SurfaceType curSurfaceType;
@@ -150,9 +155,78 @@ void raycastVerticalIterator(size_t count, void *data, void **componentArrays)
     }
 }
 
+void raycastPositionVerticalIterator(size_t count, void *data, void **componentArrays)
+{
+    BVHTree **curTree = componentArrays[COMPONENT_INDEX(Collision, ARCHETYPE_POS_COLLISION)];
+    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_POS_COLLISION)];
+    RaycastVerticalData *rayData = (RaycastVerticalData *)data;
+    ColTri *curTri;
+    SurfaceType curSurfaceType;
+    Vec3 origin = { rayData->origin[0], rayData->origin[1], rayData->origin[2] };
+    float rayLen = rayData->len;
+    float tmin = rayData->tmin;
+    float tmax = rayData->tmax;
+
+    while (count)
+    {
+        Vec3 curOrigin;
+        float curDist;
+        VEC3_DIFF(curOrigin, origin, *curPos);
+        curDist = verticalRayVsBvh(curOrigin, rayLen, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+        if (curDist < rayData->hitDist)
+        {
+            rayData->hitDist = curDist;
+            rayData->hitTri = curTri;
+            rayData->hitSurfaceType = curSurfaceType;
+        }
+        curTree++;
+        curPos++;
+        count--;
+    }
+}
+
+void raycastPositionRotationVerticalIterator(size_t count, void *data, void **componentArrays)
+{
+    BVHTree **curTree = componentArrays[COMPONENT_INDEX(Collision, ARCHETYPE_POSROT_COLLISION)];
+    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_POSROT_COLLISION)];
+    Vec3s *curRot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_POSROT_COLLISION)];
+    RaycastVerticalData *rayData = (RaycastVerticalData *)data;
+    ColTri *curTri;
+    SurfaceType curSurfaceType;
+    Vec3 origin = { rayData->origin[0], rayData->origin[1], rayData->origin[2] };
+    Vec3 rayDir = { 0, rayData->len, 0 };
+    float tmin = rayData->tmin;
+    float tmax = rayData->tmax;
+
+    while (count)
+    {
+        Vec3 curOrigin;
+        Vec3 curOriginRot;
+        Vec3 curDir;
+        MtxF invMat;
+        float curDist;
+        VEC3_DIFF(curOrigin, origin, *curPos);
+        mtxfEulerXYZInverse(invMat, (*curRot)[0], (*curRot)[1], (*curRot)[2]);
+        mtxfRotateVec(invMat, rayDir, curDir);
+        mtxfRotateVec(invMat, curOrigin, curOriginRot);
+        // Can't use a vertical collision, since the ray is rotated now
+        curDist = rayVsBvh(curOriginRot, curDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+        if (curDist < rayData->hitDist)
+        {
+            rayData->hitDist = curDist;
+            rayData->hitTri = curTri;
+            rayData->hitSurfaceType = curSurfaceType;
+        }
+        curTree++;
+        curPos++;
+        curRot++;
+        count--;
+    }
+}
+
 void raycastIterator(size_t count, void *data, void **componentArrays)
 {
-    BVHTree **curTree = componentArrays[0];
+    BVHTree **curTree = componentArrays[COMPONENT_INDEX(Collision, ARCHETYPE_COLLISION)];
     RaycastData *rayData = (RaycastData *)data;
     ColTri *curTri;
     SurfaceType curSurfaceType;
@@ -175,11 +249,82 @@ void raycastIterator(size_t count, void *data, void **componentArrays)
     }
 }
 
+void raycastPositionIterator(size_t count, void *data, void **componentArrays)
+{
+    BVHTree **curTree = componentArrays[COMPONENT_INDEX(Collision, ARCHETYPE_POS_COLLISION)];
+    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_POS_COLLISION)];
+    RaycastData *rayData = (RaycastData *)data;
+    ColTri *curTri;
+    SurfaceType curSurfaceType;
+    Vec3 origin = { rayData->origin[0], rayData->origin[1], rayData->origin[2] };
+    Vec3 rayDir = { rayData->rayDir[0], rayData->rayDir[1], rayData->rayDir[2] };
+    float tmin = rayData->tmin;
+    float tmax = rayData->tmax;
+
+    while (count)
+    {
+        Vec3 curOrigin;
+        float curDist;
+        VEC3_DIFF(curOrigin, origin, *curPos);
+        curDist = rayVsBvh(curOrigin, rayDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+        if (curDist < rayData->hitDist)
+        {
+            rayData->hitDist = curDist;
+            rayData->hitTri = curTri;
+            rayData->hitSurfaceType = curSurfaceType;
+        }
+        curTree++;
+        curPos++;
+        count--;
+    }
+}
+
+void raycastPositionRotationIterator(size_t count, void *data, void **componentArrays)
+{
+    BVHTree **curTree = componentArrays[COMPONENT_INDEX(Collision, ARCHETYPE_POSROT_COLLISION)];
+    Vec3 *curPos = componentArrays[COMPONENT_INDEX(Position, ARCHETYPE_POSROT_COLLISION)];
+    Vec3s *curRot = componentArrays[COMPONENT_INDEX(Rotation, ARCHETYPE_POSROT_COLLISION)];
+    RaycastData *rayData = (RaycastData *)data;
+    ColTri *curTri;
+    SurfaceType curSurfaceType;
+    Vec3 origin = { rayData->origin[0], rayData->origin[1], rayData->origin[2] };
+    Vec3 rayDir = { rayData->rayDir[0], rayData->rayDir[1], rayData->rayDir[2] };
+    float tmin = rayData->tmin;
+    float tmax = rayData->tmax;
+
+    while (count)
+    {
+        Vec3 curOrigin;
+        Vec3 curOriginRot;
+        Vec3 curDir;
+        MtxF invMat;
+        float curDist;
+        VEC3_DIFF(curOrigin, origin, *curPos);
+        mtxfEulerXYZInverse(invMat, (*curRot)[0], (*curRot)[1], (*curRot)[2]);
+        mtxfRotateVec(invMat, rayDir, curDir);
+        mtxfRotateVec(invMat, curOrigin, curOriginRot);
+        curDist = rayVsBvh(curOriginRot, curDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+        if (curDist < rayData->hitDist)
+        {
+            rayData->hitDist = curDist;
+            rayData->hitTri = curTri;
+            rayData->hitSurfaceType = curSurfaceType;
+        }
+        curTree++;
+        curPos++;
+        curRot++;
+        count--;
+    }
+}
+
 float raycastVertical(Vec3 rayOrigin, float rayLength, float tmin, float tmax, ColTri **hitOut, SurfaceType *floorSurface)
 {
     RaycastVerticalData data = {rayOrigin, rayLength, tmin, tmax, NULL, SURFACE_NONE, FLT_MAX};
 
-    iterateOverEntities(raycastVerticalIterator, &data, Bit_Collision, 0);
+    iterateOverEntities(raycastVerticalIterator, &data, ARCHETYPE_COLLISION, Bit_Position | Bit_Rotation);
+    iterateOverEntities(raycastPositionVerticalIterator, &data, ARCHETYPE_POS_COLLISION, Bit_Rotation);
+    // TODO rotation only
+    iterateOverEntities(raycastPositionRotationVerticalIterator, &data, ARCHETYPE_POSROT_COLLISION, 0);
 
     *hitOut = data.hitTri;
     *floorSurface = data.hitSurfaceType;
@@ -190,7 +335,10 @@ float raycast(Vec3 rayOrigin, Vec3 rayDir, float tmin, float tmax, ColTri **hitO
 {
     RaycastData data = {rayOrigin, rayDir, tmin, tmax, NULL, SURFACE_NONE, FLT_MAX};
 
-    iterateOverEntities(raycastIterator, &data, Bit_Collision, 0);
+    iterateOverEntities(raycastIterator, &data, ARCHETYPE_COLLISION, Bit_Position | Bit_Rotation);
+    iterateOverEntities(raycastPositionIterator, &data, ARCHETYPE_POS_COLLISION, Bit_Rotation);
+    // TODO rotation only
+    iterateOverEntities(raycastPositionRotationIterator, &data, ARCHETYPE_POSROT_COLLISION, 0);
 
     *hitOut = data.hitTri;
     *floorSurface = data.hitSurfaceType;

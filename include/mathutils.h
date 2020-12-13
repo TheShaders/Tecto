@@ -40,6 +40,7 @@ float sinsf(s16 angle);
 
 void mtxfMul(MtxF out, MtxF a, MtxF b);
 void mtxfEulerXYZ(MtxF out, s16 rx, s16 ry, s16 rz);
+void mtxfEulerXYZInverse(MtxF out, s16 rx, s16 ry, s16 rz);
 void mtxfRotateVec(MtxF mat, Vec3 vecIn, Vec3 vecOut);
 
 float approachFloatLinear(float current, float goal, float amount);

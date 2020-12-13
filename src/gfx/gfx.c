@@ -396,6 +396,8 @@ void drawModel(Model *toDraw, Animation *anim, u32 frame)
 
             hasCurrentTransformComponent = 0;
 
+            x = y = z = 1.0f;
+
             if (curBoneTable->flags & CHANNEL_SCALE_X)
             {
                 x = *(u16*)curBoneChannel / 256.0f;

@@ -411,13 +411,13 @@ Gfx treevineleaf_Vine3Leaf_mesh[] = {
 
 BoneLayer treevineleaf_model_bone0_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         treevineleaf_Root_mesh,
     },
 };
 BoneLayer treevineleaf_model_bone1_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         treevineleaf_Vine3Leaf_mesh,
     },
 };

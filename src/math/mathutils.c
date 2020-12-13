@@ -232,3 +232,15 @@ void mtxfRotateVec(MtxF mat, Vec3 vecIn, Vec3 vecOut)
     vecOut[1] = vecIn[0] * mat[0][1] + vecIn[1] * mat[1][1] + vecIn[2] * mat[2][1];
     vecOut[2] = vecIn[0] * mat[0][2] + vecIn[1] * mat[1][2] + vecIn[2] * mat[2][2];
 }
+
+float approachFloatLinear(float current, float goal, float amount)
+{
+    if (goal > current)
+    {
+        return MIN(current + amount, goal);
+    }
+    else
+    {
+        return MAX(current - amount, goal);
+    }
+}

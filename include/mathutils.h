@@ -3,6 +3,14 @@
 
 #include <types.h>
 
+#ifndef MAX
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 // TODO these can be vectorized with gcc for modern platforms
 #define VEC3_DOT(a,b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
 #define VEC3_COPY(out,a) \
@@ -33,5 +41,7 @@ float sinsf(s16 angle);
 void mtxfMul(MtxF out, MtxF a, MtxF b);
 void mtxfEulerXYZ(MtxF out, s16 rx, s16 ry, s16 rz);
 void mtxfRotateVec(MtxF mat, Vec3 vecIn, Vec3 vecOut);
+
+float approachFloatLinear(float current, float goal, float amount);
 
 #endif

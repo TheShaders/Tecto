@@ -313,6 +313,24 @@ void playerCallback(UNUSED void **components, void *data)
     {
         g_Camera.pitch = MAX(g_Camera.pitch - PLAYER_CAMERA_TURN_SPEED, -0x1000);
     }
+    
+
+    // Find the floor below and if it's SURFACE_SLOW, limit the camera so you can't see under the swamp water
+    {
+        ColTri *hitTri;
+        SurfaceType hitSurfaceType;
+        raycastVertical(*pos, -100.0f, 0.0f, 1.0f, &hitTri, &hitSurfaceType);
+        if (collider->floorSurfaceType == SURFACE_SLOW || (hitTri && hitSurfaceType == SURFACE_SLOW))
+        {
+            g_Camera.pitch = MAX(g_Camera.pitch, 0x1000);
+            g_Camera.yOffset = approachFloatLinear(g_Camera.yOffset, 200.0f, 5.0f);
+        }
+        else
+        {
+            g_Camera.yOffset = approachFloatLinear(g_Camera.yOffset, 100.0f, 5.0f);
+        }
+    }
+
 
     if (g_PlayerInput.buttonsPressed & Z_TRIG)
     {

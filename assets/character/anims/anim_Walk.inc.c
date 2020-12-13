@@ -1,4 +1,4 @@
-s16 character_anim_WalkBone5Tables[] = {
+s16 character_anim_WalkBone1Tables[] = {
     // PosY
     0x0001, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
@@ -13,7 +13,7 @@ s16 character_anim_WalkBone5Tables[] = {
     0x001E, 0x001F, 0x0020, 0x0020, 0x0021, 
 
 };
-s16 character_anim_WalkBone6Tables[] = {
+s16 character_anim_WalkBone2Tables[] = {
     // PosY
     0x0000, 0x0000, 0x0000, 0x0002, 0x0003, 0x0005, 0x0008, 0x000A, 0x000C, 0x000E, 0x0010, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 
     0x0016, 0x0017, 0x0017, 0x0017, 0x0017, 0x0017, 0x0016, 0x0016, 0x0015, 0x0014, 0x0012, 0x0010, 0x000E, 0x000B, 0x0009, 0x0006, 
@@ -28,7 +28,7 @@ s16 character_anim_WalkBone6Tables[] = {
     0xFFD4, 0xFFD1, 0xFFCF, 0xFFCD, 0xFFCB, 
 
 };
-s16 character_anim_WalkBone7Tables[] = {
+s16 character_anim_WalkBone3Tables[] = {
     // PosX
     0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFE, 0xFFFE, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFC, 0xFFFC, 0xFFFC, 0xFFFC, 0xFFFB, 0xFFFB, 
     0xFFFB, 0xFFFB, 0xFFFB, 0xFFFB, 0xFFFB, 0xFFFB, 0xFFFB, 0xFFFB, 0xFFFB, 0xFFFB, 0xFFFC, 0xFFFC, 0xFFFC, 0xFFFC, 0xFFFD, 0xFFFD, 
@@ -67,7 +67,7 @@ s16 character_anim_WalkBone7Tables[] = {
     0x0101, 0x0100, 0x00FF, 0x00FE, 0x00FE, 
 
 };
-s16 character_anim_WalkBone8Tables[] = {
+s16 character_anim_WalkBone4Tables[] = {
     // PosX
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 
     0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
@@ -100,7 +100,7 @@ s16 character_anim_WalkBone8Tables[] = {
     0x0101, 0x0100, 0x00FF, 0x00FE, 0x00FE, 
 
 };
-s16 character_anim_WalkBone9Tables[] = {
+s16 character_anim_WalkBone5Tables[] = {
     // PosX
     0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 
     0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
@@ -139,7 +139,7 @@ s16 character_anim_WalkBone9Tables[] = {
     0x0101, 0x0100, 0x00FF, 0x00FE, 0x00FE, 
 
 };
-s16 character_anim_WalkBone10Tables[] = {
+s16 character_anim_WalkBone6Tables[] = {
     // PosX
     0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFE, 0xFFFE, 0xFFFE, 0xFFFE, 0xFFFE, 0xFFFE, 
     0xFFFE, 0xFFFE, 0xFFFE, 0xFFFE, 0xFFFE, 0xFFFE, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFE, 0xFFFE, 0xFFFE, 0xFFFE, 0xFFFE, 
@@ -178,50 +178,34 @@ BoneTable character_anim_WalkTables[] = {
         NULL
     },
     {
-        0,
-        NULL
-    },
-    {
-        0,
-        NULL
-    },
-    {
-        0,
-        NULL
-    },
-    {
-        0,
-        NULL
+        CHANNEL_POS_Y | CHANNEL_POS_Z,
+        character_anim_WalkBone1Tables
     },
     {
         CHANNEL_POS_Y | CHANNEL_POS_Z,
-        character_anim_WalkBone5Tables
-    },
-    {
-        CHANNEL_POS_Y | CHANNEL_POS_Z,
-        character_anim_WalkBone6Tables
+        character_anim_WalkBone2Tables
     },
     {
         CHANNEL_POS_X | CHANNEL_POS_Y | CHANNEL_POS_Z | CHANNEL_SCALE_X | CHANNEL_SCALE_Y | CHANNEL_SCALE_Z,
-        character_anim_WalkBone7Tables
+        character_anim_WalkBone3Tables
     },
     {
         CHANNEL_POS_X | CHANNEL_POS_Z | CHANNEL_SCALE_X | CHANNEL_SCALE_Y | CHANNEL_SCALE_Z,
-        character_anim_WalkBone8Tables
+        character_anim_WalkBone4Tables
     },
     {
         CHANNEL_POS_X | CHANNEL_POS_Y | CHANNEL_POS_Z | CHANNEL_SCALE_X | CHANNEL_SCALE_Y | CHANNEL_SCALE_Z,
-        character_anim_WalkBone9Tables
+        character_anim_WalkBone5Tables
     },
     {
         CHANNEL_POS_X | CHANNEL_POS_Y | CHANNEL_ROT_X | CHANNEL_ROT_Y | CHANNEL_ROT_Z,
-        character_anim_WalkBone10Tables
+        character_anim_WalkBone6Tables
     },
 };
 
 Animation character_anim_Walk = {
     69, // frame count
-    11, // bone count
+    7, // bone count
     ANIM_LOOP, // flags
     character_anim_WalkTables, // bone table array pointer
     NULL, // trigger array pointer

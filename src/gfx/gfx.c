@@ -695,13 +695,27 @@ void setupCameraMatrices(Camera *camera)
 {
     Mtx* projMtx;
     Vec3 eyePos;
+    Vec3 targetPos;
     Vec3 eyeOffset = {
         camera->distance * sinsf(camera->yaw) * cossf(camera->pitch),
         camera->distance * sinsf(camera->pitch) + camera->yOffset,
         camera->distance * cossf(camera->yaw) * cossf(camera->pitch)
     };
+    float cameraHitDist;
+    ColTri *cameraHitTri;
+    SurfaceType cameraHitSurface;
 
-    VEC3_ADD(eyePos, eyeOffset, camera->target);
+    VEC3_COPY(targetPos, camera->target);
+    targetPos[1] += camera->yOffset;
+
+    cameraHitDist = raycast(targetPos, eyeOffset, 0.0f, 1.1f, &cameraHitTri, &cameraHitSurface);
+
+    if (cameraHitTri != NULL)
+    {
+        VEC3_SCALE(eyeOffset, eyeOffset, MIN(MAX(cameraHitDist - 0.1f, 0.1f), 1.0f));
+    }
+    VEC3_ADD(eyePos, eyeOffset, targetPos);
+
 
     // Set up view matrix
     gfxLookat(
@@ -714,7 +728,7 @@ void setupCameraMatrices(Camera *camera)
     guMtxF2L(g_gfxContexts[g_curGfxContext].projMtxF, projMtx);
 
     // Perpsective
-    gfxPerspective(camera->fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 100.0f, 20000.0f, 1.0f);
+    gfxPerspective(camera->fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 10.0f, 20000.0f, 1.0f);
 
     // Ortho
     // guOrthoF(g_gfxContexts[g_curGfxContext].projMtxF, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2, SCREEN_HEIGHT / 2, 100.0f, 20000.0f, 1.0f);

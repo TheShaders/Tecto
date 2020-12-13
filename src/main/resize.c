@@ -1,5 +1,6 @@
 #include <resize.h>
 #include <ecs.h>
+#include <model.h>
 
 #define ARCHETYPE_RESIZABLE (Bit_Resizable | Bit_Scale)
 
@@ -76,6 +77,12 @@ void resizableCallback(size_t count, UNUSED void *arg, void **componentArrays)
         if (curResize->resizeTimer)
         {
             float scale1, scale2;
+
+            if (curResize->resizeTimer == RESIZE_TIMER_START && curResize->callback != NULL)
+            {
+                curResize->callback(curResize, Resize_Starting);
+            }
+
             if (curResize->curSize == Size_Grown)
             {
                 scale1 = curResize->largeScale;
@@ -87,12 +94,13 @@ void resizableCallback(size_t count, UNUSED void *arg, void **componentArrays)
                 scale2 = curResize->largeScale;
             }
             *curScale = (scale1 - scale2) * scaleLerpFactorFrames[curResize->resizeTimer - 1] + scale2;
+
             curResize->resizeTimer--;
             if (curResize->resizeTimer == 0)
             {
                 if (curResize->callback != NULL)
                 {
-                    curResize->callback(curResize);
+                    curResize->callback(curResize, Resize_Ending);
                 }
                 if (curResize->curSize == Size_Grown && curResize->growTemporary)
                 {
@@ -132,29 +140,51 @@ void tickResizables()
     iterateOverEntities(resizableCallback, NULL, ARCHETYPE_RESIZABLE, 0);
 }
 
+extern Animation treevineleaf_anim_tvleaf_shrink;
+extern Animation treevineleaf_anim_tvleaf_grow;
+extern BVHTree treevineleaf_collision_tree;
+
 extern BVHTree lilypad_collision_tree;
 
-void treevineleafResizeCallback(ResizeParams *params)
+void treevineleafResizeCallback(ResizeParams *params, ResizeTrigger trigger)
 {
     Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
     BVHTree **collision;
+    AnimState *animState;
     void *components[NUM_COMPONENTS(ARCHETYPE_INTERACTABLE)];
 
     getEntityComponents(entity, components);
 
     collision = components[COMPONENT_INDEX(Collision, ARCHETYPE_INTERACTABLE)];
+    animState = components[COMPONENT_INDEX(AnimState, ARCHETYPE_INTERACTABLE)];
 
-    if (params->curSize == Size_Grown)
+    if (trigger == Resize_Starting)
     {
-        *collision = NULL;
+        if (params->curSize == Size_Grown)
+        {
+            animState->anim = &treevineleaf_anim_tvleaf_grow;
+        }
+        else
+        {
+            animState->anim = &treevineleaf_anim_tvleaf_shrink;
+        }
+        animState->counter = 0;
+        animState->speed = 1 << ANIM_COUNTER_SHIFT;
     }
     else
     {
-        *collision = NULL;
+        if (params->curSize == Size_Grown)
+        {
+            *collision = &treevineleaf_collision_tree;
+        }
+        else
+        {
+            *collision = NULL;
+        }
     }
 }
 
-void lillypadResizeCallback(ResizeParams *params)
+void lillypadResizeCallback(ResizeParams *params, UNUSED ResizeTrigger trigger)
 {
     Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
     BVHTree **collision;
@@ -164,17 +194,20 @@ void lillypadResizeCallback(ResizeParams *params)
 
     collision = components[COMPONENT_INDEX(Collision, ARCHETYPE_INTERACTABLE)];
 
-    if (params->curSize == Size_Grown)
+    if (trigger == Resize_Ending)
     {
-        *collision = &lilypad_collision_tree;
-    }
-    else
-    {
-        *collision = NULL;
+        if (params->curSize == Size_Grown)
+        {
+            *collision = &lilypad_collision_tree;
+        }
+        else
+        {
+            *collision = NULL;
+        }
     }
 }
 
-void bounceflowerResizeCallback(ResizeParams *params)
+void bounceflowerResizeCallback(ResizeParams *params, UNUSED ResizeTrigger trigger)
 {
     Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
     BVHTree **collision;
@@ -184,12 +217,15 @@ void bounceflowerResizeCallback(ResizeParams *params)
 
     collision = components[COMPONENT_INDEX(Collision, ARCHETYPE_INTERACTABLE)];
 
-    if (params->curSize == Size_Grown)
+    if (trigger == Resize_Ending)
     {
-        *collision = NULL;
-    }
-    else
-    {
-        *collision = NULL;
+        if (params->curSize == Size_Grown)
+        {
+            *collision = NULL;
+        }
+        else
+        {
+            *collision = NULL;
+        }
     }
 }

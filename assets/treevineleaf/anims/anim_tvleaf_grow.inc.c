@@ -63,7 +63,7 @@ BoneTable treevineleaf_anim_tvleaf_growTables[] = {
 Animation treevineleaf_anim_tvleaf_grow = {
     102, // frame count
     2, // bone count
-    ANIM_LOOP, // flags
+    0, // flags
     treevineleaf_anim_tvleaf_growTables, // bone table array pointer
     NULL, // trigger array pointer
 };

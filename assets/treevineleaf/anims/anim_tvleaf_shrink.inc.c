@@ -39,7 +39,7 @@ BoneTable treevineleaf_anim_tvleaf_shrinkTables[] = {
 Animation treevineleaf_anim_tvleaf_shrink = {
     47, // frame count
     2, // bone count
-    ANIM_LOOP, // flags
+    0, // flags
     treevineleaf_anim_tvleaf_shrinkTables, // bone table array pointer
     NULL, // trigger array pointer
 };

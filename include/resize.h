@@ -11,6 +11,12 @@ typedef enum
     Size_Shrunk
 } SizeState;
 
+typedef enum
+{
+    Resize_Starting,
+    Resize_Ending
+} ResizeTrigger;
+
 enum
 {
     ResizeType_Shrink_While_Held,
@@ -20,7 +26,7 @@ enum
 
 typedef u8 ResizeType;
 
-typedef void (*ResizeCallback)(ResizeParams *newState);
+typedef void (*ResizeCallback)(ResizeParams *newState, ResizeTrigger trigger);
 
 typedef struct ResizeParams_t {
     SizeState curSize : 1;

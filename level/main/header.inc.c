@@ -3,7 +3,7 @@ extern Model dande_model;
 extern Model treevineleaf_model;
 extern BVHTree main_collision_tree;
 extern Animation dandelion_anim_dande_idle;
-extern Animation treevineleaf_anim_tvleaffix_s_idle;
+extern Animation treevineleaf_anim_tvleaf_grow;
 
 Vec3 main_ARCHETYPE_MODEL_Positions[1] = {
     {  0.0f, 0.0f,   0.0f},
@@ -79,11 +79,11 @@ void *main_ARCHETYPE_HOLDABLE_ANIM_ComponentData[NUM_COMPONENTS(ARCHETYPE_HOLDAB
 };
 
 Vec3 main_ARCHETYPE_INTERACTABLE_Positions[1] = {
-    {-4186, -22, -1748},
+    {-4108, -22.4, -1796.8},
 };
 
 Vec3s main_ARCHETYPE_INTERACTABLE_Rotations[1] = {
-    {0x0000, 0x78E4, 0x0000},
+    {0x0000, 0x727D, 0x0000},
 };
 
 Model *main_ARCHETYPE_INTERACTABLE_Models[1] = {
@@ -91,15 +91,15 @@ Model *main_ARCHETYPE_INTERACTABLE_Models[1] = {
 };
 
 AnimState main_ARCHETYPE_INTERACTABLE_AnimStates[1] = {
-    { .anim = &treevineleaf_anim_tvleaffix_s_idle, .counter = 0, .speed = 1 << ANIM_COUNTER_SHIFT, .triggerIndex = 0},
+    { .anim = &treevineleaf_anim_tvleaf_grow, .counter = 0, .speed = 0, .triggerIndex = 0},
 };
 
 ResizeParams main_ARCHETYPE_INTERACTABLE_ResizeParams[1] = {
-    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 0.2f, .largeScale = 0.2f, .callback = NULL },
+    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 1.0f, .callback = NULL },
 };
 
 float main_ARCHETYPE_INTERACTABLE_Scales[1] = {
-    0.2f,
+    1.0f,
 };
 
 // Bit_Position | Bit_Rotation | Bit_Model | Bit_AnimState | Bit_Resizable | Bit_Scale

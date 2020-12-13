@@ -4080,7 +4080,7 @@ Gfx mat_main_model_water_anim_f3d[] = {
 	gsDPSetCombineLERP(PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, 0, 0, 0, ENVIRONMENT),
 	gsSPTexture(65535, 65535, 0, 0, 1),
 	gsDPTileSync(),
-	gsDPSetTextureImage(G_IM_FMT_I, G_IM_SIZ_8b, 64, main_model__0001_i4),
+	gsDPSetTextureImage(G_IM_FMT_I, G_IM_SIZ_8b, 64, 0x05000000),
 	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_8b, 8, 0, 7, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0, G_TX_WRAP | G_TX_NOMIRROR, 7, 0),
 	gsDPLoadSync(),
 	gsDPLoadTile(7, 0, 0, 254, 252),

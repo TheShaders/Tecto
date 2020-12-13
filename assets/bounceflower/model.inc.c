@@ -258,9 +258,9 @@ Gfx bounceflower_Base_mesh[] = {
 
 
 Vtx bounceflower_Ext_mesh_vtx_0[3] = {
-	{{{6, -3, -2},0, {-182, 470},{0x0, 0x0, 0x81, 0xFF}}},
-	{{{-7, -3, -2},0, {662, 479},{0x0, 0x0, 0x81, 0xFF}}},
-	{{{0, 8, -2},0, {240, -281},{0x0, 0x0, 0x81, 0xFF}}},
+	{{{-6, -3, 2},0, {-182, 470},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{7, -3, 2},0, {662, 479},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0x0, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_mesh_tri_0[] = {
@@ -279,9 +279,9 @@ Gfx bounceflower_Ext_mesh[] = {
 
 
 Vtx bounceflower_Ext_001_mesh_vtx_0[3] = {
-	{{{-4, -3, -6},0, {-182, 470},{0x86, 0x0, 0x22, 0xFF}}},
-	{{{0, -3, 7},0, {662, 479},{0x86, 0x0, 0x22, 0xFF}}},
-	{{{-2, 8, 0},0, {240, -281},{0x86, 0x0, 0x22, 0xFF}}},
+	{{{-7, -3, 2},0, {-182, 470},{0x3, 0x0, 0x7F, 0xFF}}},
+	{{{7, -3, 2},0, {662, 479},{0x3, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0x3, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_001_mesh_tri_0[] = {
@@ -300,9 +300,9 @@ Gfx bounceflower_Ext_001_mesh[] = {
 
 
 Vtx bounceflower_Ext_002_mesh_vtx_0[3] = {
-	{{{-4, -3, 5},0, {-182, 470},{0x49, 0x0, 0x68, 0xFF}}},
-	{{{7, -3, -2},0, {662, 479},{0x49, 0x0, 0x68, 0xFF}}},
-	{{{1, 8, 1},0, {240, -281},{0x49, 0x0, 0x68, 0xFF}}},
+	{{{-6, -3, 1},0, {-182, 470},{0xF8, 0x0, 0x7F, 0xFF}}},
+	{{{7, -3, 2},0, {662, 479},{0xF8, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0xF8, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_002_mesh_tri_0[] = {
@@ -321,9 +321,9 @@ Gfx bounceflower_Ext_002_mesh[] = {
 
 
 Vtx bounceflower_Ext_003_mesh_vtx_0[3] = {
-	{{{6, -3, 3},0, {-182, 470},{0x58, 0x0, 0xA5, 0xFF}}},
-	{{{-3, -3, -6},0, {662, 479},{0x58, 0x0, 0xA5, 0xFF}}},
-	{{{2, 8, -1},0, {240, -281},{0x58, 0x0, 0xA5, 0xFF}}},
+	{{{-7, -3, 3},0, {-182, 470},{0x14, 0x0, 0x7D, 0xFF}}},
+	{{{7, -3, 1},0, {662, 479},{0x14, 0x0, 0x7D, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0x14, 0x0, 0x7D, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_003_mesh_tri_0[] = {
@@ -342,9 +342,9 @@ Gfx bounceflower_Ext_003_mesh[] = {
 
 
 Vtx bounceflower_Ext_004_mesh_vtx_0[3] = {
-	{{{0, -3, -7},0, {-182, 470},{0x89, 0x0, 0xD4, 0xFF}}},
-	{{{-4, -3, 6},0, {662, 479},{0x89, 0x0, 0xD4, 0xFF}}},
-	{{{-2, 8, 0},0, {240, -281},{0x89, 0x0, 0xD4, 0xFF}}},
+	{{{-6, -3, 2},0, {-182, 470},{0x1, 0x0, 0x7F, 0xFF}}},
+	{{{7, -3, 2},0, {662, 479},{0x1, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0x1, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_004_mesh_tri_0[] = {
@@ -363,9 +363,9 @@ Gfx bounceflower_Ext_004_mesh[] = {
 
 
 Vtx bounceflower_Ext_005_mesh_vtx_0[3] = {
-	{{{-7, -3, 2},0, {-182, 470},{0xFB, 0x0, 0x7F, 0xFF}}},
-	{{{6, -3, 2},0, {662, 479},{0xFB, 0x0, 0x7F, 0xFF}}},
-	{{{0, 8, 2},0, {240, -281},{0xFB, 0x0, 0x7F, 0xFF}}},
+	{{{-7, -3, 2},0, {-182, 470},{0x4, 0x0, 0x7F, 0xFF}}},
+	{{{7, -3, 2},0, {662, 479},{0x4, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0x4, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_005_mesh_tri_0[] = {
@@ -384,9 +384,9 @@ Gfx bounceflower_Ext_005_mesh[] = {
 
 
 Vtx bounceflower_Ext_007_mesh_vtx_0[3] = {
-	{{{4, -3, -6},0, {-182, 470},{0xB4, 0x0, 0x9A, 0xFF}}},
-	{{{-6, -3, 2},0, {662, 479},{0xB4, 0x0, 0x9A, 0xFF}}},
-	{{{-1, 8, -2},0, {240, -281},{0xB4, 0x0, 0x9A, 0xFF}}},
+	{{{-7, -3, 2},0, {-182, 470},{0xFD, 0x0, 0x7F, 0xFF}}},
+	{{{6, -3, 2},0, {662, 479},{0xFD, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0xFD, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_007_mesh_tri_0[] = {
@@ -405,9 +405,9 @@ Gfx bounceflower_Ext_007_mesh[] = {
 
 
 Vtx bounceflower_Ext_008_mesh_vtx_0[3] = {
-	{{{4, -3, 5},0, {-182, 470},{0x77, 0x0, 0xD4, 0xFF}}},
-	{{{-1, -3, -7},0, {662, 479},{0x77, 0x0, 0xD4, 0xFF}}},
-	{{{2, 8, -1},0, {240, -281},{0x77, 0x0, 0xD4, 0xFF}}},
+	{{{-6, -3, 2},0, {-182, 470},{0x2, 0x0, 0x7F, 0xFF}}},
+	{{{7, -3, 2},0, {662, 479},{0x2, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0x2, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_008_mesh_tri_0[] = {
@@ -426,9 +426,9 @@ Gfx bounceflower_Ext_008_mesh[] = {
 
 
 Vtx bounceflower_Ext_009_mesh_vtx_0[3] = {
-	{{{0, -3, 7},0, {-182, 470},{0x79, 0x0, 0x27, 0xFF}}},
-	{{{4, -3, -6},0, {662, 479},{0x79, 0x0, 0x27, 0xFF}}},
-	{{{2, 8, 1},0, {240, -281},{0x79, 0x0, 0x27, 0xFF}}},
+	{{{-7, -3, 2},0, {-182, 470},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{7, -3, 2},0, {662, 479},{0x0, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0x0, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_009_mesh_tri_0[] = {
@@ -447,9 +447,9 @@ Gfx bounceflower_Ext_009_mesh[] = {
 
 
 Vtx bounceflower_Ext_010_mesh_vtx_0[3] = {
-	{{{-6, -3, -2},0, {-182, 470},{0xB7, 0x0, 0x68, 0xFF}}},
-	{{{5, -3, 5},0, {662, 479},{0xB7, 0x0, 0x68, 0xFF}}},
-	{{{-1, 8, 2},0, {240, -281},{0xB7, 0x0, 0x68, 0xFF}}},
+	{{{-6, -3, 2},0, {-182, 470},{0xFD, 0x0, 0x7F, 0xFF}}},
+	{{{7, -3, 2},0, {662, 479},{0xFD, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 2},0, {240, -281},{0xFD, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_010_mesh_tri_0[] = {
@@ -468,9 +468,9 @@ Gfx bounceflower_Ext_010_mesh[] = {
 
 
 Vtx bounceflower_Ext_011_mesh_vtx_0[3] = {
-	{{{7, -4, -3},0, {-182, 470},{0x9, 0x0, 0x81, 0xFF}}},
-	{{{-6, -4, -4},0, {662, 479},{0x9, 0x0, 0x81, 0xFF}}},
-	{{{0, 8, -4},0, {240, -281},{0x9, 0x0, 0x81, 0xFF}}},
+	{{{-7, -4, 3},0, {-182, 470},{0xF7, 0x0, 0x7F, 0xFF}}},
+	{{{6, -4, 4},0, {662, 479},{0xF7, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 4},0, {240, -281},{0xF7, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_011_mesh_tri_0[] = {
@@ -489,9 +489,9 @@ Gfx bounceflower_Ext_011_mesh[] = {
 
 
 Vtx bounceflower_Ext_012_mesh_vtx_0[3] = {
-	{{{-4, -4, 6},0, {-182, 470},{0x42, 0x0, 0x6C, 0xFF}}},
-	{{{7, -4, 0},0, {662, 479},{0x42, 0x0, 0x6C, 0xFF}}},
-	{{{2, 8, 3},0, {240, -281},{0x42, 0x0, 0x6C, 0xFF}}},
+	{{{-7, -4, 3},0, {-182, 470},{0xFB, 0x0, 0x7F, 0xFF}}},
+	{{{6, -4, 4},0, {662, 479},{0xFB, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 4},0, {240, -281},{0xFB, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_012_mesh_tri_0[] = {
@@ -510,9 +510,9 @@ Gfx bounceflower_Ext_012_mesh[] = {
 
 
 Vtx bounceflower_Ext_013_mesh_vtx_0[3] = {
-	{{{-1, -4, -7},0, {-182, 470},{0x8C, 0x0, 0xCB, 0xFF}}},
-	{{{-6, -4, 4},0, {662, 479},{0x8C, 0x0, 0xCB, 0xFF}}},
-	{{{-3, 8, -2},0, {240, -281},{0x8C, 0x0, 0xCB, 0xFF}}},
+	{{{-7, -4, 3},0, {-182, 470},{0xF1, 0x0, 0x7E, 0xFF}}},
+	{{{6, -4, 4},0, {662, 479},{0xF1, 0x0, 0x7E, 0xFF}}},
+	{{{-1, 8, 4},0, {240, -281},{0xF1, 0x0, 0x7E, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_013_mesh_tri_0[] = {
@@ -531,9 +531,9 @@ Gfx bounceflower_Ext_013_mesh[] = {
 
 
 Vtx bounceflower_Ext_014_mesh_vtx_0[3] = {
-	{{{5, -4, 5},0, {-182, 470},{0x7A, 0x0, 0xDC, 0xFF}}},
-	{{{2, -4, -7},0, {662, 479},{0x7A, 0x0, 0xDC, 0xFF}}},
-	{{{3, 8, -1},0, {240, -281},{0x7A, 0x0, 0xDC, 0xFF}}},
+	{{{-7, -4, 3},0, {-182, 470},{0xF1, 0x0, 0x7E, 0xFF}}},
+	{{{6, -4, 4},0, {662, 479},{0xF1, 0x0, 0x7E, 0xFF}}},
+	{{{-1, 8, 4},0, {240, -281},{0xF1, 0x0, 0x7E, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_014_mesh_tri_0[] = {
@@ -552,9 +552,9 @@ Gfx bounceflower_Ext_014_mesh[] = {
 
 
 Vtx bounceflower_Ext_015_mesh_vtx_0[3] = {
-	{{{-7, -4, -1},0, {-182, 470},{0xB0, 0x0, 0x63, 0xFF}}},
-	{{{3, -4, 7},0, {662, 479},{0xB0, 0x0, 0x63, 0xFF}}},
-	{{{-2, 8, 3},0, {240, -281},{0xB0, 0x0, 0x63, 0xFF}}},
+	{{{-7, -4, 3},0, {-182, 470},{0xF9, 0x0, 0x7F, 0xFF}}},
+	{{{6, -4, 4},0, {662, 479},{0xF9, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 4},0, {240, -281},{0xF9, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_015_mesh_tri_0[] = {
@@ -642,61 +642,61 @@ BoneLayer bounceflower_model_bone7_layers[] = {
         bounceflower_Ext_005_mesh,
     },
 };
-BoneLayer bounceflower_model_bone9_layers[] = {
+BoneLayer bounceflower_model_bone8_layers[] = {
     {
         3,
         bounceflower_Ext_007_mesh,
     },
 };
-BoneLayer bounceflower_model_bone10_layers[] = {
+BoneLayer bounceflower_model_bone9_layers[] = {
     {
         3,
         bounceflower_Ext_008_mesh,
     },
 };
-BoneLayer bounceflower_model_bone11_layers[] = {
+BoneLayer bounceflower_model_bone10_layers[] = {
     {
         3,
         bounceflower_Ext_009_mesh,
     },
 };
-BoneLayer bounceflower_model_bone12_layers[] = {
+BoneLayer bounceflower_model_bone11_layers[] = {
     {
         3,
         bounceflower_Ext_010_mesh,
     },
 };
-BoneLayer bounceflower_model_bone13_layers[] = {
+BoneLayer bounceflower_model_bone12_layers[] = {
     {
         3,
         bounceflower_Ext_011_mesh,
     },
 };
-BoneLayer bounceflower_model_bone14_layers[] = {
+BoneLayer bounceflower_model_bone13_layers[] = {
     {
         3,
         bounceflower_Ext_012_mesh,
     },
 };
-BoneLayer bounceflower_model_bone15_layers[] = {
+BoneLayer bounceflower_model_bone14_layers[] = {
     {
         3,
         bounceflower_Ext_013_mesh,
     },
 };
-BoneLayer bounceflower_model_bone16_layers[] = {
+BoneLayer bounceflower_model_bone15_layers[] = {
     {
         3,
         bounceflower_Ext_014_mesh,
     },
 };
-BoneLayer bounceflower_model_bone17_layers[] = {
+BoneLayer bounceflower_model_bone16_layers[] = {
     {
         3,
         bounceflower_Ext_015_mesh,
     },
 };
-BoneLayer bounceflower_model_bone18_layers[] = {
+BoneLayer bounceflower_model_bone17_layers[] = {
     {
         3,
         bounceflower_Ext_016_mesh,
@@ -736,7 +736,7 @@ Bone bounceflower_model_bones[] = {
         1,
         0,
         -0.771531343460083,
-        13.191167831420898,
+        13.191165924072266,
         -35.45782470703125,
         bounceflower_model_bone2_layers,
         NULL,
@@ -811,12 +811,12 @@ Bone bounceflower_model_bones[] = {
     {
         8,
         1,
+        1,
         0,
-        0,
-        -19.950660705566406,
-        13.191170692443848,
-        27.55021858215332,
-        NULL,
+        27.4704532623291,
+        23.51617431640625,
+        7.031193733215332,
+        bounceflower_model_bone8_layers,
         NULL,
         NULL,
         NULL,
@@ -826,9 +826,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        27.4704532623291,
-        23.51617431640625,
-        7.031193733215332,
+        20.74742889404297,
+        13.191170692443848,
+        26.789960861206055,
         bounceflower_model_bone9_layers,
         NULL,
         NULL,
@@ -839,9 +839,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        20.74742889404297,
-        13.191170692443848,
-        26.789960861206055,
+        15.88660717010498,
+        23.51617431640625,
+        -24.65092658996582,
         bounceflower_model_bone10_layers,
         NULL,
         NULL,
@@ -852,9 +852,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        15.88660717010498,
-        23.51617431640625,
-        -24.65092658996582,
+        32.60078048706055,
+        13.191167831420898,
+        -12.151156425476074,
         bounceflower_model_bone11_layers,
         NULL,
         NULL,
@@ -865,9 +865,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        32.60078048706055,
-        13.191167831420898,
-        -12.151156425476074,
+        0.6020684242248535,
+        37.8428955078125,
+        -22.373380661010742,
         bounceflower_model_bone12_layers,
         NULL,
         NULL,
@@ -878,9 +878,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        0.6020684242248535,
+        -20.381587982177734,
         37.8428955078125,
-        -22.373380661010742,
+        -8.184087753295898,
         bounceflower_model_bone13_layers,
         NULL,
         NULL,
@@ -891,9 +891,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        -20.381587982177734,
+        -13.371084213256836,
         37.8428955078125,
-        -8.184087753295898,
+        16.157291412353516,
         bounceflower_model_bone14_layers,
         NULL,
         NULL,
@@ -904,9 +904,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        -13.371084213256836,
+        11.9453125,
         37.8428955078125,
-        16.157291412353516,
+        17.011796951293945,
         bounceflower_model_bone15_layers,
         NULL,
         NULL,
@@ -917,9 +917,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        11.9453125,
+        20.581195831298828,
         37.8428955078125,
-        17.011796951293945,
+        -6.801467418670654,
         bounceflower_model_bone16_layers,
         NULL,
         NULL,
@@ -930,23 +930,10 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        20.581195831298828,
-        37.8428955078125,
-        -6.801467418670654,
-        bounceflower_model_bone17_layers,
-        NULL,
-        NULL,
-        NULL,
-    },
-    {
-        18,
-        1,
-        1,
-        0,
         0.08163948357105255,
         48.7005615234375,
         -0.6796549558639526,
-        bounceflower_model_bone18_layers,
+        bounceflower_model_bone17_layers,
         NULL,
         NULL,
         NULL,
@@ -954,7 +941,7 @@ Bone bounceflower_model_bones[] = {
 };
 
 Model bounceflower_model = {
-    19,
+    18,
     0,
     bounceflower_model_bones
 };

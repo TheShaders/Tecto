@@ -10,6 +10,11 @@ void setSegment(u32 segmentIndex, void* virtualAddress)
     segmentTable[segmentIndex] = (uintptr_t) virtualAddress;
 }
 
+void *getSegment(u32 segmentIndex)
+{
+    return (void *)segmentTable[segmentIndex];
+}
+
 void* segmentedToVirtual(void* segmentedAddress)
 {
     u32 segmentIndex = (uintptr_t)segmentedAddress >> 24;
@@ -157,4 +162,35 @@ void freeAlloc(void *start)
     // If this is the new first free chunk, set it to be so
     if (chunkIndex < firstFreeChunk)
         firstFreeChunk = chunkIndex;
+}
+
+OSMesgQueue dmaMesgQueue;
+
+OSMesg dmaMessage;
+
+OSIoMesg dmaIoMessage;
+
+void startDMA(void *targetVAddr, void *romAddr, int length)
+{
+    // Create message queue for DMA reads/writes
+    osCreateMesgQueue(&dmaMesgQueue, &dmaMessage, 1);
+    
+    // Invalidate the data cache for the region being DMA'd to
+    osInvalDCache(targetVAddr, length); 
+
+    // Set up the intro segment DMA
+    dmaIoMessage.hdr.pri = OS_MESG_PRI_NORMAL;
+    dmaIoMessage.hdr.retQueue = &dmaMesgQueue;
+    dmaIoMessage.dramAddr = targetVAddr;
+    dmaIoMessage.devAddr = (u32)romAddr;
+    dmaIoMessage.size = (u32)length;
+
+    // Start the DMA
+    osEPiStartDma(g_romHandle, &dmaIoMessage, OS_READ);
+}
+
+void waitForDMA()
+{
+    // Wait for the DMA to complete
+    osRecvMesg(&dmaMesgQueue, NULL, OS_MESG_BLOCK);
 }

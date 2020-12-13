@@ -196,6 +196,17 @@ void mtxf_align_camera(MtxF dest, MtxF mtx, Vec3 position, s16 angle) {
     mtxfMul(dest, dest, scaleMat);
 }
 
+#define NUM_WATER_TEXTURES 600
+#define WATER_TEXTURE_SIZE 4096
+
+u8 waterTextures[2][WATER_TEXTURE_SIZE];
+
+s32 firstFrame = 1;
+s32 waterTextureIndex;
+s32 waterTextureBufIndex;
+
+extern u8 _dma_waterSegmentRomStart[];
+
 void drawAllEntities()
 {
     // Draw all non-resizable entities that have a model and no animation
@@ -206,9 +217,29 @@ void drawAllEntities()
     iterateOverEntities(drawResizableModels, NULL, ARCHETYPE_SCALED_MODEL, Bit_AnimState);
     // Draw all resizable entities that have a model and an animation
     iterateOverEntities(drawResizableAnimatedModels, NULL, ARCHETYPE_SCALED_ANIM_MODEL, 0);
+    // DMA the water texture for the next frame and set the segment for the current one
+    setSegment(SEGMENT_WATER_TEXTURE, waterTextures[waterTextureBufIndex]);
+    if (firstFrame)
+    {
+        firstFrame = 0;
+    }
+    else
+    {
+        waitForDMA();
+    }
+    waterTextureBufIndex ^= 1;
+    waterTextureIndex++;
+    if (waterTextureIndex >= NUM_WATER_TEXTURES)
+    {
+        waterTextureIndex = 0;
+    }
+    startDMA(waterTextures[waterTextureBufIndex], _dma_waterSegmentRomStart + WATER_TEXTURE_SIZE * waterTextureIndex, WATER_TEXTURE_SIZE);
+    
+    // waitForDMA();
+    // setSegment(SEGMENT_WATER_TEXTURE, waterTextures[waterTextureBufIndex]);
 }
 
-Gfx *gfxCbBeforeBillboard(Bone* bone, BoneLayer *layer)
+Gfx *gfxCbBeforeBillboard(UNUSED Bone* bone, UNUSED BoneLayer *layer)
 {
     MtxF billboardMtx;
     Vec3 offset = {0.0f, 0.0f, 0.0f};
@@ -219,7 +250,7 @@ Gfx *gfxCbBeforeBillboard(Bone* bone, BoneLayer *layer)
     return NULL;
 }
 
-Gfx *gfxCbAfterBillboard(Bone* bone, BoneLayer *layer)
+Gfx *gfxCbAfterBillboard(UNUSED Bone* bone, UNUSED BoneLayer *layer)
 {
     gfxPopMat();
     

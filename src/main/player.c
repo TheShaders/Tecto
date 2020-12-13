@@ -226,9 +226,13 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
     *model = &character_model;
 
     // Set up position
-    (*pos)[0] = 0.0f;
-    (*pos)[1] = 500.0f;
-    (*pos)[2] = 0.0f;
+    // (*pos)[0] = 0.0f;
+    // (*pos)[1] = 500.0f;
+    // (*pos)[2] = 0.0f;
+    
+    (*pos)[0] = -2673.34f;
+    (*pos)[1] = -19.75f;
+    (*pos)[2] = 2627.0f;
 
     // Set up position
     (*rot)[0] = 0x0000;

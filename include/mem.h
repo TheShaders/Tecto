@@ -40,6 +40,7 @@ extern u8 _libultraSegmentBssStart[];
 extern u8 _libultraSegmentBssEnd[];
 
 void setSegment(u32 segmentIndex, void* virtualAddress);
+void *getSegment(u32 segmentIndex);
 
 u32 isSegmented(void* segmented);
 void* segmentedToVirtual(void* segmented);
@@ -53,5 +54,8 @@ void *allocChunks(int numChunks, owner_t owner);
 void *allocRegion(int length, owner_t owner);
 // Free a region of allocated memory
 void freeAlloc(void *start);
+
+void startDMA(void *targetVAddr, void *romStart, int length);
+void waitForDMA();
 
 #endif

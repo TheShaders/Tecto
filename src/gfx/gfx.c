@@ -1,6 +1,7 @@
 #include <ultra64.h>
 #include <PR/sched.h>
 #include <PR/gs2dex.h>
+#include <stdint.h>
 
 #include <gfx.h>
 #include <mem.h>
@@ -33,12 +34,6 @@ u32 g_curGfxContext;
 // The index of the framebuffer being displayed next
 u32 g_curFramebuffer;
 u16 g_perspNorm;
-
-OSMesgQueue dmaMesgQueue;
-
-OSMesg dmaMessage;
-
-OSIoMesg dmaIoMessage;
 
 static Gfx drawLayerRenderModes1Cycle[NUM_LAYERS][2] = {
     { gsDPSetRenderMode(G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2), gsSPEndDisplayList() },
@@ -108,30 +103,15 @@ void initGfx(void)
     // Set the gfx context index to 0
     g_curGfxContext = 0;
 
-    // Create message queue for DMA reads/writes
-    osCreateMesgQueue(&dmaMesgQueue, &dmaMessage, 1);
-
     // Allocate RAM for the intro segment to be DMA'd to
     introSegAddr = allocRegion((u32)_introSegmentRomEnd - (u32)_introSegmentRomStart, ALLOC_GFX);
     
-    // Invalidate the data cache for the region being DMA'd to
-    osInvalDCache(introSegAddr, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart); 
-
-    // Set up the intro segment DMA
-    dmaIoMessage.hdr.pri = OS_MESG_PRI_NORMAL;
-    dmaIoMessage.hdr.retQueue = &dmaMesgQueue;
-    dmaIoMessage.dramAddr = introSegAddr;
-    dmaIoMessage.devAddr = (u32)_introSegmentRomStart;
-    dmaIoMessage.size = (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart;
-
-    // Start the DMA
-    osEPiStartDma(g_romHandle, &dmaIoMessage, OS_READ);
-
-    // Wait for the DMA to complete
-    osRecvMesg(&dmaMesgQueue, NULL, OS_MESG_BLOCK);
-    
     // Update the segment table
     setSegment(0x04, introSegAddr);
+
+    // DMA the intro segment and wait for the DMA to finish
+    startDMA(introSegAddr, _introSegmentRomStart, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart);
+    waitForDMA();
 }
 
 static LookAt *lookAt;
@@ -280,11 +260,20 @@ void rspUcodeLoadInit(void)
 
 void startFrame(void)
 {
+    int segIndex;
     resetGfxFrame();
 
     gSPSegment(g_dlistHead++, 0x00, 0x00000000);
-    gSPSegment(g_dlistHead++, 0x04, introSegAddr);
     gSPSegment(g_dlistHead++, BUFFER_SEGMENT, &g_frameBuffers[g_curGfxContext]);
+
+    for (segIndex = 2; segIndex < NUM_SEGMENTS; segIndex++)
+    {
+        uintptr_t segOffset = (uintptr_t) getSegment(segIndex);
+        if (segOffset != 0)
+        {
+            gSPSegment(g_dlistHead++, segIndex, segOffset);
+        }
+    }
 
 #ifdef INTERLACED
     if (osViGetCurrentField())

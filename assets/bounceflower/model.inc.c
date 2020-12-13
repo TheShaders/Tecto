@@ -1,4 +1,9 @@
 
+Gfx bounceflower_model_shading_i4_aligner[] = {gsSPEndDisplayList()};
+u8 bounceflower_model_shading_i4[] = {
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFB, 0xBB, 0x77, 0x77, 
+};
+
 Gfx bounceflower_model_billball_I4_i4_aligner[] = {gsSPEndDisplayList()};
 u8 bounceflower_model_billball_I4_i4[] = {
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
@@ -21,18 +26,50 @@ u8 bounceflower_model_billball_I4_i4[] = {
 
 Gfx mat_bounceflower_model_bounceyellow[] = {
 	gsDPPipeSync(),
-	gsDPSetCombineLERP(0, 0, 0, PRIMITIVE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, PRIMITIVE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetCombineLERP(TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, ENVIRONMENT),
+	gsSPSetGeometryMode(G_TEXTURE_GEN),
+	gsSPClearGeometryMode(G_CULL_BACK),
+	gsSPTexture(959, 0, 0, 0, 1),
+	gsDPTileSync(),
+	gsDPSetTextureImage(G_IM_FMT_I, G_IM_SIZ_8b, 8, bounceflower_model_shading_i4),
+	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_8b, 1, 0, 7, 0, G_TX_CLAMP | G_TX_NOMIRROR, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0),
+	gsDPLoadSync(),
+	gsDPLoadTile(7, 0, 0, 30, 0),
+	gsDPPipeSync(),
+	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_4b, 1, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0),
+	gsDPSetTileSize(0, 0, 0, 60, 0),
 	gsDPSetPrimColor(0, 0, 250, 254, 41, 255),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_bounceflower_model_bounceyellow[] = {
+	gsDPPipeSync(),
+	gsSPClearGeometryMode(G_TEXTURE_GEN),
+	gsSPSetGeometryMode(G_CULL_BACK),
 	gsSPEndDisplayList(),
 };
 
 
 Gfx mat_bounceflower_model_bounceorange[] = {
 	gsDPPipeSync(),
-	gsDPSetCombineLERP(0, 0, 0, PRIMITIVE, 0, 0, 0, ENVIRONMENT, 0, 0, 0, PRIMITIVE, 0, 0, 0, ENVIRONMENT),
-	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsDPSetCombineLERP(TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, ENVIRONMENT),
+	gsSPSetGeometryMode(G_TEXTURE_GEN),
+	gsSPTexture(959, 0, 0, 0, 1),
+	gsDPTileSync(),
+	gsDPSetTextureImage(G_IM_FMT_I, G_IM_SIZ_8b, 8, bounceflower_model_shading_i4),
+	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_8b, 1, 0, 7, 0, G_TX_CLAMP | G_TX_NOMIRROR, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0),
+	gsDPLoadSync(),
+	gsDPLoadTile(7, 0, 0, 30, 0),
+	gsDPPipeSync(),
+	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_4b, 1, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0),
+	gsDPSetTileSize(0, 0, 0, 60, 0),
 	gsDPSetPrimColor(0, 0, 254, 151, 108, 255),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_bounceflower_model_bounceorange[] = {
+	gsDPPipeSync(),
+	gsSPClearGeometryMode(G_TEXTURE_GEN),
 	gsSPEndDisplayList(),
 };
 
@@ -55,7 +92,7 @@ Gfx mat_revert_bounceflower_model_extensions_2side[] = {
 
 Gfx mat_bounceflower_model_extensions_billboard[] = {
 	gsDPPipeSync(),
-	gsDPSetCombineLERP(0, 0, 0, TEXEL0, TEXEL0, 0, ENVIRONMENT, 0, 0, 0, 0, TEXEL0, TEXEL0, 0, ENVIRONMENT, 0),
+	gsDPSetCombineLERP(0, 0, 0, PRIMITIVE, TEXEL0, 0, ENVIRONMENT, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0, ENVIRONMENT, 0),
 	gsSPClearGeometryMode(G_CULL_BACK),
 	gsSPTexture(65535, 65535, 0, 0, 1),
 	gsDPTileSync(),
@@ -66,6 +103,7 @@ Gfx mat_bounceflower_model_extensions_billboard[] = {
 	gsDPPipeSync(),
 	gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_4b, 1, 0, 0, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0, G_TX_CLAMP | G_TX_NOMIRROR, 4, 0),
 	gsDPSetTileSize(0, 0, 0, 60, 60),
+	gsDPSetPrimColor(0, 0, 254, 194, 169, 255),
 	gsSPEndDisplayList(),
 };
 
@@ -78,37 +116,37 @@ Gfx mat_revert_bounceflower_model_extensions_billboard[] = {
 
 
 Vtx bounceflower_Root_mesh_vtx_0[31] = {
-	{{{5, 3, 33},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{-5, 3, 33},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{0, 2, 35},0, {-16, 1008},{0x0, 0x73, 0x36, 0xFF}}},
-	{{{10, 2, 26},0, {-16, 1008},{0x0, 0x7D, 0xEA, 0xFF}}},
-	{{{-10, 2, 26},0, {-16, 1008},{0x0, 0x7D, 0xEA, 0xFF}}},
-	{{{12, 0, 16},0, {-16, 1008},{0xFD, 0x7F, 0xFC, 0xFF}}},
-	{{{-12, 0, 16},0, {-16, 1008},{0x3, 0x7F, 0xFC, 0xFF}}},
-	{{{0, 4, 0},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{19, 0, -6},0, {-16, 1008},{0xFB, 0x7F, 0x2, 0xFF}}},
-	{{{22, 2, 18},0, {-16, 1008},{0xEB, 0x7D, 0xF9, 0xFF}}},
-	{{{28, 2, -2},0, {-16, 1008},{0xEB, 0x7D, 0xF9, 0xFF}}},
-	{{{30, 3, 15},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{33, 3, 6},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{33, 2, 11},0, {-16, 1008},{0x33, 0x73, 0x11, 0xFF}}},
-	{{{0, 0, -20},0, {-16, 1008},{0x0, 0x7F, 0x5, 0xFF}}},
-	{{{24, 2, -15},0, {-16, 1008},{0xF3, 0x7D, 0x12, 0xFF}}},
-	{{{7, 2, -27},0, {-16, 1008},{0xF3, 0x7D, 0x12, 0xFF}}},
-	{{{23, 3, -24},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{15, 3, -29},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{20, 2, -28},0, {-16, 1008},{0x20, 0x73, 0xD4, 0xFF}}},
-	{{{-19, 0, -6},0, {-16, 1008},{0x5, 0x7F, 0x2, 0xFF}}},
-	{{{-7, 2, -27},0, {-16, 1008},{0xD, 0x7D, 0x12, 0xFF}}},
-	{{{-24, 2, -15},0, {-16, 1008},{0xD, 0x7D, 0x12, 0xFF}}},
-	{{{-15, 3, -29},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{-23, 3, -24},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{-20, 2, -28},0, {-16, 1008},{0xE0, 0x73, 0xD4, 0xFF}}},
-	{{{-28, 2, -2},0, {-16, 1008},{0x15, 0x7D, 0xF9, 0xFF}}},
-	{{{-22, 2, 18},0, {-16, 1008},{0x15, 0x7D, 0xF9, 0xFF}}},
-	{{{-33, 3, 6},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{-30, 3, 15},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
-	{{{-33, 2, 11},0, {-16, 1008},{0xCD, 0x73, 0x11, 0xFF}}},
+	{{{5, 3, 33},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{-5, 3, 33},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{0, 2, 35},0, {-16, 16},{0x0, 0x73, 0x36, 0xFF}}},
+	{{{10, 2, 26},0, {-16, 16},{0x0, 0x7D, 0xEA, 0xFF}}},
+	{{{-10, 2, 26},0, {-16, 16},{0x0, 0x7D, 0xEA, 0xFF}}},
+	{{{12, 0, 16},0, {-16, 16},{0xFD, 0x7F, 0xFC, 0xFF}}},
+	{{{-12, 0, 16},0, {-16, 16},{0x3, 0x7F, 0xFC, 0xFF}}},
+	{{{0, 4, 0},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{19, 0, -6},0, {-16, 16},{0xFB, 0x7F, 0x2, 0xFF}}},
+	{{{22, 2, 18},0, {-16, 16},{0xEB, 0x7D, 0xF9, 0xFF}}},
+	{{{28, 2, -2},0, {-16, 16},{0xEB, 0x7D, 0xF9, 0xFF}}},
+	{{{30, 3, 15},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{33, 3, 6},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{33, 2, 11},0, {-16, 16},{0x33, 0x73, 0x11, 0xFF}}},
+	{{{0, 0, -20},0, {-16, 16},{0x0, 0x7F, 0x5, 0xFF}}},
+	{{{24, 2, -15},0, {-16, 16},{0xF3, 0x7D, 0x12, 0xFF}}},
+	{{{7, 2, -27},0, {-16, 16},{0xF3, 0x7D, 0x12, 0xFF}}},
+	{{{23, 3, -24},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{15, 3, -29},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{20, 2, -28},0, {-16, 16},{0x20, 0x73, 0xD4, 0xFF}}},
+	{{{-19, 0, -6},0, {-16, 16},{0x5, 0x7F, 0x2, 0xFF}}},
+	{{{-7, 2, -27},0, {-16, 16},{0xD, 0x7D, 0x12, 0xFF}}},
+	{{{-24, 2, -15},0, {-16, 16},{0xD, 0x7D, 0x12, 0xFF}}},
+	{{{-15, 3, -29},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{-23, 3, -24},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{-20, 2, -28},0, {-16, 16},{0xE0, 0x73, 0xD4, 0xFF}}},
+	{{{-28, 2, -2},0, {-16, 16},{0x15, 0x7D, 0xF9, 0xFF}}},
+	{{{-22, 2, 18},0, {-16, 16},{0x15, 0x7D, 0xF9, 0xFF}}},
+	{{{-33, 3, 6},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{-30, 3, 15},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{-33, 2, 11},0, {-16, 16},{0xCD, 0x73, 0x11, 0xFF}}},
 };
 
 Gfx bounceflower_Root_mesh_tri_0[] = {
@@ -134,28 +172,29 @@ Gfx bounceflower_Root_mesh_tri_0[] = {
 Gfx bounceflower_Root_mesh[] = {
 	gsSPDisplayList(mat_bounceflower_model_bounceyellow),
 	gsSPDisplayList(bounceflower_Root_mesh_tri_0),
+	gsSPDisplayList(mat_revert_bounceflower_model_bounceyellow),
 	gsSPEndDisplayList(),
 };
 
 
 
 Vtx bounceflower_Base_mesh_vtx_0[16] = {
-	{{{-14, -3, -5},0, {-16, 1008},{0xA7, 0xAB, 0xE1, 0xFF}}},
-	{{{-9, -3, 12},0, {-16, 1008},{0xC9, 0xA8, 0x4A, 0xFF}}},
-	{{{-16, 12, 23},0, {-16, 1008},{0xB7, 0xE8, 0x65, 0xFF}}},
-	{{{17, 12, 23},0, {-16, 1008},{0x49, 0xE8, 0x65, 0xFF}}},
-	{{{9, -3, 12},0, {-16, 1008},{0x37, 0xA8, 0x4A, 0xFF}}},
-	{{{27, 12, -8},0, {-16, 1008},{0x77, 0xE9, 0xDA, 0xFF}}},
-	{{{14, -3, -5},0, {-16, 1008},{0x59, 0xAA, 0xE1, 0xFF}}},
-	{{{0, 12, -28},0, {-16, 1008},{0x0, 0xE9, 0x83, 0xFF}}},
-	{{{0, -3, -15},0, {-16, 1008},{0x0, 0xAC, 0xA1, 0xFF}}},
-	{{{-27, 12, -8},0, {-16, 1008},{0x89, 0xE9, 0xDA, 0xFF}}},
-	{{{-13, 31, 18},0, {-16, 1008},{0xC4, 0x4A, 0x53, 0xFF}}},
-	{{{13, 31, 18},0, {-16, 1008},{0x3C, 0x4A, 0x53, 0xFF}}},
-	{{{21, 31, -7},0, {-16, 1008},{0x62, 0x4A, 0xDF, 0xFF}}},
-	{{{0, 31, -22},0, {-16, 1008},{0x0, 0x4A, 0x99, 0xFF}}},
-	{{{-21, 31, -7},0, {-16, 1008},{0x9E, 0x4A, 0xDF, 0xFF}}},
-	{{{0, 42, 0},0, {-16, 1008},{0x0, 0x7F, 0x0, 0xFF}}},
+	{{{-14, -3, -5},0, {-16, 16},{0xA7, 0xAB, 0xE1, 0xFF}}},
+	{{{-9, -3, 12},0, {-16, 16},{0xC9, 0xA8, 0x4A, 0xFF}}},
+	{{{-16, 12, 23},0, {-16, 16},{0xB7, 0xE8, 0x65, 0xFF}}},
+	{{{17, 12, 23},0, {-16, 16},{0x49, 0xE8, 0x65, 0xFF}}},
+	{{{9, -3, 12},0, {-16, 16},{0x37, 0xA8, 0x4A, 0xFF}}},
+	{{{27, 12, -8},0, {-16, 16},{0x77, 0xE9, 0xDA, 0xFF}}},
+	{{{14, -3, -5},0, {-16, 16},{0x59, 0xAA, 0xE1, 0xFF}}},
+	{{{0, 12, -28},0, {-16, 16},{0x0, 0xE9, 0x83, 0xFF}}},
+	{{{0, -3, -15},0, {-16, 16},{0x0, 0xAC, 0xA1, 0xFF}}},
+	{{{-27, 12, -8},0, {-16, 16},{0x89, 0xE9, 0xDA, 0xFF}}},
+	{{{-13, 31, 18},0, {-16, 16},{0xC4, 0x4A, 0x53, 0xFF}}},
+	{{{13, 31, 18},0, {-16, 16},{0x3C, 0x4A, 0x53, 0xFF}}},
+	{{{21, 31, -7},0, {-16, 16},{0x62, 0x4A, 0xDF, 0xFF}}},
+	{{{0, 31, -22},0, {-16, 16},{0x0, 0x4A, 0x99, 0xFF}}},
+	{{{-21, 31, -7},0, {-16, 16},{0x9E, 0x4A, 0xDF, 0xFF}}},
+	{{{0, 42, 0},0, {-16, 16},{0x0, 0x7F, 0x0, 0xFF}}},
 };
 
 Gfx bounceflower_Base_mesh_tri_0[] = {
@@ -249,6 +288,7 @@ Gfx bounceflower_Base_mesh_tri_1[] = {
 Gfx bounceflower_Base_mesh[] = {
 	gsSPDisplayList(mat_bounceflower_model_bounceorange),
 	gsSPDisplayList(bounceflower_Base_mesh_tri_0),
+	gsSPDisplayList(mat_revert_bounceflower_model_bounceorange),
 	gsSPDisplayList(mat_bounceflower_model_extensions_2side),
 	gsSPDisplayList(bounceflower_Base_mesh_tri_1),
 	gsSPDisplayList(mat_revert_bounceflower_model_extensions_2side),
@@ -573,9 +613,9 @@ Gfx bounceflower_Ext_015_mesh[] = {
 
 
 Vtx bounceflower_Ext_016_mesh_vtx_0[3] = {
-	{{{-6, -3, 3},0, {-182, 470},{0xF7, 0x0, 0x7F, 0xFF}}},
-	{{{6, -4, 4},0, {662, 479},{0xF7, 0x0, 0x7F, 0xFF}}},
-	{{{0, 8, 3},0, {240, -281},{0xF7, 0x0, 0x7F, 0xFF}}},
+	{{{-6, -3, 3},0, {-182, 470},{0xFF, 0x0, 0x7F, 0xFF}}},
+	{{{6, -4, 3},0, {662, 479},{0xFF, 0x0, 0x7F, 0xFF}}},
+	{{{0, 8, 3},0, {240, -281},{0xFF, 0x0, 0x7F, 0xFF}}},
 };
 
 Gfx bounceflower_Ext_016_mesh_tri_0[] = {
@@ -632,7 +672,7 @@ BoneLayer bounceflower_model_bone5_layers[] = {
 };
 BoneLayer bounceflower_model_bone6_layers[] = {
     {
-        0,
+        3,
         bounceflower_Ext_004_mesh,
     },
 };
@@ -930,9 +970,9 @@ Bone bounceflower_model_bones[] = {
         1,
         1,
         0,
-        0.08163948357105255,
+        -0.03601888194680214,
         48.7005615234375,
-        -0.6796549558639526,
+        -0.24824075400829315,
         bounceflower_model_bone17_layers,
         NULL,
         NULL,

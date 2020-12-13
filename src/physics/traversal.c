@@ -143,12 +143,15 @@ void raycastVerticalIterator(size_t count, void *data, void **componentArrays)
 
     while (count)
     {
-        float curDist = verticalRayVsBvh(origin, rayLen, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
-        if (curDist < rayData->hitDist)
+        if (*curTree)
         {
-            rayData->hitDist = curDist;
-            rayData->hitTri = curTri;
-            rayData->hitSurfaceType = curSurfaceType;
+            float curDist = verticalRayVsBvh(origin, rayLen, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+            if (curDist < rayData->hitDist)
+            {
+                rayData->hitDist = curDist;
+                rayData->hitTri = curTri;
+                rayData->hitSurfaceType = curSurfaceType;
+            }
         }
         curTree++;
         count--;
@@ -169,15 +172,18 @@ void raycastPositionVerticalIterator(size_t count, void *data, void **componentA
 
     while (count)
     {
-        Vec3 curOrigin;
-        float curDist;
-        VEC3_DIFF(curOrigin, origin, *curPos);
-        curDist = verticalRayVsBvh(curOrigin, rayLen, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
-        if (curDist < rayData->hitDist)
+        if (*curTree)
         {
-            rayData->hitDist = curDist;
-            rayData->hitTri = curTri;
-            rayData->hitSurfaceType = curSurfaceType;
+            Vec3 curOrigin;
+            float curDist;
+            VEC3_DIFF(curOrigin, origin, *curPos);
+            curDist = verticalRayVsBvh(curOrigin, rayLen, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+            if (curDist < rayData->hitDist)
+            {
+                rayData->hitDist = curDist;
+                rayData->hitTri = curTri;
+                rayData->hitSurfaceType = curSurfaceType;
+            }
         }
         curTree++;
         curPos++;
@@ -200,22 +206,25 @@ void raycastPositionRotationVerticalIterator(size_t count, void *data, void **co
 
     while (count)
     {
-        Vec3 curOrigin;
-        Vec3 curOriginRot;
-        Vec3 curDir;
-        MtxF invMat;
-        float curDist;
-        VEC3_DIFF(curOrigin, origin, *curPos);
-        mtxfEulerXYZInverse(invMat, (*curRot)[0], (*curRot)[1], (*curRot)[2]);
-        mtxfRotateVec(invMat, rayDir, curDir);
-        mtxfRotateVec(invMat, curOrigin, curOriginRot);
-        // Can't use a vertical collision, since the ray is rotated now
-        curDist = rayVsBvh(curOriginRot, curDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
-        if (curDist < rayData->hitDist)
+        if (*curTree)
         {
-            rayData->hitDist = curDist;
-            rayData->hitTri = curTri;
-            rayData->hitSurfaceType = curSurfaceType;
+            Vec3 curOrigin;
+            Vec3 curOriginRot;
+            Vec3 curDir;
+            MtxF invMat;
+            float curDist;
+            VEC3_DIFF(curOrigin, origin, *curPos);
+            mtxfEulerXYZInverse(invMat, (*curRot)[0], (*curRot)[1], (*curRot)[2]);
+            mtxfRotateVec(invMat, rayDir, curDir);
+            mtxfRotateVec(invMat, curOrigin, curOriginRot);
+            // Can't use a vertical collision, since the ray is rotated now
+            curDist = rayVsBvh(curOriginRot, curDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+            if (curDist < rayData->hitDist)
+            {
+                rayData->hitDist = curDist;
+                rayData->hitTri = curTri;
+                rayData->hitSurfaceType = curSurfaceType;
+            }
         }
         curTree++;
         curPos++;
@@ -237,12 +246,15 @@ void raycastIterator(size_t count, void *data, void **componentArrays)
 
     while (count)
     {
-        float curDist = rayVsBvh(origin, rayDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
-        if (curDist < rayData->hitDist)
+        if (*curTree)
         {
-            rayData->hitDist = curDist;
-            rayData->hitTri = curTri;
-            rayData->hitSurfaceType = curSurfaceType;
+            float curDist = rayVsBvh(origin, rayDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+            if (curDist < rayData->hitDist)
+            {
+                rayData->hitDist = curDist;
+                rayData->hitTri = curTri;
+                rayData->hitSurfaceType = curSurfaceType;
+            }
         }
         curTree++;
         count--;
@@ -263,15 +275,18 @@ void raycastPositionIterator(size_t count, void *data, void **componentArrays)
 
     while (count)
     {
-        Vec3 curOrigin;
-        float curDist;
-        VEC3_DIFF(curOrigin, origin, *curPos);
-        curDist = rayVsBvh(curOrigin, rayDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
-        if (curDist < rayData->hitDist)
+        if (*curTree)
         {
-            rayData->hitDist = curDist;
-            rayData->hitTri = curTri;
-            rayData->hitSurfaceType = curSurfaceType;
+            Vec3 curOrigin;
+            float curDist;
+            VEC3_DIFF(curOrigin, origin, *curPos);
+            curDist = rayVsBvh(curOrigin, rayDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+            if (curDist < rayData->hitDist)
+            {
+                rayData->hitDist = curDist;
+                rayData->hitTri = curTri;
+                rayData->hitSurfaceType = curSurfaceType;
+            }
         }
         curTree++;
         curPos++;
@@ -294,21 +309,24 @@ void raycastPositionRotationIterator(size_t count, void *data, void **componentA
 
     while (count)
     {
-        Vec3 curOrigin;
-        Vec3 curOriginRot;
-        Vec3 curDir;
-        MtxF invMat;
-        float curDist;
-        VEC3_DIFF(curOrigin, origin, *curPos);
-        mtxfEulerXYZInverse(invMat, (*curRot)[0], (*curRot)[1], (*curRot)[2]);
-        mtxfRotateVec(invMat, rayDir, curDir);
-        mtxfRotateVec(invMat, curOrigin, curOriginRot);
-        curDist = rayVsBvh(curOriginRot, curDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
-        if (curDist < rayData->hitDist)
+        if (*curTree)
         {
-            rayData->hitDist = curDist;
-            rayData->hitTri = curTri;
-            rayData->hitSurfaceType = curSurfaceType;
+            Vec3 curOrigin;
+            Vec3 curOriginRot;
+            Vec3 curDir;
+            MtxF invMat;
+            float curDist;
+            VEC3_DIFF(curOrigin, origin, *curPos);
+            mtxfEulerXYZInverse(invMat, (*curRot)[0], (*curRot)[1], (*curRot)[2]);
+            mtxfRotateVec(invMat, rayDir, curDir);
+            mtxfRotateVec(invMat, curOrigin, curOriginRot);
+            curDist = rayVsBvh(curOriginRot, curDir, segmentedToVirtual(*curTree), tmin, tmax, &curTri, &curSurfaceType);
+            if (curDist < rayData->hitDist)
+            {
+                rayData->hitDist = curDist;
+                rayData->hitTri = curTri;
+                rayData->hitSurfaceType = curSurfaceType;
+            }
         }
         curTree++;
         curPos++;

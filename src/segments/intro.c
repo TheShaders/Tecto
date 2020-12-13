@@ -22,6 +22,9 @@
 #include "assets/treevineleaf/model.inc.c"
 #include "assets/treevineleaf/anims/data.inc.c"
 
+#include "assets/lilypad/model.inc.c"
+#include "assets/lilypad/anims/data.inc.c"
+
 #include "assets/test_collision/collision.inc.c"
 
 #include "level/main/model.inc.c"

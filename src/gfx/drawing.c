@@ -207,6 +207,73 @@ s32 waterTextureBufIndex;
 
 extern u8 _dma_waterSegmentRomStart[];
 
+typedef struct TextureScroll_t {
+    Vtx *vertices;
+    int vtxCount;
+    s16 sSpeed;
+    s16 tSpeed;
+    s16 sMax;
+    s16 tMax;
+    s16 sPos;
+    s16 tPos;
+} TextureScroll;
+
+extern Vtx main_model_VIS_mesh_vtx_7[];
+extern Vtx main_model_VIS_XDecal_mesh_vtx_0[];
+
+TextureScroll textureScrolls[] = {
+    { main_model_VIS_mesh_vtx_7, 17, 0, -20, 128 << 5, 64 << 5, 0, 0 },
+    { main_model_VIS_XDecal_mesh_vtx_0, 25, 20, 5, 64 << 5, 64 << 5, 0, 0 },
+};
+
+#define NUM_TEXTURE_SCROLLS (sizeof(textureScrolls) / sizeof(textureScrolls[0]))
+
+void scrollTextures()
+{
+    TextureScroll *curTexScroll;
+    for (curTexScroll = &textureScrolls[0]; curTexScroll != &textureScrolls[NUM_TEXTURE_SCROLLS]; curTexScroll++)
+    {
+        int ds = curTexScroll->sSpeed;
+        int dt = curTexScroll->tSpeed;
+        int sMax = curTexScroll->sMax;
+        int tMax = curTexScroll->tMax;
+        Vtx *curVtx;
+
+        curTexScroll->sPos += ds;
+        curTexScroll->tPos += dt;
+
+        if (curTexScroll->sPos >= sMax)
+        {
+            curTexScroll->sPos -= sMax;
+            ds -= sMax;
+        }
+
+        if (curTexScroll->sPos < 0)
+        {
+            curTexScroll->sPos += sMax;
+            ds += sMax;
+        }
+
+        if (curTexScroll->tPos >= tMax)
+        {
+            curTexScroll->tPos -= tMax;
+            dt -= tMax;
+        }
+
+        if (curTexScroll->tPos < 0)
+        {
+            curTexScroll->tPos += tMax;
+            dt += tMax;
+        }
+
+        for (curVtx = segmentedToVirtual(&curTexScroll->vertices[0]); curVtx != segmentedToVirtual(&curTexScroll->vertices[curTexScroll->vtxCount]); curVtx++)
+        {
+            curVtx->v.tc[0] += ds;
+            curVtx->v.tc[1] += dt;
+        }
+    }
+}
+
 void drawAllEntities()
 {
     // Draw all non-resizable entities that have a model and no animation
@@ -234,6 +301,8 @@ void drawAllEntities()
         waterTextureIndex = 0;
     }
     startDMA(waterTextures[waterTextureBufIndex], _dma_waterSegmentRomStart + WATER_TEXTURE_SIZE * waterTextureIndex, WATER_TEXTURE_SIZE);
+
+    scrollTextures();
     
     // waitForDMA();
     // setSegment(SEGMENT_WATER_TEXTURE, waterTextures[waterTextureBufIndex]);

@@ -82,4 +82,7 @@ typedef struct AnimState_t {
     s8 triggerIndex; // Index of the previous trigger
 } AnimState;
 
+Gfx *gfxCbBeforeBillboard(Bone* bone, BoneLayer *layer);
+Gfx *gfxCbAfterBillboard(Bone* bone, BoneLayer *layer);
+
 #endif

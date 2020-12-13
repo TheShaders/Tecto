@@ -1,6 +1,7 @@
 #include <ultra64.h>
 #include <PR/sched.h>
 #include <PR/gs2dex.h>
+#include <stdint.h>
 
 #include <gfx.h>
 #include <mem.h>
@@ -34,19 +35,13 @@ u32 g_curGfxContext;
 u32 g_curFramebuffer;
 u16 g_perspNorm;
 
-OSMesgQueue dmaMesgQueue;
-
-OSMesg dmaMessage;
-
-OSIoMesg dmaIoMessage;
-
 static Gfx drawLayerRenderModes1Cycle[NUM_LAYERS][2] = {
     { gsDPSetRenderMode(G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2), gsSPEndDisplayList() },
     { gsDPSetRenderMode(G_RM_ZB_OPA_SURF, G_RM_ZB_OPA_SURF2), gsSPEndDisplayList() },
     { gsDPSetRenderMode(G_RM_ZB_OPA_DECAL, G_RM_ZB_OPA_DECAL2), gsSPEndDisplayList() },
     { gsDPSetRenderMode(G_RM_AA_ZB_TEX_EDGE, G_RM_AA_ZB_TEX_EDGE2), gsSPEndDisplayList() },
-    { gsDPSetRenderMode(G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2), gsSPEndDisplayList() },
-    { gsDPSetRenderMode(G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_ZB_XLU_SURF, G_RM_ZB_XLU_SURF), gsSPEndDisplayList() },
+    { gsDPSetRenderMode(G_RM_ZB_XLU_SURF, G_RM_ZB_XLU_SURF), gsSPEndDisplayList() },
     { gsDPSetRenderMode(G_RM_AA_ZB_XLU_DECAL, G_RM_AA_ZB_XLU_DECAL2), gsSPEndDisplayList() },
     { gsDPSetRenderMode(G_RM_SPRITE, G_RM_SPRITE2), gsSPEndDisplayList() },
     { gsDPSetRenderMode(G_RM_XLU_SPRITE, G_RM_XLU_SPRITE2), gsSPEndDisplayList() },
@@ -108,30 +103,15 @@ void initGfx(void)
     // Set the gfx context index to 0
     g_curGfxContext = 0;
 
-    // Create message queue for DMA reads/writes
-    osCreateMesgQueue(&dmaMesgQueue, &dmaMessage, 1);
-
     // Allocate RAM for the intro segment to be DMA'd to
     introSegAddr = allocRegion((u32)_introSegmentRomEnd - (u32)_introSegmentRomStart, ALLOC_GFX);
     
-    // Invalidate the data cache for the region being DMA'd to
-    osInvalDCache(introSegAddr, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart); 
-
-    // Set up the intro segment DMA
-    dmaIoMessage.hdr.pri = OS_MESG_PRI_NORMAL;
-    dmaIoMessage.hdr.retQueue = &dmaMesgQueue;
-    dmaIoMessage.dramAddr = introSegAddr;
-    dmaIoMessage.devAddr = (u32)_introSegmentRomStart;
-    dmaIoMessage.size = (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart;
-
-    // Start the DMA
-    osEPiStartDma(g_romHandle, &dmaIoMessage, OS_READ);
-
-    // Wait for the DMA to complete
-    osRecvMesg(&dmaMesgQueue, NULL, OS_MESG_BLOCK);
-    
     // Update the segment table
     setSegment(0x04, introSegAddr);
+
+    // DMA the intro segment and wait for the DMA to finish
+    startDMA(introSegAddr, _introSegmentRomStart, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart);
+    waitForDMA();
 }
 
 static LookAt *lookAt;
@@ -280,11 +260,20 @@ void rspUcodeLoadInit(void)
 
 void startFrame(void)
 {
+    int segIndex;
     resetGfxFrame();
 
     gSPSegment(g_dlistHead++, 0x00, 0x00000000);
-    gSPSegment(g_dlistHead++, 0x04, introSegAddr);
     gSPSegment(g_dlistHead++, BUFFER_SEGMENT, &g_frameBuffers[g_curGfxContext]);
+
+    for (segIndex = 2; segIndex < NUM_SEGMENTS; segIndex++)
+    {
+        uintptr_t segOffset = (uintptr_t) getSegment(segIndex);
+        if (segOffset != 0)
+        {
+            gSPSegment(g_dlistHead++, segIndex, segOffset);
+        }
+    }
 
 #ifdef INTERLACED
     if (osViGetCurrentField())
@@ -706,13 +695,27 @@ void setupCameraMatrices(Camera *camera)
 {
     Mtx* projMtx;
     Vec3 eyePos;
+    Vec3 targetPos;
     Vec3 eyeOffset = {
         camera->distance * sinsf(camera->yaw) * cossf(camera->pitch),
         camera->distance * sinsf(camera->pitch) + camera->yOffset,
         camera->distance * cossf(camera->yaw) * cossf(camera->pitch)
     };
+    float cameraHitDist;
+    ColTri *cameraHitTri;
+    SurfaceType cameraHitSurface;
 
-    VEC3_ADD(eyePos, eyeOffset, camera->target);
+    VEC3_COPY(targetPos, camera->target);
+    targetPos[1] += camera->yOffset;
+
+    cameraHitDist = raycast(targetPos, eyeOffset, 0.0f, 1.1f, &cameraHitTri, &cameraHitSurface);
+
+    if (cameraHitTri != NULL)
+    {
+        VEC3_SCALE(eyeOffset, eyeOffset, MIN(MAX(cameraHitDist - 0.1f, 0.1f), 1.0f));
+    }
+    VEC3_ADD(eyePos, eyeOffset, targetPos);
+
 
     // Set up view matrix
     gfxLookat(
@@ -725,7 +728,7 @@ void setupCameraMatrices(Camera *camera)
     guMtxF2L(g_gfxContexts[g_curGfxContext].projMtxF, projMtx);
 
     // Perpsective
-    gfxPerspective(camera->fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 100.0f, 20000.0f, 1.0f);
+    gfxPerspective(camera->fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 10.0f, 20000.0f, 1.0f);
 
     // Ortho
     // guOrthoF(g_gfxContexts[g_curGfxContext].projMtxF, -SCREEN_WIDTH / 2, SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2, SCREEN_HEIGHT / 2, 100.0f, 20000.0f, 1.0f);

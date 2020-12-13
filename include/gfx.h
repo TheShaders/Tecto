@@ -56,6 +56,8 @@
  #undef OS_K0_TO_PHYSICAL
 #endif
 
+#define SEGMENT_WATER_TEXTURE 0x05
+
 // Gets rid of warnings with -Warray-bounds
 #define OS_K0_TO_PHYSICAL(x) ((u32)(x)-0x80000000)
 

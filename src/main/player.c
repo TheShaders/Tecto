@@ -17,9 +17,11 @@
 #include <interaction.h>
 
 extern Model character_model;
+extern Model character_arm_model;
 extern Animation character_anim_Idle_Long;
 extern Animation character_anim_Walk;
 extern Animation character_anim_Jump_Start;
+extern Animation character_arm_anim_arm_idle;
 
 void setAnim(AnimState *animState, Animation *newAnim)
 {
@@ -212,8 +214,6 @@ void createPlayer(PlayerState *state)
     createEntitiesCallback(ARCHETYPE_PLAYER, state, 1, createPlayerCallback);
 }
 
-#define ARCHETYPE_HOLDABLE (Bit_Position | Bit_Velocity | Bit_Rotation | Bit_Model | Bit_Holdable | Bit_Gravity | Bit_Collider | Bit_Resizable | Bit_Scale)
-
 void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays)
 {
     // Components: Position, Velocity, Rotation, BehaviorParams, Model, AnimState, Gravity
@@ -262,6 +262,25 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
     holdOffset->holdOffset[0] = 0.0f;
     holdOffset->holdOffset[1] = 90.0f;
     holdOffset->holdOffset[2] = 100.0f;
+
+    // Set up arm entity
+    {
+        Entity *armEntity = createEntity(ARCHETYPE_ARM);
+        Model **armModel;
+        AnimState *armAnimState;
+        
+        void *armComponents[NUM_COMPONENTS(ARCHETYPE_ARM)];
+
+        getEntityComponents(armEntity, armComponents);
+
+        armModel = armComponents[COMPONENT_INDEX(Model, ARCHETYPE_ARM)];
+        armAnimState = armComponents[COMPONENT_INDEX(AnimState, ARCHETYPE_ARM)];
+
+        state->armEntity = armEntity;
+        *armModel = &character_arm_model;
+        armAnimState->anim = &character_arm_anim_arm_idle;
+        armAnimState->speed = 1 << ANIM_COUNTER_SHIFT;
+    }
 }
 
 extern Model logo_model;
@@ -294,6 +313,24 @@ void playerCallback(UNUSED void **components, void *data)
     {
         g_Camera.pitch = MAX(g_Camera.pitch - PLAYER_CAMERA_TURN_SPEED, -0x1000);
     }
+    
+
+    // Find the floor below and if it's SURFACE_SLOW, limit the camera so you can't see under the swamp water
+    {
+        ColTri *hitTri;
+        SurfaceType hitSurfaceType;
+        raycastVertical(*pos, -100.0f, 0.0f, 1.0f, &hitTri, &hitSurfaceType);
+        if (collider->floorSurfaceType == SURFACE_SLOW || (hitTri && hitSurfaceType == SURFACE_SLOW))
+        {
+            g_Camera.pitch = MAX(g_Camera.pitch, 0x1000);
+            g_Camera.yOffset = approachFloatLinear(g_Camera.yOffset, 200.0f, 5.0f);
+        }
+        else
+        {
+            g_Camera.yOffset = approachFloatLinear(g_Camera.yOffset, 100.0f, 5.0f);
+        }
+    }
+
 
     if (g_PlayerInput.buttonsPressed & Z_TRIG)
     {
@@ -460,4 +497,21 @@ void playerCallback(UNUSED void **components, void *data)
             }
         }
     }
+    // Set up arm entity
+    {
+        Vec3 *armPos;
+        Vec3s *armRot;
+
+        void *armComponents[NUM_COMPONENTS(ARCHETYPE_ARM)];
+
+        getEntityComponents(state->armEntity, armComponents);
+
+        armPos = armComponents[COMPONENT_INDEX(Position, ARCHETYPE_ARM)];
+        armRot = armComponents[COMPONENT_INDEX(Velocity, ARCHETYPE_ARM)];
+
+        VEC3_COPY(*armPos, *pos);
+        VEC3_COPY(*armRot, *rot);
+
+    }
+    debug_printf("Player position: %5.2f %5.2f %5.2f\n", (*pos)[0], (*pos)[1], (*pos)[2]);
 }

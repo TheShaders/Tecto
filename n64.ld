@@ -253,6 +253,12 @@ SECTIONS
     }
     END_SEGMENT(song);
 
+    START_SEGMENT(dma_water, 0x00000000)
+    {
+        dma_textures/water/water.o;
+        . = ALIGN(16);
+    }
+
     __popcountsi2 = numberOfSetBits;
 
     /DISCARD/ :

@@ -9,8 +9,12 @@
 #include <resize.h>
 
 #include "assets/logo/model.inc.c"
+
 #include "assets/character/model.inc.c"
 #include "assets/character/anims/data.inc.c"
+
+#include "assets/character_arm/model.inc.c"
+#include "assets/character_arm/anims/data.inc.c"
 
 #include "assets/dandelion/model.inc.c"
 #include "assets/dandelion/anims/data.inc.c"

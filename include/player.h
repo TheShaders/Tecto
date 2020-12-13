@@ -10,7 +10,9 @@ typedef struct PlayerState_t
     u8 state;
     u8 subState;
     u16 stateArg;
+    Entity *armEntity;
     Entity *heldEntity;
+    Vec3 armOffsets[3];
 } PlayerState;
 
 #define MAX_PLAYER_SPEED 8.0f
@@ -34,6 +36,8 @@ typedef struct PlayerState_t
 void createPlayer(PlayerState *state);
 void createPlayerCallback(size_t count, void *arg, void **componentArrays);
 void playerCallback(void **components, void *data);
+
+#define ARCHETYPE_ARM (Bit_Position | Bit_Rotation | Bit_Model | Bit_AnimState)
 
 // Player states
 #define PSTATE_GROUND 0

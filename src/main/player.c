@@ -17,9 +17,11 @@
 #include <interaction.h>
 
 extern Model character_model;
+extern Model character_arm_model;
 extern Animation character_anim_Idle_Long;
 extern Animation character_anim_Walk;
 extern Animation character_anim_Jump_Start;
+extern Animation character_arm_anim_arm_idle;
 
 void setAnim(AnimState *animState, Animation *newAnim)
 {
@@ -260,6 +262,25 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
     holdOffset->holdOffset[0] = 0.0f;
     holdOffset->holdOffset[1] = 90.0f;
     holdOffset->holdOffset[2] = 100.0f;
+
+    // Set up arm entity
+    {
+        Entity *armEntity = createEntity(ARCHETYPE_ARM);
+        Model **armModel;
+        AnimState *armAnimState;
+        
+        void *armComponents[NUM_COMPONENTS(ARCHETYPE_ARM)];
+
+        getEntityComponents(armEntity, armComponents);
+
+        armModel = armComponents[COMPONENT_INDEX(Model, ARCHETYPE_ARM)];
+        armAnimState = armComponents[COMPONENT_INDEX(AnimState, ARCHETYPE_ARM)];
+
+        state->armEntity = armEntity;
+        *armModel = &character_arm_model;
+        armAnimState->anim = &character_arm_anim_arm_idle;
+        armAnimState->speed = 1 << ANIM_COUNTER_SHIFT;
+    }
 }
 
 extern Model logo_model;
@@ -457,6 +478,22 @@ void playerCallback(UNUSED void **components, void *data)
                 }
             }
         }
+    }
+    // Set up arm entity
+    {
+        Vec3 *armPos;
+        Vec3s *armRot;
+
+        void *armComponents[NUM_COMPONENTS(ARCHETYPE_ARM)];
+
+        getEntityComponents(state->armEntity, armComponents);
+
+        armPos = armComponents[COMPONENT_INDEX(Position, ARCHETYPE_ARM)];
+        armRot = armComponents[COMPONENT_INDEX(Velocity, ARCHETYPE_ARM)];
+
+        VEC3_COPY(*armPos, *pos);
+        VEC3_COPY(*armRot, *rot);
+
     }
     debug_printf("Player position: %5.2f %5.2f %5.2f\n", (*pos)[0], (*pos)[1], (*pos)[2]);
 }

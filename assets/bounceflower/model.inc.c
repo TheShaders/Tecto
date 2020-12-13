@@ -28,6 +28,7 @@ Gfx mat_bounceflower_model_bounceyellow[] = {
 	gsDPPipeSync(),
 	gsDPSetCombineLERP(TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, ENVIRONMENT),
 	gsSPSetGeometryMode(G_TEXTURE_GEN),
+	gsDPSetTextureFilter(G_TF_POINT),
 	gsSPClearGeometryMode(G_CULL_BACK),
 	gsSPTexture(959, 0, 0, 0, 1),
 	gsDPTileSync(),
@@ -46,6 +47,7 @@ Gfx mat_revert_bounceflower_model_bounceyellow[] = {
 	gsDPPipeSync(),
 	gsSPClearGeometryMode(G_TEXTURE_GEN),
 	gsSPSetGeometryMode(G_CULL_BACK),
+	gsDPSetTextureFilter(G_TF_BILERP),
 	gsSPEndDisplayList(),
 };
 
@@ -54,6 +56,7 @@ Gfx mat_bounceflower_model_bounceorange[] = {
 	gsDPPipeSync(),
 	gsDPSetCombineLERP(TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, ENVIRONMENT),
 	gsSPSetGeometryMode(G_TEXTURE_GEN),
+	gsDPSetTextureFilter(G_TF_POINT),
 	gsSPTexture(959, 0, 0, 0, 1),
 	gsDPTileSync(),
 	gsDPSetTextureImage(G_IM_FMT_I, G_IM_SIZ_8b, 8, bounceflower_model_shading_i4),
@@ -70,6 +73,7 @@ Gfx mat_bounceflower_model_bounceorange[] = {
 Gfx mat_revert_bounceflower_model_bounceorange[] = {
 	gsDPPipeSync(),
 	gsSPClearGeometryMode(G_TEXTURE_GEN),
+	gsDPSetTextureFilter(G_TF_BILERP),
 	gsSPEndDisplayList(),
 };
 

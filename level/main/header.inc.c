@@ -81,47 +81,53 @@ void *main_ARCHETYPE_HOLDABLE_ANIM_ComponentData[NUM_COMPONENTS(ARCHETYPE_HOLDAB
     main_ARCHETYPE_HOLDABLE_ANIM_Scales, // scale
 };
 
-Vec3 main_ARCHETYPE_INTERACTABLE_Positions[5] = {
+Vec3 main_ARCHETYPE_INTERACTABLE_Positions[6] = {
     {-4108.0f, -22.4f, -1796.8f},
     {-3356.0f, 407.0f, -4956.0f},
     {-2998.0f, 407.0f, -5140.0f},
     {-3012.0f, 407.0f, -5520.0f},
-    {0.0f, 0.0f, 0.0f},
+    {-5312.0f, -14.6f, -3660.0f},
+    {-3604.0f, 171.8f, -3970.0f},
 };
 
-Vec3s main_ARCHETYPE_INTERACTABLE_Rotations[5] = {
+Vec3s main_ARCHETYPE_INTERACTABLE_Rotations[6] = {
     {0x0000, 0x727D, 0x0000},
     {0x0000, 0x0000, 0x0000},
     {0x0000, 0x0000, 0x0000},
     {0x0000, 0x0000, 0x0000},
     {0x0000, 0x0000, 0x0000},
+    {0x0000, 0x0000, 0x0000},
 };
 
-Model *main_ARCHETYPE_INTERACTABLE_Models[5] = {
+Model *main_ARCHETYPE_INTERACTABLE_Models[6] = {
     &treevineleaf_model,
     &lilypad_model,
     &lilypad_model,
     &lilypad_model,
     &bounceflower_model,
+    &bounceflower_model,
 };
 
-AnimState main_ARCHETYPE_INTERACTABLE_AnimStates[5] = {
+AnimState main_ARCHETYPE_INTERACTABLE_AnimStates[6] = {
     { .anim = &treevineleaf_anim_tvleaf_grow, .counter = 0, .speed = 0 << ANIM_COUNTER_SHIFT, .triggerIndex = 0},
     { .anim = &lilypad_anim_lilypad_Idle, .counter = 0, .speed = 1 << ANIM_COUNTER_SHIFT, .triggerIndex = 0},
     { .anim = &lilypad_anim_lilypad_Idle, .counter = 0, .speed = 1 << ANIM_COUNTER_SHIFT, .triggerIndex = 0},
     { .anim = &lilypad_anim_lilypad_Idle, .counter = 0, .speed = 1 << ANIM_COUNTER_SHIFT, .triggerIndex = 0},
     { .anim = NULL, .counter = 0, .speed = 1 << ANIM_COUNTER_SHIFT, .triggerIndex = 0},
+    { .anim = NULL, .counter = 0, .speed = 1 << ANIM_COUNTER_SHIFT, .triggerIndex = 0},
 };
 
-ResizeParams main_ARCHETYPE_INTERACTABLE_ResizeParams[5] = {
+ResizeParams main_ARCHETYPE_INTERACTABLE_ResizeParams[6] = {
     { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 1.0f, .callback = NULL },
     { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = NULL },
     { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = NULL },
     { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = NULL },
     { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 5.0f, .largeScale = 1.0f, .callback = NULL },
+    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 5.0f, .largeScale = 1.0f, .callback = NULL },
 };
 
-float main_ARCHETYPE_INTERACTABLE_Scales[5] = {
+float main_ARCHETYPE_INTERACTABLE_Scales[6] = {
+    1.0f,
     1.0f,
     1.0f,
     1.0f,
@@ -150,7 +156,7 @@ int mainArchetypeCounts[4] = {
     1,
     1,
     1,
-    5,
+    6,
 };
 
 void **mainComponentData[4] = {

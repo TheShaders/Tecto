@@ -19,6 +19,9 @@
 #include "assets/dandelion/model.inc.c"
 #include "assets/dandelion/anims/data.inc.c"
 
+#include "assets/treevineleaf/model.inc.c"
+#include "assets/treevineleaf/anims/data.inc.c"
+
 #include "assets/test_collision/collision.inc.c"
 
 #include "level/main/model.inc.c"

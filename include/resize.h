@@ -15,6 +15,7 @@ enum
 {
     ResizeType_Shrink_While_Held,
     ResizeType_Grow_While_Held,
+    ResizeType_Interactable
 };
 
 typedef u8 ResizeType;

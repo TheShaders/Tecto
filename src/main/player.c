@@ -284,6 +284,7 @@ void createPlayerCallback(UNUSED size_t count, void *arg, void **componentArrays
 }
 
 extern Model logo_model;
+extern Model indicator_model;
 
 void playerCallback(UNUSED void **components, void *data)
 {
@@ -295,6 +296,11 @@ void playerCallback(UNUSED void **components, void *data)
     ColliderParams *collider = components[COMPONENT_INDEX(Collider, ARCHETYPE_PLAYER)];
     GravityParams *gravity = components[COMPONENT_INDEX(Gravity, ARCHETYPE_PLAYER)];
     PlayerState *state = (PlayerState *)data;
+    Entity *closestResizable;
+    Vec3 searchPos;
+    Vec3 resizablePos;
+    float resizableDist;
+    int resizableFound = FALSE;
 
     if (g_PlayerInput.buttonsHeld & R_CBUTTONS)
     {
@@ -319,7 +325,7 @@ void playerCallback(UNUSED void **components, void *data)
     {
         ColTri *hitTri;
         SurfaceType hitSurfaceType;
-        raycastVertical(*pos, -100.0f, 0.0f, 1.0f, &hitTri, &hitSurfaceType);
+        raycastVertical(*pos, -50.0f, 0.0f, 1.0f, &hitTri, &hitSurfaceType);
         if (collider->floorSurfaceType == SURFACE_SLOW || (hitTri && hitSurfaceType == SURFACE_SLOW))
         {
             g_Camera.pitch = MAX(g_Camera.pitch, 0x1000);
@@ -377,8 +383,8 @@ void playerCallback(UNUSED void **components, void *data)
         heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
         heldResizable->curSize = Size_Shrunk;
         heldResizable->type = ResizeType_Shrink_While_Held;
-        heldResizable->shrinkAllowed = 1;
-        heldResizable->growAllowed = 1;
+        heldResizable->grownTime = 0;
+        heldResizable->growTemporary = 0;
         heldResizable->smallScale = 1.0f;
         heldResizable->largeScale = 3.0f;
     }
@@ -417,8 +423,8 @@ void playerCallback(UNUSED void **components, void *data)
         heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
         heldResizable->curSize = Size_Grown;
         heldResizable->type = ResizeType_Grow_While_Held;
-        heldResizable->shrinkAllowed = 1;
-        heldResizable->growAllowed = 1;
+        heldResizable->grownTime = 0;
+        heldResizable->growTemporary = 0;
         heldResizable->smallScale = 0.25f;
         heldResizable->largeScale = 1.0f;
     }
@@ -427,6 +433,91 @@ void playerCallback(UNUSED void **components, void *data)
     stateUpdateCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, gravity, animState);
     // Process the current state
     stateProcessCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, gravity, animState);
+
+    VEC3_COPY(searchPos, *pos);
+    searchPos[0] += 200.0f * sinsf((*rot)[1]);
+    searchPos[2] += 200.0f * cossf((*rot)[1]);
+    closestResizable = findClosestEntity(searchPos, Bit_Resizable, 150.0f, &resizableDist, resizablePos);
+
+    if (closestResizable && (state->heldEntity == NULL))
+    {
+        // TODO why does this need an extra component (the purpose of the holdable) to work?
+        // Is something wrong with getEntityComponents?
+        void *indicatorComponents[NUM_COMPONENTS(ARCHETYPE_MODEL | Bit_Holdable)];
+        Vec3 *indicatorPos;
+        Vec3s *indicatorRot;
+        Model **indicatorModel;
+        Entity *indicator = state->indicator;
+
+        void *resizableComponents[NUM_COMPONENTS(closestResizable->archetype)];
+        ResizeParams *resizeParams;
+
+        getEntityComponents(closestResizable, resizableComponents);
+
+        resizeParams = resizableComponents[COMPONENT_INDEX(Resizable, closestResizable->archetype)];
+
+        // Only show the indicator if the resizable is holdable, or if its current state can be changed by the player
+        if ((closestResizable->archetype & Bit_Holdable) ||
+            (resizeParams->curSize == Size_Grown && resizeParams->shrinkAllowed) ||
+            (resizeParams->curSize == Size_Shrunk && resizeParams->growAllowed))
+        {
+            resizableFound = TRUE;
+            if (indicator == NULL)
+            {
+                indicator = createEntity(ARCHETYPE_MODEL | Bit_Holdable);
+                state->indicator = indicator;
+            }
+
+            getEntityComponents(indicator, indicatorComponents);
+
+            indicatorPos = indicatorComponents[COMPONENT_INDEX(Position, ARCHETYPE_MODEL | Bit_Holdable)];
+            indicatorRot = indicatorComponents[COMPONENT_INDEX(Rotation, ARCHETYPE_MODEL | Bit_Holdable)];
+            indicatorModel = indicatorComponents[COMPONENT_INDEX(Model, ARCHETYPE_MODEL | Bit_Holdable)];
+
+            *indicatorModel = &indicator_model;
+
+            VEC3_COPY(*indicatorPos, resizablePos);
+
+            (*indicatorPos)[1] += 200.0f;
+
+            if (resizeParams->horizontalIndicator)
+            {
+                (*indicatorPos)[0] += (100.0f + 10 * sinsf(0x200 * g_gameTimer)) * sinsf(g_Camera.yaw + 0x4000);
+                (*indicatorPos)[2] += (100.0f + 10 * sinsf(0x200 * g_gameTimer)) * cossf(g_Camera.yaw + 0x4000);
+                (*indicatorRot)[0] = -g_Camera.yaw;
+                (*indicatorRot)[1] = 0;
+                (*indicatorRot)[2] = -0x4000;
+            }
+            else
+            {
+                (*indicatorPos)[1] += 20 * sinsf(0x200 * g_gameTimer);
+                (*indicatorRot)[0] = 0;
+                (*indicatorRot)[1] = g_gameTimer * 0x100;
+                (*indicatorRot)[2] = 0;
+            }
+        }
+        
+
+    }
+    if (!resizableFound)
+    {
+        Entity *indicator = state->indicator;
+        if (indicator != NULL)
+        {
+            void *indicatorComponents[NUM_COMPONENTS(ARCHETYPE_MODEL | Bit_Holdable)];
+            Model **indicatorModel;
+
+            getEntityComponents(indicator, indicatorComponents);
+            
+            indicatorModel = indicatorComponents[COMPONENT_INDEX(Model, ARCHETYPE_MODEL | Bit_Holdable)];
+
+            *indicatorModel = NULL;
+
+            // TODO fix deletion
+            // deleteEntity(state->indicator);
+            // state->indicator = NULL;
+        }
+    }
     
     if (g_PlayerInput.buttonsPressed & B_BUTTON)
     {
@@ -464,34 +555,51 @@ void playerCallback(UNUSED void **components, void *data)
         }
         else if (state->state == PSTATE_GROUND)
         {
-            float holdableDist;
-            Entity *closestHoldable = findClosestEntity(*pos, Bit_Holdable, 200.0f, &holdableDist);
-
-            if (closestHoldable != NULL)
+            if (closestResizable != NULL)
             {
-                void *heldComponents[NUM_COMPONENTS(closestHoldable->archetype)];
-                
-                getEntityComponents(closestHoldable, heldComponents);
+                void *resizableComponents[NUM_COMPONENTS(closestResizable->archetype)];
+                ResizeParams *resizeParams;
 
-                HoldState *heldState = heldComponents[COMPONENT_INDEX(Holdable, closestHoldable->archetype)];
+                getEntityComponents(closestResizable, resizableComponents);
 
-                if (heldState->holder == NULL)
+                resizeParams = resizableComponents[COMPONENT_INDEX(Resizable, closestResizable->archetype)];
+
+                // Holdable resizable
+                if (closestResizable->archetype & Bit_Holdable)
                 {
-                    heldState->holder = state->playerEntity;
-                    state->heldEntity = closestHoldable;
+                    HoldState *heldState = resizableComponents[COMPONENT_INDEX(Holdable, closestResizable->archetype)];
 
-                    if (closestHoldable->archetype & Bit_Resizable)
+                    if (heldState->holder == NULL)
                     {
-                        ResizeParams *heldResize = heldComponents[COMPONENT_INDEX(Resizable, closestHoldable->archetype)];
-                        if (heldResize->type == ResizeType_Shrink_While_Held)
+                        heldState->holder = state->playerEntity;
+                        state->heldEntity = closestResizable;
+
+                        if (closestResizable->archetype & Bit_Resizable)
                         {
-                            heldResize->curSize = Size_Shrunk;
+                            if (resizeParams->type == ResizeType_Shrink_While_Held)
+                            {
+                                resizeParams->curSize = Size_Shrunk;
+                            }
+                            else
+                            {
+                                resizeParams->curSize = Size_Grown;
+                            }
+                            resizeParams->resizeTimer = RESIZE_TIMER_START;
                         }
-                        else
-                        {
-                            heldResize->curSize = Size_Grown;
-                        }
-                        heldResize->resizeTimer = RESIZE_TIMER_START;
+                    }
+                }
+                // Stationary resizable
+                else
+                {
+                    if (resizeParams->curSize == Size_Shrunk && resizeParams->growAllowed)
+                    {
+                        resizeParams->curSize = Size_Grown;
+                        resizeParams->resizeTimer = RESIZE_TIMER_START;
+                    }
+                    else if (resizeParams->curSize == Size_Grown && resizeParams->shrinkAllowed)
+                    {
+                        resizeParams->curSize = Size_Shrunk;
+                        resizeParams->resizeTimer = RESIZE_TIMER_START;
                     }
                 }
             }
@@ -513,5 +621,5 @@ void playerCallback(UNUSED void **components, void *data)
         VEC3_COPY(*armRot, *rot);
 
     }
-    debug_printf("Player position: %5.2f %5.2f %5.2f\n", (*pos)[0], (*pos)[1], (*pos)[2]);
+    // debug_printf("Player position: %5.2f %5.2f %5.2f\n", (*pos)[0], (*pos)[1], (*pos)[2]);
 }

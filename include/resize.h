@@ -20,17 +20,20 @@ enum
 
 typedef u8 ResizeType;
 
-typedef void (*ResizeCallback)(SizeState newState, Entity *entity, void **componentArrays);
+typedef void (*ResizeCallback)(ResizeParams *newState);
 
 typedef struct ResizeParams_t {
     SizeState curSize : 1;
+    int growTemporary : 1;
     int growAllowed : 1;
     int shrinkAllowed : 1;
-    int reserved : 5;
+    int horizontalIndicator : 1;
+    int reserved : 3;
 
+    u8 grownTime;
     u8 resizeTimer;
     ResizeType type;
-    u8 reserved2;
+    u8 restoreTimer;
     float smallScale;
     float largeScale;
     ResizeCallback callback;

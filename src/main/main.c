@@ -84,6 +84,9 @@ u32 __osSetFpcCsr(u32);
 
 PlayerState playerState;
 
+u32 g_gameTimer = 0;
+u32 g_graphicsTimer = 0;
+
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
     float angle = 0.0f;
@@ -157,6 +160,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         tickResizables();
         // Process all entities that have a behavior
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
+        g_gameTimer++;
 #ifdef FPS30
         beginInputPolling();
         readInput();
@@ -172,6 +176,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         tickResizables();
         // Process all entities that have a behavior
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
+        g_gameTimer++;
 #endif
         
         // Set up the camera
@@ -185,6 +190,8 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 #endif
 
         endFrame();
+
+        g_graphicsTimer++;
 
         angle += 360.0f / (5 * 60.0f);
             

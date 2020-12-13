@@ -88,6 +88,17 @@ void resizableCallback(size_t count, UNUSED void *arg, void **componentArrays)
             }
             *curScale = (scale1 - scale2) * scaleLerpFactorFrames[curResize->resizeTimer - 1] + scale2;
             curResize->resizeTimer--;
+            if (curResize->resizeTimer == 0)
+            {
+                if (curResize->callback != NULL)
+                {
+                    curResize->callback(curResize);
+                }
+                if (curResize->curSize == Size_Grown && curResize->growTemporary)
+                {
+                    curResize->restoreTimer = curResize->grownTime;
+                }
+            }
         }
         else
         {
@@ -98,6 +109,15 @@ void resizableCallback(size_t count, UNUSED void *arg, void **componentArrays)
             else
             {
                 *curScale = curResize->smallScale;
+            }
+            if (curResize->restoreTimer)
+            {
+                curResize->restoreTimer--;
+                if (curResize->restoreTimer == 0)
+                {
+                    curResize->curSize = Size_Shrunk;
+                    curResize->resizeTimer = RESIZE_TIMER_START;
+                }
             }
         }
 
@@ -110,4 +130,66 @@ void resizableCallback(size_t count, UNUSED void *arg, void **componentArrays)
 void tickResizables()
 {
     iterateOverEntities(resizableCallback, NULL, ARCHETYPE_RESIZABLE, 0);
+}
+
+extern BVHTree lilypad_collision_tree;
+
+void treevineleafResizeCallback(ResizeParams *params)
+{
+    Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
+    BVHTree **collision;
+    void *components[NUM_COMPONENTS(ARCHETYPE_INTERACTABLE)];
+
+    getEntityComponents(entity, components);
+
+    collision = components[COMPONENT_INDEX(Collision, ARCHETYPE_INTERACTABLE)];
+
+    if (params->curSize == Size_Grown)
+    {
+        *collision = NULL;
+    }
+    else
+    {
+        *collision = NULL;
+    }
+}
+
+void lillypadResizeCallback(ResizeParams *params)
+{
+    Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
+    BVHTree **collision;
+    void *components[NUM_COMPONENTS(ARCHETYPE_INTERACTABLE)];
+
+    getEntityComponents(entity, components);
+
+    collision = components[COMPONENT_INDEX(Collision, ARCHETYPE_INTERACTABLE)];
+
+    if (params->curSize == Size_Grown)
+    {
+        *collision = &lilypad_collision_tree;
+    }
+    else
+    {
+        *collision = NULL;
+    }
+}
+
+void bounceflowerResizeCallback(ResizeParams *params)
+{
+    Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
+    BVHTree **collision;
+    void *components[NUM_COMPONENTS(ARCHETYPE_INTERACTABLE)];
+
+    getEntityComponents(entity, components);
+
+    collision = components[COMPONENT_INDEX(Collision, ARCHETYPE_INTERACTABLE)];
+
+    if (params->curSize == Size_Grown)
+    {
+        *collision = NULL;
+    }
+    else
+    {
+        *collision = NULL;
+    }
 }

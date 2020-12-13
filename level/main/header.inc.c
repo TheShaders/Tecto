@@ -60,7 +60,7 @@ HoldState main_ARCHETYPE_HOLDABLE_ANIM_HoldStates[1] = {
 };
 
 ResizeParams main_ARCHETYPE_HOLDABLE_ANIM_ResizeParams[1] = {
-    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Grow_While_Held, .smallScale = 1.0f, .largeScale = 4.0f, .callback = NULL },
+    { .curSize = Size_Shrunk, .growTemporary = 0, .grownTime = 0, .resizeTimer = 0, .type = ResizeType_Grow_While_Held, .smallScale = 1.0f, .largeScale = 4.0f, .callback = NULL },
 };
 
 float main_ARCHETYPE_HOLDABLE_ANIM_Scales[1] = {
@@ -117,13 +117,17 @@ AnimState main_ARCHETYPE_INTERACTABLE_AnimStates[6] = {
     { .anim = NULL, .counter = 0, .speed = 1 << ANIM_COUNTER_SHIFT, .triggerIndex = 0},
 };
 
+extern void treevineleafResizeCallback();
+extern void lillypadResizeCallback();
+extern void bounceflowerResizeCallback();
+
 ResizeParams main_ARCHETYPE_INTERACTABLE_ResizeParams[6] = {
-    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 1.0f, .callback = NULL },
-    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = NULL },
-    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = NULL },
-    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = NULL },
-    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 5.0f, .largeScale = 1.0f, .callback = NULL },
-    { .curSize = Size_Shrunk, .growAllowed = 1, .shrinkAllowed = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 5.0f, .largeScale = 1.0f, .callback = NULL },
+    { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 1.0f, .callback = treevineleafResizeCallback },
+    { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 0, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = lillypadResizeCallback },
+    { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 0, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = lillypadResizeCallback },
+    { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 0, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = lillypadResizeCallback },
+    { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 0, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 5.0f, .largeScale = 1.0f, .callback = bounceflowerResizeCallback },
+    { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 0, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 5.0f, .largeScale = 1.0f, .callback = bounceflowerResizeCallback },
 };
 
 float main_ARCHETYPE_INTERACTABLE_Scales[6] = {
@@ -135,9 +139,10 @@ float main_ARCHETYPE_INTERACTABLE_Scales[6] = {
     1.0f,
 };
 
-// Bit_Position | Bit_Rotation | Bit_Model | Bit_AnimState | Bit_Resizable | Bit_Scale
+// Bit_Position | Bit_Collision | Bit_Rotation | Bit_Model | Bit_AnimState | Bit_Resizable | Bit_Scale
 void *main_ARCHETYPE_INTERACTABLE_ComponentData[NUM_COMPONENTS(ARCHETYPE_INTERACTABLE)] = {
     main_ARCHETYPE_INTERACTABLE_Positions, // pos
+    NULL, // collision
     main_ARCHETYPE_INTERACTABLE_Rotations, // rotation
     main_ARCHETYPE_INTERACTABLE_Models, // model
     main_ARCHETYPE_INTERACTABLE_AnimStates, // animstate

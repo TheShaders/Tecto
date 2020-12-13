@@ -52,7 +52,7 @@ void findClosestCallback(size_t count, void *arg, UNUSED int numComponents, arch
     findData->closestArchetype = closestArchetype;
 }
 
-Entity *findClosestEntity(Vec3 pos, archetype_t archetype, float maxDist, float *foundDist)
+Entity *findClosestEntity(Vec3 pos, archetype_t archetype, float maxDist, float *foundDist, Vec3 foundPos)
 {
     FindClosestData findData = 
     {
@@ -70,6 +70,7 @@ Entity *findClosestEntity(Vec3 pos, archetype_t archetype, float maxDist, float 
     {
         Entity *foundEntity = findEntityFromComponent(findData.closestArchetype, COMPONENT_INDEX(Position, findData.closestArchetype), findData.closestPos);
         *foundDist = sqrtf(findData.closestDistSq);
+        VEC3_COPY(foundPos, *findData.closestPos);
         return foundEntity;
     }
 

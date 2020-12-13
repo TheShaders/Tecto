@@ -12,6 +12,7 @@ typedef struct PlayerState_t
     u16 stateArg;
     Entity *armEntity;
     Entity *heldEntity;
+    Entity *indicator;
     Vec3 armOffsets[3];
 } PlayerState;
 

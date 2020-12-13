@@ -3,6 +3,6 @@
 
 #include <types.h>
 
-Entity *findClosestEntity(Vec3 pos, archetype_t archetype, float maxDist, float *foundDist);
+Entity *findClosestEntity(Vec3 pos, archetype_t archetype, float maxDist, float *foundDist, Vec3 foundPos);
 
 #endif

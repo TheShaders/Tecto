@@ -307,6 +307,8 @@ void drawModel(Model *toDraw, Animation *anim, u32 frame)
     MtxF *boneMatrices;
     u32 numFrames = 0;
 
+    if (toDraw == NULL) return;
+
     // Get the virtual address of the model
     toDraw = segmentedToVirtual(toDraw);
     // Allocate space for this model's bone matrices

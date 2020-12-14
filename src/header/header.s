@@ -7,9 +7,9 @@
 .word  0xFFFFFFFF             # Checksum
 .word  0x00000000             # 
 .word  0x00000000             # 
-.ascii "Boilerplate         " # ROM name: 20 bytes
+.ascii "TECTO               " # ROM name: 20 bytes
 .word  0x00000000             # 
 .word  0x0000004E             # N
-.ascii "BP"                   # Cartridge ID
+.ascii "T0"                   # Cartridge ID
 .ascii "E"                    # Country
 .byte  0x00                   # Revision

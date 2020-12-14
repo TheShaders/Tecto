@@ -31,6 +31,8 @@ extern u8 memPoolStart[];
 
 extern u8 _introSegmentRomStart[];
 extern u8 _introSegmentRomEnd[];
+extern u8 _creditsSegmentRomStart[];
+extern u8 _creditsSegmentRomEnd[];
 
 extern u8 _mainSegmentBssStart[];
 extern u8 _mainSegmentBssEnd[];

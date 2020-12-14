@@ -90,6 +90,7 @@ extern Gfx *g_dlistHead;
 void initGfx(void);
 void loadIntroSegment(void);
 void freeIntroSegment(void);
+void loadCreditsSegment(void);
 
 void startFrame(void);
 void setupCameraMatrices(Camera *camera);

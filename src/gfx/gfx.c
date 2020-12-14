@@ -123,6 +123,19 @@ void freeIntroSegment(void)
     freeAlloc(introSegAddr);
 }
 
+void loadCreditsSegment(void)
+{
+    // Allocate RAM for the intro segment to be DMA'd to
+    introSegAddr = allocRegion((u32)_creditsSegmentRomEnd - (u32)_creditsSegmentRomStart, ALLOC_GFX);
+    
+    // Update the segment table
+    setSegment(0x04, introSegAddr);
+
+    // DMA the intro segment and wait for the DMA to finish
+    startDMA(introSegAddr, _creditsSegmentRomStart, (u32)_creditsSegmentRomEnd - (u32)_creditsSegmentRomStart);
+    waitForDMA();
+}
+
 static LookAt *lookAt;
 static Lights1 *light;
 
@@ -235,9 +248,6 @@ const Gfx rdpInitDL[] = {
 };
 
 const Gfx clearScreenDL[] = {
-    gsDPSetCycleType(G_CYC_FILL),
-    gsDPSetColorImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, BUFFER_SEGMENT << 24),
-    gsDPSetFillColor(GPACK_RGBA5551(0, 61, 8, 1) << 16 | GPACK_RGBA5551(0, 61, 8, 1)),
     gsDPFillRectangle(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1),
     gsDPPipeSync(),
 
@@ -266,6 +276,8 @@ void rspUcodeLoadInit(void)
     gSPSetLights1(g_dlistHead++, (*light));
     gSPLookAt(g_dlistHead++, lookAt);
 }
+
+u32 fillColor = GPACK_RGBA5551(0, 61, 8, 1) << 16 | GPACK_RGBA5551(0, 61, 8, 1);
 
 void startFrame(void)
 {
@@ -296,6 +308,10 @@ void startFrame(void)
 #endif
     gSPDisplayList(g_dlistHead++, rdpInitDL);
     gSPDisplayList(g_dlistHead++, clearDepthBuffer);
+    
+    gDPSetCycleType(g_dlistHead++, G_CYC_FILL);
+    gDPSetColorImage(g_dlistHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, BUFFER_SEGMENT << 24);
+    gDPSetFillColor(g_dlistHead++, fillColor);
     gSPDisplayList(g_dlistHead++, clearScreenDL);
     
     gDPSetCycleType(g_dlistHead++, G_CYC_1CYCLE);

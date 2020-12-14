@@ -388,43 +388,43 @@ Gfx friend2_Torso2_mesh[] = {
 
 BoneLayer friend2_model_bone1_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         friend2_Foot_L_mesh,
     },
 };
 BoneLayer friend2_model_bone2_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         friend2_Foot_R_mesh,
     },
 };
 BoneLayer friend2_model_bone3_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         friend2_Head_mesh,
     },
 };
 BoneLayer friend2_model_bone4_layers[] = {
     {
-        3,
+        LAYER_TEX_EDGE,
         friend2_Eye_L_mesh,
     },
 };
 BoneLayer friend2_model_bone5_layers[] = {
     {
-        3,
+        LAYER_TEX_EDGE,
         friend2_Eye_R_mesh,
     },
 };
 BoneLayer friend2_model_bone6_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         friend2_Torso_mesh,
     },
 };
 BoneLayer friend2_model_bone7_layers[] = {
     {
-        1,
+        LAYER_OPA_SURF,
         friend2_Torso2_mesh,
     },
 };

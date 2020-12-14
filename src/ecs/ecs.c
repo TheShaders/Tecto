@@ -499,3 +499,31 @@ Entity *findEntityFromComponent(archetype_t archetype, int componentIndex, void*
 
     return findEntity(archetype, archetypeArrayIndex);
 }
+
+void deleteAllEntities(void)
+{
+    int archetypeIndex;
+    for (archetypeIndex = 0; archetypeIndex < numArchetypes; archetypeIndex++)
+    {
+        MultiArrayList *curArr = &archetypeArrays[archetypeIndex];
+        MultiArrayListBlock *curBlock = curArr->start;
+
+        bzero(curArr, sizeof(MultiArrayList));
+        archetypeEntityCounts[archetypeIndex] = 0;
+        currentArchetypes[archetypeIndex] = 0;
+        while (curBlock)
+        {
+            MultiArrayListBlock *nextBlock = curBlock->next;
+
+            freeAlloc(curBlock);
+
+            curBlock = nextBlock;
+        }
+    }
+    numArchetypes = 0;
+    bzero(allEntities, sizeof(allEntities));
+    numEntities = 0;
+    entitiesEnd = 0;
+    numGaps = 0;
+    firstGap = 0;
+}

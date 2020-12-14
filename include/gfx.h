@@ -88,6 +88,8 @@ extern u16 g_perspNorm;
 extern Gfx *g_dlistHead;
 
 void initGfx(void);
+void loadIntroSegment(void);
+void freeIntroSegment(void);
 
 void startFrame(void);
 void setupCameraMatrices(Camera *camera);

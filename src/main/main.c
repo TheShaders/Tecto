@@ -88,6 +88,20 @@ PlayerState playerState;
 u32 g_gameTimer = 0;
 u32 g_graphicsTimer = 0;
 
+#define CREDITS_LOAD_FADE_TIME 60
+#define CREDITS_LOAD_TIME 90
+
+u32 creditsTimer = 0;
+
+Vtx fullscreenVerts[] = {
+    {{{-1, -1, 0}, 0, {0, 0},{0x0, 0x0, 0x0, 0x0}}},
+    {{{-1,  1, 0}, 0, {0, 0},{0x0, 0x0, 0x0, 0x0}}},
+    {{{ 1, -1, 0}, 0, {0, 0},{0x0, 0x0, 0x0, 0x0}}},
+    {{{ 1,  1, 0}, 0, {0, 0},{0x0, 0x0, 0x0, 0x0}}},
+};
+
+extern s32 firstFrame; // HACK
+
 void mainThreadFunc(__attribute__ ((unused)) void *arg)
 {
     float angle = 0.0f;
@@ -103,6 +117,7 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
     initInput();
     initGfx();
+    loadIntroSegment();
 
     // Create the player entity
     createPlayer(&playerState);
@@ -146,8 +161,11 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         ProfilerData.cpuTime = osGetTime();
         IO_WRITE(DPC_STATUS_REG, DPC_CLR_CLOCK_CTR | DPC_CLR_CMD_CTR | DPC_CLR_PIPE_CTR | DPC_CLR_TMEM_CTR);
 #endif
+        debug_printf("before input polling\n");
         beginInputPolling();
+        debug_printf("before start frame\n");
         startFrame();
+        debug_printf("before read input\n");
         readInput();
 
         if (frame < 10)
@@ -156,10 +174,13 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         }
 
         // Increment the physics state
+        debug_printf("before physics tick\n");
         physicsTick();
         // Increment resizables' states
+        debug_printf("before resizables tick\n");
         tickResizables();
         // Process all entities that have a behavior
+        debug_printf("before behaviors\n");
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
         g_gameTimer++;
 #ifdef FPS30
@@ -172,27 +193,90 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
         }
         // Just run everything twice per frame to match 60 fps gameplay speed lol
         // Increment the physics state
+        debug_printf("before physics tick\n");
         physicsTick();
         // Increment resizables' states
+        debug_printf("before resizables tick\n");
         tickResizables();
         // Process all entities that have a behavior
+        debug_printf("before behaviors\n");
         iterateOverEntitiesAllComponents(processBehaviorEntities, NULL, Bit_Behavior, 0);
         g_gameTimer++;
 #endif
         
         // Set up the camera
+        debug_printf("before camera\n");
         setupCameraMatrices(&g_Camera);
+        debug_printf("before light dir\n");
         setLightDirection(lightDir);
 
+        debug_printf("before drawing\n");
         drawAllEntities();
         
 #ifdef DEBUG_MODE
         ProfilerData.cpuTime = osGetTime() - ProfilerData.cpuTime;
 #endif
 
-        endFrame();
-
         g_graphicsTimer++;
+        
+        if (creditsTimer)
+        {
+            float alphaPercent;
+            Mtx *ortho = (Mtx *)allocGfx(sizeof(Mtx));
+            Mtx *ident = (Mtx *)allocGfx(sizeof(Mtx));
+            Gfx *fadeDL = (Gfx *)allocGfx(sizeof(Gfx) * 11);
+            Gfx *fadeDLHead = fadeDL;
+            
+            creditsTimer--;
+
+            alphaPercent = MIN(1.0f, (((float)CREDITS_LOAD_TIME - (float)creditsTimer) / (float)CREDITS_LOAD_FADE_TIME));
+
+            guOrtho(ortho, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
+            guMtxIdent(ident);
+
+            gSPMatrix(fadeDLHead++, ident, G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
+            gSPMatrix(fadeDLHead++, ortho, G_MTX_PROJECTION|G_MTX_LOAD|G_MTX_NOPUSH);
+            gSPPerspNormalize(fadeDLHead++, 0xFFFF);
+            gSPVertex(fadeDLHead++, fullscreenVerts, 4, 0);
+            gSPClearGeometryMode(fadeDLHead++, G_ZBUFFER);
+            gDPPipeSync(fadeDLHead++);
+            gDPSetEnvColor(fadeDLHead++, 0, 0, 0, (u8)(alphaPercent * 255.0f));
+            gDPSetCombineLERP(fadeDLHead++, 0, 0, 0, 0, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 0, 0, 0, 0, ENVIRONMENT);
+            gDPSetRenderMode(fadeDLHead++, G_RM_XLU_SURF, G_RM_XLU_SURF);
+            gSP2Triangles(fadeDLHead++, 0, 2, 1, 0x00, 2, 3, 1, 0x00);
+            gSPEndDisplayList(fadeDLHead++);
+
+            addGfxToDrawLayer(LAYER_XLU_SURF, fadeDL);
+
+            if (creditsTimer == CREDITS_LOAD_TIME - CREDITS_LOAD_FADE_TIME)
+            {
+                debug_printf("Deleting all entities");
+                // Delete all entities
+                deleteAllEntities();
+            }
+            if (creditsTimer == 0)
+            {
+                // Free intro segment
+                debug_printf("Freeing intro segment\n");
+                freeIntroSegment();
+                // DMA credits segment
+                debug_printf("DMAing credits segment\n");
+                loadIntroSegment();
+
+                // Create the player entity
+                bzero(&playerState, sizeof(PlayerState));
+                createPlayer(&playerState);
+                // Load credits
+                debug_printf("Running credits header\n");
+                processLevelHeader(segmentedToVirtual(&mainHeader));
+                debug_printf("Level header complete\n");
+                
+                firstFrame = 1; // HACK BAD FIX
+            }
+        }
+
+        endFrame();
+        debug_printf("After end frame\n");
 
         angle += 360.0f / (5 * 60.0f);
             
@@ -209,4 +293,9 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
         frame++;
     }
+}
+
+void startCreditsLoad(void)
+{
+    creditsTimer = CREDITS_LOAD_TIME;
 }

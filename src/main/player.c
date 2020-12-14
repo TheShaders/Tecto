@@ -452,6 +452,10 @@ void playerCallback(UNUSED void **components, void *data)
         heldResizable->smallScale = 0.25f;
         heldResizable->largeScale = 1.0f;
     }
+    if (g_PlayerInput.buttonsPressed & L_JPAD)
+    {
+        startCreditsLoad();
+    }
     
     // Transition between states if applicable
     stateUpdateCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, gravity, animState);

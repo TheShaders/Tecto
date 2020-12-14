@@ -102,7 +102,10 @@ void initGfx(void)
 
     // Set the gfx context index to 0
     g_curGfxContext = 0;
+}
 
+void loadIntroSegment(void)
+{
     // Allocate RAM for the intro segment to be DMA'd to
     introSegAddr = allocRegion((u32)_introSegmentRomEnd - (u32)_introSegmentRomStart, ALLOC_GFX);
     
@@ -112,6 +115,12 @@ void initGfx(void)
     // DMA the intro segment and wait for the DMA to finish
     startDMA(introSegAddr, _introSegmentRomStart, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart);
     waitForDMA();
+}
+
+void freeIntroSegment(void)
+{
+    setSegment(0x04, NULL);
+    freeAlloc(introSegAddr);
 }
 
 static LookAt *lookAt;

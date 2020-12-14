@@ -87,6 +87,8 @@ void getEntityComponents(Entity *entity, void **componentArrayOut);
 Entity *findEntity(archetype_t archetype, size_t archetypeArrayIndex);
 // Finds the entity that the given component belongs to, given the index of the given component (e.g. Component_Position) and the entity's archetype
 Entity *findEntityFromComponent(archetype_t archetype, int componentArchetypeIndex, void* componentPointer);
+// Deletes all entities (duh)
+void deleteAllEntities(void);
 
 extern const size_t g_componentSizes[];
 

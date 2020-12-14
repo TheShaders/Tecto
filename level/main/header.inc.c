@@ -1,4 +1,5 @@
 extern Model main_model;
+extern Model logo_model;
 extern Model dande_model;
 extern Model treevineleaf_model;
 extern Model lilypad_model;
@@ -35,8 +36,52 @@ void *main_ARCHETYPE_STATIC_COL_ComponentData[NUM_COMPONENTS(ARCHETYPE_STATIC_CO
     main_ARCHETYPE_STATIC_COL_Collisions, // collision
 };
 
+Vec3 main_ARCHETYPE_HOLDABLE_COL_Positions[1] = {
+    {-4720.0f, 32.4f, -2630.0f},
+};
+
+ColliderParams main_ARCHETYPE_HOLDABLE_COL_Colliders[1] = {
+    { .radius = 58.0f, .numHeights = 1, .startOffset = 29.0f, .ySpacing = 0.0f, .frictionDamping = 0.9f, .floor = NULL, .floorSurfaceType = SURFACE_NONE },
+};
+
+Model *main_ARCHETYPE_HOLDABLE_COL_Models[1] = {
+    &logo_model,
+};
+
+GravityParams main_ARCHETYPE_HOLDABLE_COL_Gravities[1] = {
+    { .accel = -1.0f, .terminalVelocity = -30.0f },
+};
+
+HoldState main_ARCHETYPE_HOLDABLE_COL_HoldStates[1] = {
+    { .holder = NULL, .type = HoldType_Normal },
+};
+
+extern void setLogoCollision();
+
+ResizeParams main_ARCHETYPE_HOLDABLE_COL_ResizeParams[1] = {
+    { .curSize = Size_Grown, .growTemporary = 0, .grownTime = 0, .resizeTimer = 0, .type = ResizeType_Shrink_While_Held, .smallScale = 1.0f, .largeScale = 3.0f, .callback = setLogoCollision },
+};
+
+float main_ARCHETYPE_HOLDABLE_COL_Scales[1] = {
+    1.0f,
+};
+
+// Bit_Position | Bit_Velocity | Bit_Collision | Bit_Collider | Bit_Rotation | Bit_Model | Bit_Gravity | Bit_Holdable | Bit_Resizable | Bit_Scale
+void *main_ARCHETYPE_HOLDABLE_COL_ComponentData[NUM_COMPONENTS(ARCHETYPE_HOLDABLE_COL)] = {
+    main_ARCHETYPE_HOLDABLE_COL_Positions, // pos
+    NULL, // velocity
+    NULL, // collision
+    main_ARCHETYPE_HOLDABLE_COL_Colliders, // collider
+    NULL, // rotation
+    main_ARCHETYPE_HOLDABLE_COL_Models, // model
+    main_ARCHETYPE_HOLDABLE_COL_Gravities, // gravity
+    main_ARCHETYPE_HOLDABLE_COL_HoldStates, // holdable
+    main_ARCHETYPE_HOLDABLE_COL_ResizeParams, // resizable
+    main_ARCHETYPE_HOLDABLE_COL_Scales, // scale
+};
+
 Vec3 main_ARCHETYPE_HOLDABLE_ANIM_Positions[1] = {
-    {-305.25, -354.25, -1141.81},
+    {-4642.0f, 264.0f, -3986.0f},
 };
 
 ColliderParams main_ARCHETYPE_HOLDABLE_ANIM_Colliders[1] = {
@@ -150,29 +195,32 @@ void *main_ARCHETYPE_INTERACTABLE_ComponentData[NUM_COMPONENTS(ARCHETYPE_INTERAC
     main_ARCHETYPE_INTERACTABLE_Scales, // scale
 };
 
-archetype_t mainArchetypes[4] = {
+archetype_t mainArchetypes[5] = {
     ARCHETYPE_MODEL,
     ARCHETYPE_STATIC_COL,
+    ARCHETYPE_HOLDABLE_COL,
     ARCHETYPE_HOLDABLE_ANIM,
     ARCHETYPE_INTERACTABLE
 };
 
-int mainArchetypeCounts[4] = {
+int mainArchetypeCounts[5] = {
+    1,
     1,
     1,
     1,
     6,
 };
 
-void **mainComponentData[4] = {
+void **mainComponentData[5] = {
     main_ARCHETYPE_MODEL_ComponentData,
     main_ARCHETYPE_STATIC_COL_ComponentData,
+    main_ARCHETYPE_HOLDABLE_COL_ComponentData,
     main_ARCHETYPE_HOLDABLE_ANIM_ComponentData,
     main_ARCHETYPE_INTERACTABLE_ComponentData,
 };
 
 LevelHeader mainHeader = {
-    4, // archetype count
+    5, // archetype count
     mainArchetypes, // archetypes
     mainArchetypeCounts, // archetype counts
     mainComponentData, // archetype component data

@@ -9,6 +9,7 @@
 #include <resize.h>
 
 #include "assets/logo/model.inc.c"
+#include "assets/logo/collision.inc.c"
 
 #include "assets/character/model.inc.c"
 #include "assets/character/anims/data.inc.c"

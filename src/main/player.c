@@ -112,6 +112,10 @@ void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 v
     {
         targetSpeed *= 0.5f;
     }
+    if (collider->floorSurfaceType == SURFACE_DEATH_PLANE)
+    {
+        startCreditsLoad();
+    }
 
     vel[0] = vel[0] * (1.0f - PLAYER_GROUND_ACCEL_TIME_CONST) + targetSpeed * (PLAYER_GROUND_ACCEL_TIME_CONST) * cossf(input->angle + g_Camera.yaw);
     vel[2] = vel[2] * (1.0f - PLAYER_GROUND_ACCEL_TIME_CONST) - targetSpeed * (PLAYER_GROUND_ACCEL_TIME_CONST) * sinsf(input->angle + g_Camera.yaw);
@@ -373,89 +377,89 @@ void playerCallback(UNUSED void **components, void *data)
 
     
     // test held entity
-    if ((g_PlayerInput.buttonsPressed & D_JPAD) && state->heldEntity == NULL)
-    {
-        Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
-        void *heldComponents[NUM_COMPONENTS(ARCHETYPE_HOLDABLE)];
-        HoldState *heldState;
-        Model **heldModel;
-        GravityParams *heldGravity;
-        ColliderParams *heldCollider;
-        ResizeParams *heldResizable;
+    // if ((g_PlayerInput.buttonsPressed & D_JPAD) && state->heldEntity == NULL)
+    // {
+    //     Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
+    //     void *heldComponents[NUM_COMPONENTS(ARCHETYPE_HOLDABLE)];
+    //     HoldState *heldState;
+    //     Model **heldModel;
+    //     GravityParams *heldGravity;
+    //     ColliderParams *heldCollider;
+    //     ResizeParams *heldResizable;
 
-        getEntityComponents(heldEntity, heldComponents);
+    //     getEntityComponents(heldEntity, heldComponents);
 
-        heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
-        heldState->holder = state->playerEntity;
-        heldState->type = HoldType_Normal;
-        state->heldEntity = heldEntity;
+    //     heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
+    //     heldState->holder = state->playerEntity;
+    //     heldState->type = HoldType_Normal;
+    //     state->heldEntity = heldEntity;
 
-        heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
-        *heldModel = &logo_model;
+    //     heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
+    //     *heldModel = &logo_model;
 
-        heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
-        heldGravity->accel = -PLAYER_GRAVITY;
-        heldGravity->terminalVelocity = -30.0f;
+    //     heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
+    //     heldGravity->accel = -PLAYER_GRAVITY;
+    //     heldGravity->terminalVelocity = -30.0f;
 
-        heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
-        heldCollider->numHeights = 1;
-        heldCollider->radius = 58.0f;
-        heldCollider->startOffset = 29.0f;
-        heldCollider->ySpacing = 0.0f;
-        heldCollider->frictionDamping = 0.9f;
+    //     heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
+    //     heldCollider->numHeights = 1;
+    //     heldCollider->radius = 58.0f;
+    //     heldCollider->startOffset = 29.0f;
+    //     heldCollider->ySpacing = 0.0f;
+    //     heldCollider->frictionDamping = 0.9f;
 
-        heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
-        heldResizable->curSize = Size_Shrunk;
-        heldResizable->type = ResizeType_Shrink_While_Held;
-        heldResizable->grownTime = 0;
-        heldResizable->growTemporary = 0;
-        heldResizable->smallScale = 1.0f;
-        heldResizable->largeScale = 3.0f;
-    }
-    // test held entity
-    if ((g_PlayerInput.buttonsPressed & U_JPAD) && state->heldEntity == NULL)
-    {
-        Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
-        void *heldComponents[NUM_COMPONENTS(ARCHETYPE_HOLDABLE)];
-        HoldState *heldState;
-        Model **heldModel;
-        GravityParams *heldGravity;
-        ColliderParams *heldCollider;
-        ResizeParams *heldResizable;
+    //     heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
+    //     heldResizable->curSize = Size_Shrunk;
+    //     heldResizable->type = ResizeType_Shrink_While_Held;
+    //     heldResizable->grownTime = 0;
+    //     heldResizable->growTemporary = 0;
+    //     heldResizable->smallScale = 1.0f;
+    //     heldResizable->largeScale = 3.0f;
+    // }
+    // // test held entity
+    // if ((g_PlayerInput.buttonsPressed & U_JPAD) && state->heldEntity == NULL)
+    // {
+    //     Entity *heldEntity = createEntity(ARCHETYPE_HOLDABLE);
+    //     void *heldComponents[NUM_COMPONENTS(ARCHETYPE_HOLDABLE)];
+    //     HoldState *heldState;
+    //     Model **heldModel;
+    //     GravityParams *heldGravity;
+    //     ColliderParams *heldCollider;
+    //     ResizeParams *heldResizable;
 
-        getEntityComponents(heldEntity, heldComponents);
+    //     getEntityComponents(heldEntity, heldComponents);
 
-        heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
-        heldState->holder = state->playerEntity;
-        heldState->type = HoldType_Glide;
-        state->heldEntity = heldEntity;
+    //     heldState = heldComponents[COMPONENT_INDEX(Holdable, ARCHETYPE_HOLDABLE)];
+    //     heldState->holder = state->playerEntity;
+    //     heldState->type = HoldType_Glide;
+    //     state->heldEntity = heldEntity;
 
-        heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
-        *heldModel = &logo_model;
+    //     heldModel = heldComponents[COMPONENT_INDEX(Model, ARCHETYPE_HOLDABLE)];
+    //     *heldModel = &logo_model;
 
-        heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
-        heldGravity->accel = -PLAYER_GRAVITY;
-        heldGravity->terminalVelocity = -30.0f;
+    //     heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
+    //     heldGravity->accel = -PLAYER_GRAVITY;
+    //     heldGravity->terminalVelocity = -30.0f;
 
-        heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
-        heldCollider->numHeights = 1;
-        heldCollider->radius = 58.0f;
-        heldCollider->startOffset = 29.0f;
-        heldCollider->ySpacing = 0.0f;
-        heldCollider->frictionDamping = 0.9f;
+    //     heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
+    //     heldCollider->numHeights = 1;
+    //     heldCollider->radius = 58.0f;
+    //     heldCollider->startOffset = 29.0f;
+    //     heldCollider->ySpacing = 0.0f;
+    //     heldCollider->frictionDamping = 0.9f;
 
-        heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
-        heldResizable->curSize = Size_Grown;
-        heldResizable->type = ResizeType_Grow_While_Held;
-        heldResizable->grownTime = 0;
-        heldResizable->growTemporary = 0;
-        heldResizable->smallScale = 0.25f;
-        heldResizable->largeScale = 1.0f;
-    }
-    if (g_PlayerInput.buttonsPressed & L_JPAD)
-    {
-        startCreditsLoad();
-    }
+    //     heldResizable = heldComponents[COMPONENT_INDEX(Resizable, ARCHETYPE_HOLDABLE)];
+    //     heldResizable->curSize = Size_Grown;
+    //     heldResizable->type = ResizeType_Grow_While_Held;
+    //     heldResizable->grownTime = 0;
+    //     heldResizable->growTemporary = 0;
+    //     heldResizable->smallScale = 0.25f;
+    //     heldResizable->largeScale = 1.0f;
+    // }
+    // if (g_PlayerInput.buttonsPressed & L_JPAD)
+    // {
+    //     startCreditsLoad();
+    // }
     
     // Transition between states if applicable
     stateUpdateCallbacks[state->state](state, &g_PlayerInput, *pos, *vel, collider, *rot, gravity, animState);

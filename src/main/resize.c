@@ -147,6 +147,7 @@ extern BVHTree treevineleaf_collision_tree;
 extern BVHTree lilypad_collision_tree;
 
 extern BVHTree bounceflower_collision_tree;
+extern BVHTree logo_collision_tree;
 
 void treevineleafResizeCallback(ResizeParams *params, ResizeTrigger trigger)
 {
@@ -186,7 +187,7 @@ void treevineleafResizeCallback(ResizeParams *params, ResizeTrigger trigger)
     }
 }
 
-void lillypadResizeCallback(ResizeParams *params, UNUSED ResizeTrigger trigger)
+void lillypadResizeCallback(ResizeParams *params, ResizeTrigger trigger)
 {
     Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
     BVHTree **collision;
@@ -209,7 +210,7 @@ void lillypadResizeCallback(ResizeParams *params, UNUSED ResizeTrigger trigger)
     }
 }
 
-void bounceflowerResizeCallback(ResizeParams *params, UNUSED ResizeTrigger trigger)
+void bounceflowerResizeCallback(ResizeParams *params, ResizeTrigger trigger)
 {
     Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
     BVHTree **collision;
@@ -224,6 +225,29 @@ void bounceflowerResizeCallback(ResizeParams *params, UNUSED ResizeTrigger trigg
         if (params->curSize == Size_Grown)
         {
             *collision = &bounceflower_collision_tree;
+        }
+        else
+        {
+            *collision = NULL;
+        }
+    }
+}
+
+void setLogoCollision(ResizeParams *params, ResizeTrigger trigger)
+{
+    Entity *entity = findEntityFromComponent(ARCHETYPE_HOLDABLE_COL, Component_Resizable, params);
+    BVHTree **collision;
+    void *components[NUM_COMPONENTS(ARCHETYPE_HOLDABLE_COL)];
+
+    getEntityComponents(entity, components);
+
+    collision = components[COMPONENT_INDEX(Collision, ARCHETYPE_HOLDABLE_COL)];
+
+    if (trigger == Resize_Ending)
+    {
+        if (params->curSize == Size_Grown)
+        {
+            *collision = &logo_collision_tree;
         }
         else
         {

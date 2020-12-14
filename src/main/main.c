@@ -304,5 +304,6 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
 
 void startCreditsLoad(void)
 {
-    creditsTimer = CREDITS_LOAD_TIME;
+    if (creditsTimer == 0)
+        creditsTimer = CREDITS_LOAD_TIME;
 }

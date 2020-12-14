@@ -19617,7 +19617,7 @@ Bone credits_model_bones[] = {
         0,
         1,
         0,
-        1.8189894035458565e-11,
+        0.0,
         -5.63666296005249,
         -648.008056640625,
         credits_model_bone1_layers,

@@ -247,11 +247,16 @@ SECTIONS
     }
     END_SEGMENT(intro);
 
-    START_SEGMENT(song, 0x04000000)
+    START_SEGMENT(sounds, 0x0A000000)
     {
-        . = ALIGN(16);
+        rockstep_1_start = .;
+        sounds/rockstep_1.o(.*data*);
+        rockstep_1_end = .;
+        rockstep_2_start = .;
+        sounds/rockstep_2.o(.*data*);
+        rockstep_2_end = .;
     }
-    END_SEGMENT(song);
+    END_SEGMENT(sounds);
 
     START_SEGMENT(dma_water, 0x00000000)
     {

@@ -15,6 +15,7 @@
 #include <resize.h>
 #include <surface_types.h>
 #include <interaction.h>
+#include <audio.h>
 
 extern Model character_model;
 extern Model character_arm_model;
@@ -87,6 +88,22 @@ void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 v
             adjustAnim = 1;
             break;
         case PGSUBSTATE_WALKING:
+            {
+                static int prevFootstep = 1; // TODO not this;
+                int curAnimFrame = animState->counter;
+
+                if (curAnimFrame >= (35 << ANIM_COUNTER_SHIFT) && prevFootstep == 1)
+                {
+                    playSound(1, FALSE);
+                    prevFootstep = 0;
+                }
+                // the anim frame may have wrapped around, so account for that by checking if it's low as well
+                else if (((curAnimFrame >= (68 << ANIM_COUNTER_SHIFT)) || (curAnimFrame <= (10 << ANIM_COUNTER_SHIFT))) && prevFootstep == 0)
+                {
+                    playSound(2, FALSE);
+                    prevFootstep = 1;
+                }
+            }
             targetSpeed = MAX_PLAYER_SPEED * g_PlayerInput.magnitude;
             adjustAnim = 1;
             break;

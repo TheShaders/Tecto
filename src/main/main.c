@@ -14,6 +14,7 @@
 #include <camera.h>
 #include <level.h>
 #include <resize.h>
+#include <audio.h>
 
 #include <segments/intro.h>
 

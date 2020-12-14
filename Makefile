@@ -4,7 +4,7 @@
 include Makefile.config
 
 # Name of ROM to build
-TARGET := boilerplate
+TARGET := tecto
 
 DEBUG ?= 0
 

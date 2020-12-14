@@ -17799,23 +17799,6 @@ Gfx mat_credits_model_floor_light[] = {
 };
 
 
-Gfx mat_credits_model_vcol_transparent_cover_layer0[] = {
-	gsDPPipeSync(),
-	gsDPSetCombineLERP(0, 0, 0, 0, 0, 0, 0, SHADE, 0, 0, 0, 0, 0, 0, 0, SHADE),
-	gsSPClearGeometryMode(G_LIGHTING),
-	gsDPSetRenderMode(G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_OPA_SURF2),
-	gsSPTexture(65535, 65535, 0, 0, 1),
-	gsSPEndDisplayList(),
-};
-
-Gfx mat_revert_credits_model_vcol_transparent_cover_layer0[] = {
-	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
-	gsDPSetRenderMode(G_RM_ZB_OPA_SURF, G_RM_NOOP2),
-	gsSPEndDisplayList(),
-};
-
-
 Gfx mat_credits_model_f3d_material[] = {
 	gsDPPipeSync(),
 	gsDPSetCombineLERP(0, 0, 0, 0, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 0, 0, 0, 0, ENVIRONMENT),
@@ -18885,6 +18868,21 @@ Gfx mat_revert_credits_model_slice_038[] = {
 };
 
 
+Gfx mat_credits_model_vcol_transparent_cover[] = {
+	gsDPPipeSync(),
+	gsDPSetCombineLERP(0, 0, 0, 0, 0, 0, 0, SHADE, 0, 0, 0, 0, 0, 0, 0, SHADE),
+	gsSPClearGeometryMode(G_LIGHTING),
+	gsSPTexture(65535, 65535, 0, 0, 1),
+	gsSPEndDisplayList(),
+};
+
+Gfx mat_revert_credits_model_vcol_transparent_cover[] = {
+	gsDPPipeSync(),
+	gsSPSetGeometryMode(G_LIGHTING),
+	gsSPEndDisplayList(),
+};
+
+
 
 Vtx credits_Root_mesh_vtx_0[4] = {
 	{{{-464, 0, 168},0, {149, 922},{0x0, 0x7F, 0x0, 0xFF}}},
@@ -18897,31 +18895,15 @@ Gfx credits_Root_mesh_tri_0[] = {
 	gsSPVertex(credits_Root_mesh_vtx_0 + 0, 4, 0),
 	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
 	gsSPEndDisplayList(),
-};Vtx credits_Root_mesh_vtx_1[8] = {
-	{{{-640, 567, -255},0, {149, 155},{0xFF, 0xFF, 0xFF, 0x0}}},
-	{{{637, 665, -255},0, {1867, 155},{0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{-640, 665, -255},0, {149, 155},{0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{637, 567, -255},0, {1867, 155},{0xFF, 0xFF, 0xFF, 0x0}}},
-	{{{-640, -45, -290},0, {149, 155},{0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{637, -45, -290},0, {1867, 155},{0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{637, 86, -290},0, {1867, 155},{0xFF, 0xFF, 0xFF, 0x0}}},
-	{{{-640, 86, -290},0, {149, 155},{0xFF, 0xFF, 0xFF, 0x0}}},
-};
-
-Gfx credits_Root_mesh_tri_1[] = {
-	gsSPVertex(credits_Root_mesh_vtx_1 + 0, 8, 0),
-	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
-	gsSP2Triangles(4, 5, 6, 0, 4, 6, 7, 0),
-	gsSPEndDisplayList(),
-};Vtx credits_Root_mesh_vtx_2[4] = {
+};Vtx credits_Root_mesh_vtx_1[4] = {
 	{{{-1165, -775, -1015},0, {-16, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
 	{{{1165, -775, -1015},0, {1008, 1008},{0x0, 0x0, 0x7F, 0xFF}}},
 	{{{1165, 1005, -1015},0, {1008, -16},{0x0, 0x0, 0x7F, 0xFF}}},
 	{{{-1165, 1005, -1015},0, {-16, -16},{0x0, 0x0, 0x7F, 0xFF}}},
 };
 
-Gfx credits_Root_mesh_tri_2[] = {
-	gsSPVertex(credits_Root_mesh_vtx_2 + 0, 4, 0),
+Gfx credits_Root_mesh_tri_1[] = {
+	gsSPVertex(credits_Root_mesh_vtx_1 + 0, 4, 0),
 	gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
 	gsSPEndDisplayList(),
 };
@@ -18929,11 +18911,8 @@ Gfx credits_Root_mesh_tri_2[] = {
 Gfx credits_Root_mesh[] = {
 	gsSPDisplayList(mat_credits_model_floor_light),
 	gsSPDisplayList(credits_Root_mesh_tri_0),
-	gsSPDisplayList(mat_credits_model_vcol_transparent_cover_layer0),
-	gsSPDisplayList(credits_Root_mesh_tri_1),
-	gsSPDisplayList(mat_revert_credits_model_vcol_transparent_cover_layer0),
 	gsSPDisplayList(mat_credits_model_f3d_material),
-	gsSPDisplayList(credits_Root_mesh_tri_2),
+	gsSPDisplayList(credits_Root_mesh_tri_1),
 	gsSPEndDisplayList(),
 };
 
@@ -19540,6 +19519,33 @@ Gfx credits_Scroll_mesh[] = {
 
 
 
+Vtx credits_Transp_mesh_vtx_0[8] = {
+	{{{-640, 47, -43},0, {149, 155},{0xFF, 0xFF, 0xFF, 0x0}}},
+	{{{637, 144, -43},0, {1867, 155},{0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{-640, 144, -43},0, {149, 155},{0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{637, 47, -43},0, {1867, 155},{0xFF, 0xFF, 0xFF, 0x0}}},
+	{{{-640, -580, -78},0, {149, 155},{0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{637, -580, -78},0, {1867, 155},{0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{637, -435, -78},0, {1867, 155},{0xFF, 0xFF, 0xFF, 0x0}}},
+	{{{-640, -435, -78},0, {149, 155},{0xFF, 0xFF, 0xFF, 0x0}}},
+};
+
+Gfx credits_Transp_mesh_tri_0[] = {
+	gsSPVertex(credits_Transp_mesh_vtx_0 + 0, 8, 0),
+	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
+	gsSP2Triangles(4, 5, 6, 0, 4, 6, 7, 0),
+	gsSPEndDisplayList(),
+};
+
+Gfx credits_Transp_mesh[] = {
+	gsSPDisplayList(mat_credits_model_vcol_transparent_cover),
+	gsSPDisplayList(credits_Transp_mesh_tri_0),
+	gsSPDisplayList(mat_revert_credits_model_vcol_transparent_cover),
+	gsSPEndDisplayList(),
+};
+
+
+
 
 BoneLayer credits_model_bone0_layers[] = {
     {
@@ -19551,6 +19557,12 @@ BoneLayer credits_model_bone1_layers[] = {
     {
         0,
         credits_Scroll_mesh,
+    },
+};
+BoneLayer credits_model_bone2_layers[] = {
+    {
+        4,
+        credits_Transp_mesh,
     },
 };
 
@@ -19573,7 +19585,7 @@ Bone credits_model_bones[] = {
         0,
         1,
         0,
-        0.0,
+        1.8189894035458565e-11,
         -5.63666296005249,
         -648.008056640625,
         credits_model_bone1_layers,
@@ -19581,10 +19593,23 @@ Bone credits_model_bones[] = {
         NULL,
         NULL,
     },
+    {
+        2,
+        0,
+        1,
+        0,
+        0.0,
+        520.4969482421875,
+        -212.4177703857422,
+        credits_model_bone2_layers,
+        NULL,
+        NULL,
+        NULL,
+    },
 };
 
 Model credits_model = {
-    2,
+    3,
     0,
     credits_model_bones
 };

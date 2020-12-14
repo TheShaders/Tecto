@@ -118,6 +118,12 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
     initInput();
     initGfx();
     loadIntroSegment();
+    
+    {
+        OSTime startTime = osGetTime();
+        // wait 1 second
+        while ((osGetTime() - startTime) < 62500000);
+    }
 
     // Create the player entity
     createPlayer(&playerState);
@@ -258,10 +264,15 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
             {
                 // Free intro segment
                 debug_printf("Freeing intro segment\n");
-                freeIntroSegment();
+                // freeIntroSegment();
                 // DMA credits segment
                 debug_printf("DMAing credits segment\n");
                 loadCreditsSegment();
+                {
+                    OSTime startTime = osGetTime();
+                    // wait 1 second
+                    while ((osGetTime() - startTime) < 62500000);
+                }
 
                 // Load credits
                 debug_printf("Running credits header\n");

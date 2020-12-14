@@ -114,7 +114,7 @@ void loadIntroSegment(void)
 
     // DMA the intro segment and wait for the DMA to finish
     startDMA(introSegAddr, _introSegmentRomStart, (u32)_introSegmentRomEnd - (u32)_introSegmentRomStart);
-    waitForDMA();
+    // waitForDMA();
 }
 
 void freeIntroSegment(void)
@@ -133,7 +133,7 @@ void loadCreditsSegment(void)
 
     // DMA the intro segment and wait for the DMA to finish
     startDMA(introSegAddr, _creditsSegmentRomStart, (u32)_creditsSegmentRomEnd - (u32)_creditsSegmentRomStart);
-    waitForDMA();
+    // waitForDMA();
 }
 
 static LookAt *lookAt;

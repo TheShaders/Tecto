@@ -298,7 +298,7 @@ void drawAllEntities()
     }
     else
     {
-        waitForDMA();
+        // waitForDMA();
     }
     waterTextureBufIndex ^= 1;
     waterTextureIndex++;

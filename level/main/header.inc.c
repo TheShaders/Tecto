@@ -122,7 +122,7 @@ extern void lillypadResizeCallback();
 extern void bounceflowerResizeCallback();
 
 ResizeParams main_ARCHETYPE_INTERACTABLE_ResizeParams[6] = {
-    { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 1.0f, .callback = treevineleafResizeCallback },
+    { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 300, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 1, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 1.0f, .callback = treevineleafResizeCallback },
     { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 0, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = lillypadResizeCallback },
     { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 0, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = lillypadResizeCallback },
     { .curSize = Size_Shrunk, .growTemporary = 1, .grownTime = 150, .growAllowed = 1, .shrinkAllowed = 0, .horizontalIndicator = 0, .resizeTimer = 0, .type = ResizeType_Interactable, .smallScale = 1.0f, .largeScale = 9.4f, .callback = lillypadResizeCallback },

@@ -6,5 +6,6 @@
 #define SURFACE_SLOW 2
 #define SURFACE_HARD 3
 #define SURFACE_DEATH_PLANE 4
+#define SURFACE_TTM_VINES 5
 
 #endif

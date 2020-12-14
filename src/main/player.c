@@ -121,7 +121,7 @@ void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, 
 {
     if (state->subState == PASUBSTATE_JUMPING)
     {
-        vel[1] = 25.0f;
+        vel[1] = 23.0f;
         if (input->magnitude)
         {
             rot[1] = input->angle + g_Camera.yaw + 0x4000;

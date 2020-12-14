@@ -17819,15 +17819,8 @@ Gfx mat_revert_credits_model_vcol_transparent_cover_layer0[] = {
 Gfx mat_credits_model_f3d_material[] = {
 	gsDPPipeSync(),
 	gsDPSetCombineLERP(0, 0, 0, 0, 0, 0, 0, ENVIRONMENT, 0, 0, 0, 0, 0, 0, 0, ENVIRONMENT),
-	gsDPSetCycleType(G_CYC_FILL),
 	gsDPSetBlendColor(0, 0, 0, 255),
 	gsSPTexture(65535, 65535, 0, 0, 1),
-	gsSPEndDisplayList(),
-};
-
-Gfx mat_revert_credits_model_f3d_material[] = {
-	gsDPPipeSync(),
-	gsDPSetCycleType(G_CYC_1CYCLE),
 	gsSPEndDisplayList(),
 };
 
@@ -18975,7 +18968,6 @@ Gfx credits_Root_mesh[] = {
 	gsSPDisplayList(mat_revert_credits_model_vcol_transparent_cover_layer0),
 	gsSPDisplayList(mat_credits_model_f3d_material),
 	gsSPDisplayList(credits_Root_mesh_tri_2),
-	gsSPDisplayList(mat_revert_credits_model_f3d_material),
 	gsSPDisplayList(mat_credits_model_f3d_material_001),
 	gsSPDisplayList(credits_Root_mesh_tri_3),
 	gsSPEndDisplayList(),
@@ -19617,7 +19609,7 @@ Bone credits_model_bones[] = {
         0,
         1,
         0,
-        0.0,
+        1.8189894035458565e-11,
         -5.63666296005249,
         -648.008056640625,
         credits_model_bone1_layers,

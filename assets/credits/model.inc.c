@@ -18408,10 +18408,9 @@ Gfx mat_revert_credits_model_slice_021[] = {
 };
 
 
-Gfx mat_credits_model_slice_022[] = {
+Gfx mat_credits_model_Slice22fix[] = {
 	gsDPPipeSync(),
 	gsDPSetCombineLERP(0, 0, 0, TEXEL0, 0, 0, 0, ENVIRONMENT, 0, 0, 0, TEXEL0, 0, 0, 0, ENVIRONMENT),
-	gsSPClearGeometryMode(G_LIGHTING),
 	gsDPSetTextureFilter(G_TF_POINT),
 	gsSPTexture(65535, 65535, 0, 0, 1),
 	gsDPTileSync(),
@@ -18425,9 +18424,8 @@ Gfx mat_credits_model_slice_022[] = {
 	gsSPEndDisplayList(),
 };
 
-Gfx mat_revert_credits_model_slice_022[] = {
+Gfx mat_revert_credits_model_Slice22fix[] = {
 	gsDPPipeSync(),
-	gsSPSetGeometryMode(G_LIGHTING),
 	gsDPSetTextureFilter(G_TF_BILERP),
 	gsSPEndDisplayList(),
 };
@@ -19188,10 +19186,10 @@ Gfx credits_Scroll_mesh_tri_23[] = {
 	gsSP2Triangles(0, 1, 2, 0, 0, 3, 1, 0),
 	gsSPEndDisplayList(),
 };Vtx credits_Scroll_mesh_vtx_24[4] = {
-	{{{-673, -1833, 138},0, {0, 768},{0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{673, -1734, 131},0, {10240, 0},{0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{-673, -1734, 131},0, {0, 0},{0xFF, 0xFF, 0xFF, 0xFF}}},
-	{{{673, -1833, 138},0, {10240, 768},{0xFF, 0xFF, 0xFF, 0xFF}}},
+	{{{-673, -1833, 138},0, {0, 768},{0x0, 0xA, 0x7F, 0xFF}}},
+	{{{673, -1734, 131},0, {10240, 0},{0x0, 0xA, 0x7F, 0xFF}}},
+	{{{-673, -1734, 131},0, {0, 0},{0x0, 0xA, 0x7F, 0xFF}}},
+	{{{673, -1833, 138},0, {10240, 768},{0x0, 0xA, 0x7F, 0xFF}}},
 };
 
 Gfx credits_Scroll_mesh_tri_24[] = {
@@ -19460,9 +19458,9 @@ Gfx credits_Scroll_mesh[] = {
 	gsSPDisplayList(mat_credits_model_slice_021),
 	gsSPDisplayList(credits_Scroll_mesh_tri_23),
 	gsSPDisplayList(mat_revert_credits_model_slice_021),
-	gsSPDisplayList(mat_credits_model_slice_022),
+	gsSPDisplayList(mat_credits_model_Slice22fix),
 	gsSPDisplayList(credits_Scroll_mesh_tri_24),
-	gsSPDisplayList(mat_revert_credits_model_slice_022),
+	gsSPDisplayList(mat_revert_credits_model_Slice22fix),
 	gsSPDisplayList(mat_credits_model_slice_023),
 	gsSPDisplayList(credits_Scroll_mesh_tri_25),
 	gsSPDisplayList(mat_revert_credits_model_slice_023),
@@ -19585,7 +19583,7 @@ Bone credits_model_bones[] = {
         0,
         1,
         0,
-        1.8189894035458565e-11,
+        0.0,
         -5.63666296005249,
         -648.008056640625,
         credits_model_bone1_layers,

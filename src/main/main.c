@@ -15,12 +15,11 @@
 #include <level.h>
 #include <resize.h>
 #include <audio.h>
+#include <credits.h>
 
 #include <segments/intro.h>
 
 #define NUM_LOGOS 10
-
-extern u8 *introSegAddr;
 
 extern u8 _introSegmentStart[];
 
@@ -87,6 +86,7 @@ PlayerState playerState;
 
 u32 g_gameTimer = 0;
 u32 g_graphicsTimer = 0;
+extern u32 fillColor;
 
 #define CREDITS_LOAD_FADE_TIME 60
 #define CREDITS_LOAD_TIME 90
@@ -261,16 +261,23 @@ void mainThreadFunc(__attribute__ ((unused)) void *arg)
                 freeIntroSegment();
                 // DMA credits segment
                 debug_printf("DMAing credits segment\n");
-                loadIntroSegment();
+                loadCreditsSegment();
 
-                // Create the player entity
-                bzero(&playerState, sizeof(PlayerState));
-                createPlayer(&playerState);
                 // Load credits
                 debug_printf("Running credits header\n");
-                processLevelHeader(segmentedToVirtual(&mainHeader));
+                processLevelHeader(segmentedToVirtual(&creditsHeader));
                 debug_printf("Level header complete\n");
-                
+
+                g_Camera.distance = 530.0f;
+                g_Camera.target[0] = 0;
+                g_Camera.target[1] = 13.0f * 20.0f;
+                g_Camera.target[2] = 4.14f * 20.0f;
+                g_Camera.yOffset = 0.0f;
+                g_Camera.pitch = (s16)(0x8000 * (5.0f / 180.0f));
+                g_Camera.yaw = 0;
+
+                fillColor = GPACK_RGBA5551(0, 0, 0, 1) << 16 | GPACK_RGBA5551(0, 0, 0, 1);
+
                 firstFrame = 1; // HACK BAD FIX
             }
         }

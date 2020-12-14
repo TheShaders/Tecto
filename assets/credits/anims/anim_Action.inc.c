@@ -510,7 +510,7 @@ BoneTable credits_anim_ActionTables[] = {
 Animation credits_anim_Action = {
     1291, // frame count
     2, // bone count
-    ANIM_LOOP, // flags
+    0, // flags
     credits_anim_ActionTables, // bone table array pointer
     NULL, // trigger array pointer
 };

@@ -263,6 +263,14 @@ SECTIONS
         dma_textures/water/water.o;
         . = ALIGN(16);
     }
+    END_SEGMENT(dma_water);
+
+    START_SEGMENT(credits, 0x04000000)
+    {
+        BUILD_ROOT/src/segments/credits.o(.*data*);
+        . = ALIGN(16);
+    }
+    END_SEGMENT(credits);
 
     __popcountsi2 = numberOfSetBits;
 

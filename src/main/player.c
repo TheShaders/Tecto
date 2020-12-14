@@ -112,6 +112,10 @@ void processGround(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 v
     {
         targetSpeed *= 0.5f;
     }
+    if (collider->floorSurfaceType == SURFACE_DEATH_PLANE)
+    {
+        startCreditsLoad();
+    }
 
     vel[0] = vel[0] * (1.0f - PLAYER_GROUND_ACCEL_TIME_CONST) + targetSpeed * (PLAYER_GROUND_ACCEL_TIME_CONST) * cossf(input->angle + g_Camera.yaw);
     vel[2] = vel[2] * (1.0f - PLAYER_GROUND_ACCEL_TIME_CONST) - targetSpeed * (PLAYER_GROUND_ACCEL_TIME_CONST) * sinsf(input->angle + g_Camera.yaw);

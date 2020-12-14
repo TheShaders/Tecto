@@ -146,6 +146,8 @@ extern BVHTree treevineleaf_collision_tree;
 
 extern BVHTree lilypad_collision_tree;
 
+extern BVHTree bounceflower_collision_tree;
+
 void treevineleafResizeCallback(ResizeParams *params, ResizeTrigger trigger)
 {
     Entity *entity = findEntityFromComponent(ARCHETYPE_INTERACTABLE, Component_Resizable, params);
@@ -221,7 +223,7 @@ void bounceflowerResizeCallback(ResizeParams *params, UNUSED ResizeTrigger trigg
     {
         if (params->curSize == Size_Grown)
         {
-            *collision = NULL;
+            *collision = &bounceflower_collision_tree;
         }
         else
         {

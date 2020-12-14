@@ -312,7 +312,7 @@ ColTri *handleFloorOnGround(Vec3 pos, Vec3 vel, float stepUp, float stepDown, Su
 {
     ColTri *floor;
     SurfaceType floorSurfaceType;
-    float downdist = raycastVertical(pos, -1.0f, -stepUp, stepDown, &floor, &floorSurfaceType);
+    float downdist = raycastVertical(pos, -1.0f, -stepUp - vel[1], stepDown - vel[1], &floor, &floorSurfaceType);
     if (floor)
     {
         pos[1] -= downdist;

@@ -28,6 +28,7 @@
 #include "assets/lilypad/anims/data.inc.c"
 
 #include "assets/bounceflower/model.inc.c"
+#include "assets/bounceflower/collision.inc.c"
 
 #include "assets/test_collision/collision.inc.c"
 

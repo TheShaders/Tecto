@@ -121,7 +121,7 @@ void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, 
 {
     if (state->subState == PASUBSTATE_JUMPING)
     {
-        vel[1] = 23.0f;
+        vel[1] = 20.0f;
         if (input->magnitude)
         {
             rot[1] = input->angle + g_Camera.yaw + 0x4000;
@@ -134,11 +134,18 @@ void updateAir(PlayerState *state, InputData *input, UNUSED Vec3 pos, Vec3 vel, 
     {
         if (collider->floor)
         {
-            state->state = PSTATE_GROUND;
-            if (input->magnitude)
-                state->subState = PGSUBSTATE_WALKING;
+            if (collider->floorSurfaceType == SURFACE_BOUNCY)
+            {
+                vel[1] = 30.0f;
+            }
             else
-                state->subState = PGSUBSTATE_STANDING;
+            {
+                state->state = PSTATE_GROUND;
+                if (input->magnitude)
+                    state->subState = PGSUBSTATE_WALKING;
+                else
+                    state->subState = PGSUBSTATE_STANDING;
+            }
         }
         else
         {
@@ -370,7 +377,7 @@ void playerCallback(UNUSED void **components, void *data)
         *heldModel = &logo_model;
 
         heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
-        heldGravity->accel = -1.0f;
+        heldGravity->accel = -PLAYER_GRAVITY;
         heldGravity->terminalVelocity = -30.0f;
 
         heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];
@@ -410,7 +417,7 @@ void playerCallback(UNUSED void **components, void *data)
         *heldModel = &logo_model;
 
         heldGravity = heldComponents[COMPONENT_INDEX(Gravity, ARCHETYPE_HOLDABLE)];
-        heldGravity->accel = -1.0f;
+        heldGravity->accel = -PLAYER_GRAVITY;
         heldGravity->terminalVelocity = -30.0f;
 
         heldCollider = heldComponents[COMPONENT_INDEX(Collider, ARCHETYPE_HOLDABLE)];

@@ -1,7 +1,6 @@
 #include <ultra64.h>
 #include <mem.h>
 #include <stdint.h>
-#include <string.h>
 
 uintptr_t segmentTable[SEGMENT_COUNT];
 

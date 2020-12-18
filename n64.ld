@@ -137,34 +137,34 @@ SECTIONS
 
     START_SEGMENT_AFTER(libgcc, audio)
     {
-        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.text*);
-        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.*data*);
+        libgcc.a(.text*);
+        libgcc.a(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(libgcc);
 
     START_SEGMENT_AFTER(libultra, libgcc)
     {
-        SDK/ultra/usr/lib/LIBULTRA.a(.text*);
-        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.text*);
-        SDK/ultra/usr/lib/LIBULTRA.a(.*data*);
-        SDK/ultra/usr/lib/LIBULTRA.a(.scommon*);
-        SDK/ultra/usr/lib/LIBULTRA.a(COMMON*);
-        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.*data*);
+        LIBULTRA.a(.text*);
+        libnustd.a(.text*);
+        LIBULTRA.a(.*data*);
+        LIBULTRA.a(.scommon*);
+        LIBULTRA.a(COMMON*);
+        libnustd.a(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(libultra);
 
     START_SEGMENT_AFTER(ucode, libultra)
     {
-        SDK/ultra/usr/lib/PR/rspboot.o(.text*);
-        SDK/ultra/usr/lib/PR/gspF3DEX2.fifo.o(.text*);
-        SDK/ultra/usr/lib/PR/gspL3DEX2.fifo.o(.text*);
-        SDK/ultra/usr/lib/PR/gspS2DEX2.fifo.o(.text*);
-        SDK/ultra/usr/lib/PR/rspboot.o(.*data*);
-        SDK/ultra/usr/lib/PR/gspF3DEX2.fifo.o(.*data*);
-        SDK/ultra/usr/lib/PR/gspL3DEX2.fifo.o(.*data*);
-        SDK/ultra/usr/lib/PR/gspS2DEX2.fifo.o(.*data*);
+        PR/rspboot.o(.text*);
+        PR/gspF3DEX2.fifo.o(.text*);
+        PR/gspL3DEX2.fifo.o(.text*);
+        PR/gspS2DEX2.fifo.o(.text*);
+        PR/rspboot.o(.*data*);
+        PR/gspF3DEX2.fifo.o(.*data*);
+        PR/gspL3DEX2.fifo.o(.*data*);
+        PR/gspS2DEX2.fifo.o(.*data*);
         . = ALIGN(16);
     }
     END_SEGMENT(ucode);
@@ -225,15 +225,15 @@ SECTIONS
 
     START_NOLOAD_AFTER(libgcc, audio.noload)
     {
-        CHAIN/lib/gcc/mips64-elf/10.1.0/libgcc.a(.bss*);
+        libgcc.a(.bss*);
         . = ALIGN(16);
     }
     END_NOLOAD(libgcc);
 
     START_NOLOAD_AFTER(libultra, libgcc.noload)
     {
-        SDK/ultra/usr/lib/LIBULTRA.a(.bss*);
-        SDK/nintendo/n64kit/nustd/lib/libnustd.a(.bss*);
+        LIBULTRA.a(.bss*);
+        libnustd.a(.bss*);
         . = ALIGN(16);
     }
     END_NOLOAD(libultra);

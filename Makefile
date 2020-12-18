@@ -1,8 +1,5 @@
 ### User Configuration ###
 
-# Toolchain locations
-include Makefile.config
-
 # Name of ROM to build
 TARGET := tecto
 
@@ -12,8 +9,22 @@ DEBUG ?= 0
 
 # System config
 ifeq ($(OS),Windows_NT)
+  include Makefile.winconfig
+  SDK_INCLUDE := -I$(SDK)/ultra/usr/include
+  NUSTD_INCLUDE := -I$(SDK)/nintendo/n64kid/nustd/include
+  ULTRA_LINKER := -L$(SDK)/ultra/usr/lib
+  NUSTD_LINKER := -L$(SDK)/nintendo/n64kit/nustd/lib
+  GCC_LINKER := -L$(N64CHAIN)../lib/gcc/mips64-elf/10.1.0
+  LIBULTRA := gultra_rom
   SHELL := powershell.exe
   .SHELLFLAGS := -NoProfile -Command
+else
+  include Makefile.config
+  SDK_INCLUDE := -I/usr/include/n64
+  NUSTD_INCLUDE := -I/usr/include/n64/nustd
+  ULTRA_LINKER := -L/usr/lib/n64
+  GCC_LINKER := -L$(N64_LIBGCCDIR)
+  LIBULTRA := ultra_rom
 endif
 
 ### Text variables ###
@@ -33,34 +44,61 @@ indent +=
 CD := cd
 CP := cp
 RM := rm
-MKDIR := New-Item -Path 
-MKDIR_OPTS := -Force -Type Directory | Out-Null
 
-RMDIR := (Remove-Item
-RMDIR_OPTS := -ErrorAction SilentlyContinue -Recurse -Force) -or $$true | Out-Null # The -or $true is needed to prevent make from saying error
 
-RUN := cmd /c
+ifeq ($(OS),Windows_NT)
+  MKDIR := New-Item -Path 
+  MKDIR_OPTS := -Force -Type Directory | Out-Null
+  
+  RMDIR := (Remove-Item
+  RMDIR_OPTS := -ErrorAction SilentlyContinue -Recurse -Force) -or $$true | Out-Null # The -or $true is needed to prevent make from saying error
+  
+  RUN := cmd /c
+  
+  PRINT := Write-Host -NoNewline 
+   ENDCOLOR := $(PRINT) "$$([char]27)[0m"; 
+   WHITE     := 
+   ENDWHITE  := $(space) -ForegroundColor White; $(ENDCOLOR) $(PRINT) 
+   GREEN     := 
+   ENDGREEN  := $(space) -ForegroundColor Green; $(ENDCOLOR) $(PRINT) 
+   BLUE      := 
+   ENDBLUE   := $(space) -ForegroundColor Blue; $(ENDCOLOR) $(PRINT) 
+   YELLOW    := 
+   ENDYELLOW := $(space) -ForegroundColor Yellow; $(ENDCOLOR) $(PRINT) 
+  ENDLINE := ; Write-Host 
 
-PRINT := Write-Host -NoNewline
- ENDCOLOR := $(PRINT) "$$([char]27)[0m";
- GREEN     := 
- ENDGREEN  := $(space)-ForegroundColor Green; $(ENDCOLOR) $(PRINT)
- BLUE      := 
- ENDBLUE   := $(space)-ForegroundColor Blue; $(ENDCOLOR) $(PRINT)
- YELLOW    := 
- ENDYELLOW := $(space)-ForegroundColor Yellow; $(ENDCOLOR) $(PRINT)
- WHITE     := 
- ENDWHITE  := $(space)-ForegroundColor White; $(ENDCOLOR) $(PRINT)
-ENDLINE := ; Write-Host
+  PREFIX  := mips64-elf-
+else
+  MKDIR := mkdir
+  MKDIR_OPTS := -p
+
+  RMDIR := rm
+  RMDIR_OPTS := -rf
+
+  PRINT := printf '
+   ENDCOLOR := \033[0m
+   WHITE     := \033[0m
+   ENDWHITE  := $(ENDCOLOR)
+   GREEN     := \033[0;32m
+   ENDGREEN  := $(ENDCOLOR)
+   BLUE      := \033[0;34m
+   ENDBLUE   := $(ENDCOLOR)
+   YELLOW    := \033[0;33m
+   ENDYELLOW := $(ENDCOLOR)
+  ENDLINE := \n'
+
+  RUN := 
+  
+  PREFIX  := mips64-elf-
+endif
 
 # Build tools
-PREFIX  := mips64-elf-
-CC      := $(N64CHAIN)/bin/$(PREFIX)gcc
-AS      := $(N64CHAIN)/bin/$(PREFIX)as
-CPP     := $(N64CHAIN)/bin/$(PREFIX)cpp
-CXX     := $(N64CHAIN)/bin/$(PREFIX)g++
-LD      := $(N64CHAIN)/bin/$(PREFIX)ld
-OBJCOPY := $(N64CHAIN)/bin/$(PREFIX)objcopy
+CC      := $(N64CHAIN)$(PREFIX)gcc
+AS      := $(N64CHAIN)$(PREFIX)as
+CPP     := $(N64CHAIN)$(PREFIX)cpp
+CXX     := $(N64CHAIN)$(PREFIX)g++
+LD      := $(N64CHAIN)$(PREFIX)ld
+OBJCOPY := $(N64CHAIN)$(PREFIX)objcopy
 
 CKSUM   := $(PYTHON) tools/n64cksum.py
 
@@ -104,16 +142,16 @@ ELF      := $(Z64:.z64=.elf)
 # Build tool flags
 
 CFLAGS     := -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -mhard-float -fno-stack-protector -fno-common -fno-zero-initialized-in-bss \
-			  -I include -I . -I src/ -I $(SDK)/ultra/usr/include -I $(SDK)/nintendo/n64kit/nustd/include -fno-PIC -mno-abicalls -fno-strict-aliasing -fno-inline-functions -ffreestanding -fwrapv -Wall -Wextra \
+			  -I include -I . -I src/ $(SDK_INCLUDE) $(NUSTD_INCLUDE) -fno-PIC -mno-abicalls -fno-strict-aliasing -fno-inline-functions -ffreestanding -fwrapv -Wall -Wextra \
 			  -mno-check-zero-division -mno-split-addresses -mno-relax-pic-calls -mfp32 -mgp32 -mbranch-cost=1 \
 			  -fno-dse -fno-check-pointer-bounds -Wno-chkp -mno-odd-spreg -D_FINALROM \
 			  -D_MIPS_SZLONG=32 -D_MIPS_SZINT=32 -D_LANGUAGE_C -D_ULTRA64 -D__EXTENSIONS__ -DF3DEX_GBI_2
 CXXFLAGS   := 
 ASFLAGS    := -mtune=vr4300 -march=vr4300 -mabi=32 -mips3
 LDFLAGS    := -T $(LD_CPP) -mips3 --accept-unknown-input-arch --no-check-sections -Map $(BUILD_ROOT)/$(TARGET).map \
-			  -L $(SDK)/ultra/usr/lib -L $(SDK)/nintendo/n64kit/nustd/lib -L lib -L $(N64CHAIN)/lib/gcc/mips64-elf/10.1.0 \
-			  -lgultra_rom -lnustd -lgcc
-LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DSDK=$(SDK) -DCHAIN=$(N64CHAIN) -Umips -DLIBULTRA=libgultra_rom
+			  $(ULTRA_LINKER) $(NUSTD_LINKER) -L lib $(GCC_LINKER) \
+			  -l$(LIBULTRA) -lnustd -lgcc
+LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DLIBULTRA=lib$(LIBULTRA) -Umips
 OCOPYFLAGS := --pad-to=0x400000 --gap-fill=0xFF
 OPT_FLAGS  := -Os # Somehow Os is the fastest option according to testing
 
@@ -133,58 +171,58 @@ all: $(Z64)
 
 # Make directories
 $(BUILD_ROOT) $(BUILD_DIRS) :
-	@$(PRINT) $(GREEN) Creating directory: $(ENDGREEN) $(BLUE) $@ $(ENDBLUE) $(ENDLINE)
+	@$(PRINT)$(GREEN)Creating directory: $(ENDGREEN)$(BLUE)$@$(ENDBLUE)$(ENDLINE)
 	@$(MKDIR) $@ $(MKDIR_OPTS)
 
 # .c -> .o
 $(BUILD_ROOT)/%.o : %.c | $(BUILD_DIRS)
-	@$(PRINT) $(GREEN) Compiling C source file: $(ENDGREEN) $(BLUE) $< $(ENDBLUE) $(ENDLINE)
+	@$(PRINT)$(GREEN)Compiling C source file: $(ENDGREEN)$(BLUE)$<$(ENDBLUE)$(ENDLINE)
 	@$(CC) $< -o $@ -c -MMD -MF $(@:.o=.d) $(CFLAGS) $(OPT_FLAGS)
 
 # .bin -> .o
 $(BUILD_ROOT)/%.o : %.bin | $(BUILD_DIRS)
-	@$(PRINT) $(GREEN) Objcopying binary file: $(ENDGREEN) $(BLUE) $< $(ENDBLUE) $(ENDLINE)
+	@$(PRINT)$(GREEN)Objcopying binary file: $(ENDGREEN)$(BLUE)$<$(ENDBLUE)$(ENDLINE)
 	@$(OBJCOPY) -I binary -O elf32-big $< $@
 
 # .s -> .o
 $(BUILD_ROOT)/%.o : %.s | $(BUILD_DIRS)
-	@$(PRINT) $(GREEN) Compiling ASM source file: $(ENDGREEN) $(BLUE) $< $(ENDBLUE) $(ENDLINE)
+	@$(PRINT)$(GREEN)Compiling ASM source file: $(ENDGREEN)$(BLUE)$<$(ENDBLUE)$(ENDLINE)
 	@$(AS) $< -o $@ $(ASFLAGS)
 
 # boot -> .o
 $(BOOT_OBJ) : $(BOOT) | $(BOOT_BUILD_DIR)
-	@$(PRINT) $(GREEN) Copying boot to object file $(ENDGREEN) $(ENDLINE)
+	@$(PRINT)$(GREEN)Copying boot to object file$(ENDGREEN)$(ENDLINE)
 	@$(OBJCOPY) -I binary -O elf32-big $< $@
 
 # .o -> .elf
-$(ELF) : $(OBJS) $(LD_CPP) $(BOOT_OBJ) $(SDK)/ultra/usr/lib/PR/gspF3DEX2.fifo.o
-	@$(PRINT) $(GREEN) Linking elf file: $(ENDGREEN) $(BLUE) $@ $(ENDBLUE) $(ENDLINE)
-	@$(LD) $(LDFLAGS) -L $(BUILD_ROOT) -o $@
+$(ELF) : $(OBJS) $(LD_CPP) $(BOOT_OBJ)
+	@$(PRINT)$(GREEN)Linking elf file:$(ENDGREEN)$(BLUE)$@$(ENDBLUE)$(ENDLINE)
+	$(LD) $(LDFLAGS) -L $(BUILD_ROOT) -o $@
 
 # .elf -> .z64
 $(Z64) : $(ELF)
-	@$(PRINT) $(GREEN) Creating z64: $(ENDGREEN) $(BLUE) $@ $(ENDBLUE) $(ENDLINE)
+	@$(PRINT)$(GREEN)Creating z64: $(ENDGREEN)$(BLUE)$@$(ENDBLUE)$(ENDLINE)
 	@$(OBJCOPY) $< $@ -O binary $(OCOPYFLAGS)
-	@$(PRINT) $(GREEN) Calculating checksums $(ENDGREEN) $(ENDLINE)
+	@$(PRINT)$(GREEN)Calculating checksums$(ENDGREEN)$(ENDLINE)
 	@$(CKSUM) $@
-	@$(PRINT) $(WHITE) ROM Built! $(ENDWHITE) $(ENDLINE)
+	@$(PRINT)$(WHITE)ROM Built!$(ENDWHITE)$(ENDLINE)
 
 # byteswap z64
 $(V64) : $(Z64)
-	@$(PRINT) $(GREEN) Byteswapping z64 to v64 $(ENDGREEN) $(ENDLINE)
+	@$(PRINT)$(GREEN)Byteswapping z64 to v64$(ENDGREEN)$(ENDLINE)
 	@$(OBJCOPY) $< $@ -I binary -O binary --reverse-bytes=2
 
 # Preprocess LD script
 $(LD_CPP) : $(LD_SCRIPT) | $(BUILD_ROOT)
-	@$(PRINT) $(GREEN) Preprocessing linker script $(ENDGREEN) $(ENDLINE)
+	@$(PRINT)$(GREEN)Preprocessing linker script$(ENDGREEN)$(ENDLINE)
 	@$(CPP) $(LDCPPFLAGS) -MMD -MP -MT $@ -MF $@.d -o $@ $<
 
 clean:
-	@$(PRINT) $(YELLOW) Cleaning build $(ENDYELLOW) $(ENDLINE)
+	@$(PRINT)$(YELLOW)Cleaning build$(ENDYELLOW)$(ENDLINE)
 	@$(RMDIR) $(BUILD_ROOT) $(RMDIR_OPTS)
 
 load: $(Z64)
-	@$(PRINT) $(GREEN) Loading $(Z64) onto flashcart $(ENDGREEN) $(ENDLINE)
+	@$(PRINT)$(GREEN)Loading $(Z64) onto flashcart$(ENDGREEN)$(ENDLINE)
 	@$(RUN) $(UNFLOADER) -r $(Z64) -d
 
 .PHONY: all clean load

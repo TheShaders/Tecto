@@ -3,10 +3,12 @@
 #include <mem.h>
 #include <ecs.h>
 #include <stdint.h>
-#include <string.h>
 
 // For bzero, MIN
 #include <ultra64.h>
+
+// Including string.h causes errors with ultra64.h, so just declare it here
+void memcpy(void *dest, const void *src, size_t count);
 
 // Seems like the best option because it doesn't require a lookup table (slow ram performance)
 // or multiplication (delay slots)

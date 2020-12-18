@@ -7,8 +7,11 @@ https://github.com/buu342/N64-UNFLoader
 ***************************************************************/
 
 #include <ultra64.h>
-#include <string.h>
 #include "usb.h"
+
+// Including string.h causes errors with ultra64.h, so just declare it here
+void *memset(void* dst, int c, size_t count);
+void *memcpy(void *dest, const void *src, size_t count);
 
 
 /*********************************

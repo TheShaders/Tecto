@@ -9,8 +9,10 @@ https://github.com/buu342/N64-UNFLoader
 #include <ultra64.h> 
 #include <stdarg.h> // Located in ultra\GCC\MIPSE\INCLUDE
 #include <PR/os_internal.h> // Needed for Crash's Linux toolchain
-#include <string.h> // Needed for Crash's Linux toolchain
 #include "debug.h"
+
+// Including string.h causes errors with ultra64.h, so just declare it here
+void *memset(void* dst, int c, size_t count);
 
 
 #if DEBUG_MODE

@@ -136,7 +136,7 @@ SEG_OBJS := $(addprefix $(BUILD_ROOT)/,$(SEG_SRCS:.c=.o))
 LD_CPP   := $(BUILD_ROOT)/$(LD_SCRIPT)
 BOOT_OBJ := $(BUILD_ROOT)/$(BOOT).o
 ENTRY_OBJ:= $(BUILD_ROOT)/$(ENTRY_AS:.s=.o)
-D_FILES  := $(C_OBJS:.o=.d) $(CXX_OBJS:.o=.d) $(LD_CPP).d
+D_FILES  := $(C_OBJS:.o=.d) $(CXX_OBJS:.o=.d) $(LD_CPP).d $(SEG_OBJS:.o=.d)
 
 CODESEG  := $(BUILD_ROOT)/codesegment.o
 Z64      := $(addprefix $(BUILD_ROOT)/,$(TARGET).z64)

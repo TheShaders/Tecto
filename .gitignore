@@ -2,3 +2,4 @@ bin/
 debug/
 .vscode/
 Makefile.config
+Makefile.winconfig

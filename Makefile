@@ -7,6 +7,31 @@ DEBUG ?= 0
 
 # Do not change below this line!
 
+# Set powershell as the shell on Windows
+ifeq ($(OS),Windows_NT)
+  SHELL := powershell.exe
+  .SHELLFLAGS := -NoProfile -Command
+endif
+
+# Default config generation
+ifeq ($(OS),Windows_NT)
+  ifeq (,$(wildcard ./Makefile.winconfig))
+    DUMMY != New-Item Makefile.winconfig -ItemType File
+    DUMMY != Add-Content Makefile.winconfig "\# Location of your mips gcc (must have a slash after it!)"
+    DUMMY != Add-Content Makefile.winconfig "N64CHAIN := C:/n64/gcc-toolchain-mips64-win64/bin/"
+    DUMMY != Add-Content Makefile.winconfig "\# Location of your N64 SDK"
+    DUMMY != Add-Content Makefile.winconfig "SDK := C:/n64/n64sdk"
+    DUMMY != Add-Content Makefile.winconfig "\# Python command, e.g. python3 (or location if not on the path)"
+    DUMMY != Add-Content Makefile.winconfig "PYTHON := python"
+    DUMMY != Add-Content Makefile.winconfig "\# Location of Everdrive usb64 application"
+    DUMMY != Add-Content Makefile.winconfig "UNFLOADER := C:/n64/UNFLoader.exe)"
+  endif
+else
+  ifeq (,$(wildcard Makefile.config))
+    DUMMY != printf "\# Python command, e.g. python3 (or location if not on the path)\nPYTHON := python3\n" >> Makefile.config
+  endif
+endif
+
 # System config
 ifeq ($(OS),Windows_NT)
   include Makefile.winconfig
@@ -16,8 +41,6 @@ ifeq ($(OS),Windows_NT)
   NUSTD_LINKER := -L $(SDK)/nintendo/n64kit/nustd/lib
   GCC_LINKER := -L $(N64CHAIN)../lib/gcc/mips64-elf/10.1.0
   LIBULTRA := gultra_rom
-  SHELL := powershell.exe
-  .SHELLFLAGS := -NoProfile -Command
 else
   include Makefile.config
   SDK_INCLUDE := -I /usr/include/n64

@@ -500,6 +500,8 @@ Entity *findEntityFromComponent(archetype_t archetype, int componentIndex, void*
     return findEntity(archetype, archetypeArrayIndex);
 }
 
+extern void bzero(void *, int);
+
 void deleteAllEntities(void)
 {
     int archetypeIndex;

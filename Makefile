@@ -12,18 +12,18 @@ ifeq ($(OS),Windows_NT)
   include Makefile.winconfig
   SDK_INCLUDE := -I$(SDK)/ultra/usr/include
   NUSTD_INCLUDE := -I$(SDK)/nintendo/n64kid/nustd/include
-  ULTRA_LINKER := -L$(SDK)/ultra/usr/lib
-  NUSTD_LINKER := -L$(SDK)/nintendo/n64kit/nustd/lib
-  GCC_LINKER := -L$(N64CHAIN)../lib/gcc/mips64-elf/10.1.0
+  ULTRA_LINKER := -L $(SDK)/ultra/usr/lib
+  NUSTD_LINKER := -L $(SDK)/nintendo/n64kit/nustd/lib
+  GCC_LINKER := -L $(N64CHAIN)../lib/gcc/mips64-elf/10.1.0
   LIBULTRA := gultra_rom
   SHELL := powershell.exe
   .SHELLFLAGS := -NoProfile -Command
 else
   include Makefile.config
-  SDK_INCLUDE := -I/usr/include/n64
-  NUSTD_INCLUDE := -I/usr/include/n64/nustd
-  ULTRA_LINKER := -L/usr/lib/n64
-  GCC_LINKER := -L$(N64_LIBGCCDIR)
+  SDK_INCLUDE := -I /usr/include/n64
+  NUSTD_INCLUDE := -I /usr/include/n64/nustd
+  ULTRA_LINKER := -L /usr/lib/n64
+  GCC_LINKER := -L $(N64_LIBGCCDIR)
   LIBULTRA := ultra_rom
 endif
 
@@ -111,8 +111,10 @@ C_SRCS    := $(foreach src_dir,$(SRC_DIRS),$(wildcard $(src_dir)/*.c))
 CXX_SRCS  := $(foreach src_dir,$(SRC_DIRS),$(wildcard $(src_dir)/*.cpp))
 ASM_SRCS  := $(foreach src_dir,$(SRC_DIRS),$(wildcard $(src_dir)/*.s))
 BIN_FILES := $(foreach src_dir,$(SRC_DIRS),$(wildcard $(src_dir)/*.bin))
+SEG_SRCS  := $(wildcard segments/*.c)
 LD_SCRIPT := n64.ld
 BOOT      := boot/boot.6102
+ENTRY_AS  := boot/entry.s
 
 # Build folders
 ifeq ($(DEBUG),0)
@@ -120,8 +122,9 @@ BUILD_ROOT     := bin
 else
 BUILD_ROOT     := debug
 endif
+SEG_BUILD_DIR  := $(BUILD_ROOT)/segments
 BOOT_BUILD_DIR := $(BUILD_ROOT)/boot
-BUILD_DIRS     := $(addprefix $(BUILD_ROOT)/,$(SRC_DIRS)) $(BOOT_BUILD_DIR)
+BUILD_DIRS     := $(addprefix $(BUILD_ROOT)/,$(SRC_DIRS)) $(SEG_BUILD_DIR) $(BOOT_BUILD_DIR)
 
 # Build files
 C_OBJS   := $(addprefix $(BUILD_ROOT)/,$(C_SRCS:.c=.o))
@@ -129,10 +132,13 @@ CXX_OBJS := $(addprefix $(BUILD_ROOT)/,$(CXX_SRCS:.cpp=.o))
 ASM_OBJS := $(addprefix $(BUILD_ROOT)/,$(ASM_SRCS:.s=.o))
 BIN_OBJS := $(addprefix $(BUILD_ROOT)/,$(BIN_FILES:.bin=.o))
 OBJS     := $(C_OBJS) $(CXX_OBJS) $(ASM_OBJS) $(BIN_OBJS)
+SEG_OBJS := $(addprefix $(BUILD_ROOT)/,$(SEG_SRCS:.c=.o))
 LD_CPP   := $(BUILD_ROOT)/$(LD_SCRIPT)
 BOOT_OBJ := $(BUILD_ROOT)/$(BOOT).o
+ENTRY_OBJ:= $(BUILD_ROOT)/$(ENTRY_AS:.s=.o)
 D_FILES  := $(C_OBJS:.o=.d) $(CXX_OBJS:.o=.d) $(LD_CPP).d
 
+CODESEG  := $(BUILD_ROOT)/codesegment.o
 Z64      := $(addprefix $(BUILD_ROOT)/,$(TARGET).z64)
 V64      := $(addprefix $(BUILD_ROOT)/,$(TARGET).v64)
 ELF      := $(Z64:.z64=.elf)
@@ -141,15 +147,23 @@ ELF      := $(Z64:.z64=.elf)
 
 # Build tool flags
 
+ifeq ($(OS),Windows_NT)
 CFLAGS     := -march=vr4300 -mtune=vr4300 -mfix4300 -mabi=32 -mno-shared -G 0 -mhard-float -fno-stack-protector -fno-common -fno-zero-initialized-in-bss \
 			  -I include -I . -I src/ $(SDK_INCLUDE) $(NUSTD_INCLUDE) -fno-PIC -mno-abicalls -fno-strict-aliasing -fno-inline-functions -ffreestanding -fwrapv -Wall -Wextra \
 			  -mno-check-zero-division -mno-split-addresses -mno-relax-pic-calls -mfp32 -mgp32 -mbranch-cost=1 \
 			  -fno-dse -fno-check-pointer-bounds -Wno-chkp -mno-odd-spreg -D_FINALROM \
 			  -D_MIPS_SZLONG=32 -D_MIPS_SZINT=32 -D_LANGUAGE_C -D_ULTRA64 -D__EXTENSIONS__ -DF3DEX_GBI_2
+else
+CFLAGS     := -mabi=32 -ffreestanding -G 0 \
+		      -Wall -Wextra \
+              -I include -I . -I src/ $(SDK_INCLUDE) $(NUSTD_INCLUDE) \
+			  -D_FINALROM -D_MIPS_SZLONG=32 -D_MIPS_SZINT=32 -D_LANGUAGE_C -D_ULTRA64 -D__EXTENSIONS__ -DF3DEX_GBI_2
+endif
 CXXFLAGS   := 
 ASFLAGS    := -mtune=vr4300 -march=vr4300 -mabi=32 -mips3
-LDFLAGS    := -T $(LD_CPP) -mips3 --accept-unknown-input-arch --no-check-sections -Map $(BUILD_ROOT)/$(TARGET).map \
-			  $(ULTRA_LINKER) $(NUSTD_LINKER) -L lib $(GCC_LINKER) \
+LDFLAGS    := -T $(LD_CPP) --accept-unknown-input-arch --no-check-sections -Map $(BUILD_ROOT)/$(TARGET).map \
+			  $(ULTRA_LINKER) $(NUSTD_LINKER) -L lib $(GCC_LINKER)
+SEG_LDFLAGS:= $(ULTRA_LINKER) $(NUSTD_LINKER) -L lib $(GCC_LINKER) \
 			  -l$(LIBULTRA) -lnustd -lgcc
 LDCPPFLAGS := -P -Wno-trigraphs -DBUILD_ROOT=$(BUILD_ROOT) -DLIBULTRA=lib$(LIBULTRA) -Umips
 OCOPYFLAGS := --pad-to=0x400000 --gap-fill=0xFF
@@ -194,10 +208,15 @@ $(BOOT_OBJ) : $(BOOT) | $(BOOT_BUILD_DIR)
 	@$(PRINT)$(GREEN)Copying boot to object file$(ENDGREEN)$(ENDLINE)
 	@$(OBJCOPY) -I binary -O elf32-big $< $@
 
+# All .o -> codesegment.o
+$(CODESEG) : $(OBJS)
+	@$(PRINT)$(GREEN)Combining code objects into code segment$(ENDGREEN)$(ENDLINE)
+	@$(LD) -o $@ -r $^ $(SEG_LDFLAGS)
+
 # .o -> .elf
-$(ELF) : $(OBJS) $(LD_CPP) $(BOOT_OBJ)
+$(ELF) : $(CODESEG) $(SEG_OBJS) $(LD_CPP) $(BOOT_OBJ) $(ENTRY_OBJ)
 	@$(PRINT)$(GREEN)Linking elf file:$(ENDGREEN)$(BLUE)$@$(ENDBLUE)$(ENDLINE)
-	$(LD) $(LDFLAGS) -L $(BUILD_ROOT) -o $@
+	@$(LD) $(LDFLAGS) -o $@
 
 # .elf -> .z64
 $(Z64) : $(ELF)

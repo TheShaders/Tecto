@@ -28,8 +28,6 @@ void init(void)
     osInitialize();
     
     bzero(_mainSegmentBssStart, (u32)_mainSegmentBssEnd - (u32)_mainSegmentBssStart);
-    bzero(_gfxSegmentBssStart, (u32)_gfxSegmentBssEnd - (u32)_gfxSegmentBssStart);
-    bzero(_libultraSegmentBssStart, (u32)_libultraSegmentBssEnd - (u32)_libultraSegmentBssStart);
 
     initMemAllocator(memPoolStart, (void*) MEM_END);
     g_romHandle = osCartRomInit();

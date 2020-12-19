@@ -36,10 +36,6 @@ extern u8 _creditsSegmentRomEnd[];
 
 extern u8 _mainSegmentBssStart[];
 extern u8 _mainSegmentBssEnd[];
-extern u8 _gfxSegmentBssStart[];
-extern u8 _gfxSegmentBssEnd[];
-extern u8 _libultraSegmentBssStart[];
-extern u8 _libultraSegmentBssEnd[];
 
 void setSegment(u32 segmentIndex, void* virtualAddress);
 void *getSegment(u32 segmentIndex);

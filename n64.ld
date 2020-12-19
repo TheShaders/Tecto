@@ -4,20 +4,20 @@ OUTPUT_ARCH(mips)
 #define START_SEGMENT(segmentName, ramAddr) \
     _##segmentName##SegmentStart = ADDR(.segmentName); \
     _##segmentName##SegmentRomStart = romPos; \
-    .segmentName ramAddr : AT(romPos)
+    .segmentName ramAddr : AT(romPos) SUBALIGN(16)
 
 #define START_NOLOAD(segmentName, ramAddr) \
     _##segmentName##SegmentBssStart = ADDR(.segmentName.noload); \
-    .segmentName.noload ramAddr (NOLOAD) :
+    .segmentName.noload ramAddr (NOLOAD) : SUBALIGN(16)
 
 #define START_SEGMENT_AFTER(segmentName, previousSegment) \
     _##segmentName##SegmentStart = ADDR(.segmentName); \
     _##segmentName##SegmentRomStart = romPos; \
-    .segmentName ADDR(.previousSegment) + SIZEOF(.previousSegment) : AT(romPos)
+    .segmentName ADDR(.previousSegment) + SIZEOF(.previousSegment) : AT(romPos) SUBALIGN(16)
 
 #define START_NOLOAD_AFTER(segmentName, previousSegment) \
     _##segmentName##SegmentBssStart = ADDR(.segmentName.noload); \
-    .segmentName.noload ADDR(.previousSegment) + SIZEOF(.previousSegment) (NOLOAD) :
+    .segmentName.noload ADDR(.previousSegment) + SIZEOF(.previousSegment) (NOLOAD) : SUBALIGN(16)
 
 #define END_SEGMENT(segmentName) \
     _##segmentName##SegmentEnd = ADDR(.segmentName) + SIZEOF(.segmentName); \
@@ -56,194 +56,40 @@ SECTIONS
 
     START_SEGMENT(main, 0x80000400)
     {
-        BUILD_ROOT/src/entry/entry.o(.text*);
-        KEEP(BUILD_ROOT/src/main/main.o(.text*));
-        BUILD_ROOT/src/main/mem.o(.text*);
-        BUILD_ROOT/src/main/init.o(.text*);
-        BUILD_ROOT/src/main/input.o(.text*);
-        BUILD_ROOT/src/main/camera.o(.text*);
-        BUILD_ROOT/src/main/player.o(.text*);
-        BUILD_ROOT/src/main/task_sched.o(.text*);
-        BUILD_ROOT/src/main/resize.o(.text*);
-        BUILD_ROOT/src/main/interaction.o(.text*);
-
-        BUILD_ROOT/src/math/asmmath.o(.text*);
-        BUILD_ROOT/src/math/algorithms.o(.text*);
-        BUILD_ROOT/src/math/mathutils.o(.text*);
-
-        BUILD_ROOT/src/usb/usb.o(.text*);
-        BUILD_ROOT/src/usb/debug.o(.text*);
-
-        BUILD_ROOT/src/main/main.o(.*data*);
-        BUILD_ROOT/src/main/mem.o(.*data*);
-        BUILD_ROOT/src/main/init.o(.*data*);
-        BUILD_ROOT/src/main/input.o(.*data*);
-        BUILD_ROOT/src/main/camera.o(.*data*);
-        BUILD_ROOT/src/main/player.o(.*data*);
-        BUILD_ROOT/src/main/task_sched.o(.*data*);
-        BUILD_ROOT/src/main/resize.o(.*data*);
-        BUILD_ROOT/src/main/interaction.o(.*data*);
-
-        BUILD_ROOT/src/math/algorithms.o(.*data*);
-        BUILD_ROOT/src/math/mathutils.o(.*data*);
-
-        BUILD_ROOT/src/usb/usb.o(.*data*);
-        BUILD_ROOT/src/usb/debug.o(.*data*);
-        . = ALIGN(16);
-    }
-    END_SEGMENT(main);
-
-    START_SEGMENT_AFTER(gfx, main)
-    {
-        BUILD_ROOT/src/gfx/gfx.o(.text*);
-        BUILD_ROOT/src/gfx/drawing.o(.text*);
-        BUILD_ROOT/src/gfx/gfx.o(.*data*);
-        BUILD_ROOT/src/gfx/drawing.o(.*data*);
-        . = ALIGN(16);
-    }
-    END_SEGMENT(gfx);
-
-    START_SEGMENT_AFTER(ecs, gfx)
-    {
-        BUILD_ROOT/src/ecs/ecs.o(.text*);
-        BUILD_ROOT/src/ecs/multiarraylist.o(.text*);
-        BUILD_ROOT/src/ecs/level.o(.text*);
-        BUILD_ROOT/src/ecs/ecs.o(.*data*);
-        BUILD_ROOT/src/ecs/multiarraylist.o(.*data*);
-        BUILD_ROOT/src/ecs/level.o(.*data*);
-        . = ALIGN(16);
-    }
-    END_SEGMENT(ecs);
-
-    START_SEGMENT_AFTER(physics, ecs)
-    {
-        BUILD_ROOT/src/physics/physics.o(.text*);
-        BUILD_ROOT/src/physics/collision.o(.text*);
-        BUILD_ROOT/src/physics/traversal.o(.text*);
-        BUILD_ROOT/src/physics/physics.o(.*data*);
-        BUILD_ROOT/src/physics/collision.o(.*data*);
-        BUILD_ROOT/src/physics/traversal.o(.*data*);
-        . = ALIGN(16);
-    }
-    END_SEGMENT(physics);
-
-    START_SEGMENT_AFTER(audio, physics)
-    {
-        BUILD_ROOT/src/audio/audio.o(.text*);
-        BUILD_ROOT/src/audio/audio.o(.*data*);
-        . = ALIGN(16);
-    }
-    END_SEGMENT(audio);
-
-    START_SEGMENT_AFTER(libgcc, audio)
-    {
-        libgcc.a(.text*);
-        libgcc.a(.*data*);
-        . = ALIGN(16);
-    }
-    END_SEGMENT(libgcc);
-
-    START_SEGMENT_AFTER(libultra, libgcc)
-    {
-        LIBULTRA.a(.text*);
-        libnustd.a(.text*);
-        LIBULTRA.a(.*data*);
-        LIBULTRA.a(.scommon*);
-        LIBULTRA.a(COMMON*);
-        libnustd.a(.*data*);
-        . = ALIGN(16);
-    }
-    END_SEGMENT(libultra);
-
-    START_SEGMENT_AFTER(ucode, libultra)
-    {
+        BUILD_ROOT/boot/entry.o(.text*);
+        BUILD_ROOT/codesegment.o(.text*);
+        
         PR/rspboot.o(.text*);
         PR/gspF3DEX2.fifo.o(.text*);
         PR/gspL3DEX2.fifo.o(.text*);
         PR/gspS2DEX2.fifo.o(.text*);
+
+        BUILD_ROOT/codesegment.o(.data*);
+        BUILD_ROOT/codesegment.o(COMMON*);
+        BUILD_ROOT/codesegment.o(.scommon*);
+
         PR/rspboot.o(.*data*);
         PR/gspF3DEX2.fifo.o(.*data*);
         PR/gspL3DEX2.fifo.o(.*data*);
         PR/gspS2DEX2.fifo.o(.*data*);
-        . = ALIGN(16);
+        BUILD_ROOT/codesegment.o(.rodata*);
     }
-    END_SEGMENT(ucode);
+    END_SEGMENT(main);
 
-    START_NOLOAD_AFTER(main, ucode)
+    __popcountsi2 = numberOfSetBits;
+
+    START_NOLOAD_AFTER(main, main)
     {
-        BUILD_ROOT/src/main/main.o(.bss*);
-        BUILD_ROOT/src/main/mem.o(.bss*);
-        BUILD_ROOT/src/main/init.o(.bss*);
-        BUILD_ROOT/src/main/input.o(.bss*);
-        BUILD_ROOT/src/main/camera.o(.bss*);
-        BUILD_ROOT/src/main/player.o(.bss*);
-        BUILD_ROOT/src/main/task_sched.o(.bss*);
-        BUILD_ROOT/src/main/resize.o(.bss*);
-        BUILD_ROOT/src/main/interaction.o(.bss*);
-
-        BUILD_ROOT/src/math/algorithms.o(.bss*);
-        BUILD_ROOT/src/math/mathutils.o(.bss*);
-        
-        BUILD_ROOT/src/usb/usb.o(.bss*);
-        BUILD_ROOT/src/usb/debug.o(.bss*);
-        . = ALIGN(16);
+        BUILD_ROOT/codesegment.o(.bss*);
     }
     END_NOLOAD(main);
-
-    START_NOLOAD_AFTER(gfx, main.noload)
-    {
-        BUILD_ROOT/src/gfx/gfx.o(.bss*);
-        BUILD_ROOT/src/gfx/drawing.o(.bss*);
-        . = ALIGN(16);
-    }
-    END_NOLOAD(gfx);
-
-    START_NOLOAD_AFTER(ecs, gfx.noload)
-    {
-        BUILD_ROOT/src/ecs/ecs.o(.bss*);
-        BUILD_ROOT/src/ecs/multiarraylist.o(.bss*);
-        BUILD_ROOT/src/ecs/level.o(.bss*);
-        . = ALIGN(16);
-    }
-    END_NOLOAD(ecs);
-
-    START_NOLOAD_AFTER(physics, ecs.noload)
-    {
-        BUILD_ROOT/src/physics/physics.o(.bss*);
-        BUILD_ROOT/src/physics/collision.o(.bss*);
-        BUILD_ROOT/src/physics/traversal.o(.bss*);
-        . = ALIGN(16);
-    }
-    END_NOLOAD(physics);
-
-    START_NOLOAD_AFTER(audio, physics.noload)
-    {
-        BUILD_ROOT/src/audio/audio.o(.bss*);
-        . = ALIGN(16);
-    }
-    END_NOLOAD(audio);
-
-    START_NOLOAD_AFTER(libgcc, audio.noload)
-    {
-        libgcc.a(.bss*);
-        . = ALIGN(16);
-    }
-    END_NOLOAD(libgcc);
-
-    START_NOLOAD_AFTER(libultra, libgcc.noload)
-    {
-        LIBULTRA.a(.bss*);
-        libnustd.a(.bss*);
-        . = ALIGN(16);
-    }
-    END_NOLOAD(libultra);
 
     memPoolStart = .;
 
     START_SEGMENT(intro, 0x04000000)
     {
-        BUILD_ROOT/src/segments/intro.o(.*data*);
-        . = ALIGN(16);
+        BUILD_ROOT/segments/intro.o(.*data*);
+        BUILD_ROOT/segments/intro.o(.bss*);
     }
     END_SEGMENT(intro);
 
@@ -261,18 +107,15 @@ SECTIONS
     START_SEGMENT(dma_water, 0x00000000)
     {
         dma_textures/water/water.o;
-        . = ALIGN(16);
     }
     END_SEGMENT(dma_water);
 
     START_SEGMENT(credits, 0x04000000)
     {
-        BUILD_ROOT/src/segments/credits.o(.*data*);
-        . = ALIGN(16);
+        BUILD_ROOT/segments/credits.o(.*data*);
+        BUILD_ROOT/segments/credits.o(.bss*);
     }
     END_SEGMENT(credits);
-
-    __popcountsi2 = numberOfSetBits;
 
     /DISCARD/ :
     {

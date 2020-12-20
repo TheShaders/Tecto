@@ -1,16 +1,3 @@
-Lights1 main_model_grassmud2_Valp_f3d_lights = gdSPDefLights1(
-	0x7F, 0x7F, 0x7F,
-	0xFE, 0xFE, 0xFE, 0x28, 0x28, 0x28);
-
-Lights1 main_model_grassmud_Valp_f3d_lights = gdSPDefLights1(
-	0x7F, 0x7F, 0x7F,
-	0xFE, 0xFE, 0xFE, 0x28, 0x28, 0x28);
-
-Lights1 main_model_wateredge_XYSCROLL_ALPHCOMP_f3d_layer6_lights = gdSPDefLights1(
-	0x7F, 0x7F, 0x7F,
-	0xFE, 0xFE, 0xFE, 0x28, 0x28, 0x28);
-
-
 Gfx main_model_mossyrock2_CI4_ci4_aligner[] = {gsSPEndDisplayList()};
 u8 main_model_mossyrock2_CI4_ci4[] = {
 	0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
@@ -3892,7 +3879,6 @@ Gfx mat_main_model_grassmud2_Valp_f3d[] = {
 	gsDPPipeSync(),
 	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 4, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
 	gsDPSetTileSize(0, 0, 0, 252, 252),
-	gsSPSetLights1(main_model_grassmud2_Valp_f3d_lights),
 	gsSPEndDisplayList(),
 };
 
@@ -4019,7 +4005,6 @@ Gfx mat_main_model_grassmud_Valp_f3d[] = {
 	gsDPPipeSync(),
 	gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_4b, 4, 0, 0, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0, G_TX_WRAP | G_TX_NOMIRROR, 6, 0),
 	gsDPSetTileSize(0, 0, 0, 252, 252),
-	gsSPSetLights1(main_model_grassmud_Valp_f3d_lights),
 	gsSPEndDisplayList(),
 };
 
@@ -4118,7 +4103,6 @@ Gfx mat_main_model_wateredge_XYSCROLL_ALPHCOMP_f3d_layer6[] = {
 	gsDPSetTileSize(0, 0, 0, 252, 252),
 	gsDPSetPrimColor(0, 0, 187, 187, 187, 255),
 	gsDPSetEnvColor(187, 187, 187, 127),
-	gsSPSetLights1(main_model_wateredge_XYSCROLL_ALPHCOMP_f3d_layer6_lights),
 	gsSPEndDisplayList(),
 };
 

@@ -27,19 +27,7 @@ OUTPUT_ARCH(mips)
 
 #define END_NOLOAD(segmentName) \
     _##segmentName##SegmentBssEnd = ADDR(.segmentName.noload) + SIZEOF(.segmentName.noload); \
-    _##segmentName##SegmentBssSize = SIZEOF(.segmentName)
-
-#define START_TEXT(segmentName) \
-    _##segmentName##SegmentTextStart = .
-
-#define END_TEXT(segmentName) \
-    _##segmentName##SegmentTextEnd = .
-
-#define START_DATA(segmentName) \
-    _##segmentName##SegmentDataStart = .
-
-#define END_DATA(segmentName) \
-    _##segmentName##SegmentDataEnd = .
+    _##segmentName##SegmentBssSize = SIZEOF(.segmentName.noload)
 
 SECTIONS
 {

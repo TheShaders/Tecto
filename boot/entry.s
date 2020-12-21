@@ -18,7 +18,7 @@ EntryPoint:
     lui   $t0, %hi(_mainSegmentBssStart)
     lui   $t1, %hi(_mainSegmentBssSize)
     addiu $t0, %lo(_mainSegmentBssStart)
-    ori   $t1, %lo(_mainSegmentBssSize)
+    addiu $t1, %lo(_mainSegmentBssSize)
 .clear_bytes:
     addi  $t1, $t1, -8 # Subtract 8 bytes from the amount remaining
     sw    $zero, ($t0)  # Clear 4 bytes

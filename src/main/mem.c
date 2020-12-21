@@ -171,6 +171,9 @@ OSIoMesg dmaIoMessage;
 
 void startDMA(void *targetVAddr, void *romAddr, int length)
 {
+    // Zero out the region being DMA'd to
+    bzero(targetVAddr, length);
+
     // Create message queue for DMA reads/writes
     osCreateMesgQueue(&dmaMesgQueue, &dmaMessage, 1);
     
